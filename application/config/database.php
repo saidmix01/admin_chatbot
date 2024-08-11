@@ -75,7 +75,7 @@ $query_builder = TRUE;
 
 $db['default'] = array(
 	'dsn'	=> '',
-	'hostname' => '142.44.227.108',
+	'hostname' => 'localhost',
 	'username' => 'postgres',
 	'password' => 'S4l0m3;25@',
 	'database' => 'chat_bot_ws',
