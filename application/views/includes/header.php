@@ -3,7 +3,7 @@
 <html lang="en" class="material-style layout-fixed">
 
 <head>
-    <title>Empire | B4+ admin template by Srthemesvilla</title>
+    <title>Dashboard | Chat bot Ws</title>
 
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -218,7 +218,7 @@
                                 <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown">
                                     <span class="d-inline-flex flex-lg-row-reverse align-items-center align-middle">
                                         <img src="<?=base_url()?>assets/img/avatars/1.png" alt class="d-block ui-w-30 rounded-circle">
-                                        <span class="px-1 mr-lg-2 ml-2 ml-lg-0">Cindy Deitch</span>
+                                        <span class="px-1 mr-lg-2 ml-2 ml-lg-0"><?=$user_data->us_name; ?></span>
                                     </span>
                                 </a>
                                 <div class="dropdown-menu dropdown-menu-right">
