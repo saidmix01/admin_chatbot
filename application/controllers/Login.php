@@ -28,6 +28,7 @@ class Login extends CI_Controller
 				if($response_model["data"]->us_status == 1){
 					$this->session->set_userdata('us_email', $response_model["data"]->us_email);
 					$this->session->set_userdata('us_id', $response_model["data"]->us_id);
+					$this->session->set_userdata('login', true);
 					$response["status"] = true;
 				}else{
 					throw new Exception("The user is inactive", 1);
