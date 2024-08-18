@@ -23,7 +23,8 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 | a PHP script and you can easily do that on your own.
 |
 */
-$config['base_url'] = 'http://localhost/admin_chatbot/';
+
+$config['base_url'] = 'http://142.44.227.108/admin_chatbot/';
 
 /*
 |--------------------------------------------------------------------------
