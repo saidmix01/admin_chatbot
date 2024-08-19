@@ -27,12 +27,13 @@ async function login(name_form="") {
 		})
 		.catch(error => {
 			console.error('Error:', error);
+			throw new Error(error);
 		});
     } catch (error) {
         Swal.fire({
 			icon: "error",
-			title: "Oops...",
-			text: "Something went wrong! \n"+error
+			title: "Something went wrong!",
+			text: error
 		  });
     }
 }

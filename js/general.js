@@ -10,44 +10,44 @@
  * @returns A Promise is being returned from the `send_data` function.
  */
 function send_data(url, data) {
-    return new Promise((resolve, reject) => {
-        // Create a new XMLHttpRequest instance
-        const xhr = new XMLHttpRequest();
-        // Configure the POST request
-        xhr.open('POST', url, true);
-        // No es necesario establecer el Content-Type para FormData, el navegador lo hace automáticamente
-        // Handle the request response
-        xhr.onreadystatechange = function() {
-            if (xhr.readyState === 4) { // La petición ha finalizado
-                if (xhr.status >= 200 && xhr.status < 300) {
-                    // The request was successful
-                    resolve(JSON.parse(xhr.responseText));
-                } else {
-                    // The request failed
-                    reject({
-                        status: xhr.status,
-                        statusText: xhr.statusText
-                    });
-                }
-            }
-        };
-        // Handle request errors
-        xhr.onerror = function() {
-            reject({
-                status: xhr.status,
-                statusText: xhr.statusText
-            });
-        };
-        // Create FormData from the data object
-        const formData = new FormData();
-        for (const key in data) {
-            if (data.hasOwnProperty(key)) {
-                formData.append(key, data[key]);
-            }
-        }
-        // Send the data as FormData
-        xhr.send(formData);
-    });
+	return new Promise((resolve, reject) => {
+		// Create a new XMLHttpRequest instance
+		const xhr = new XMLHttpRequest();
+		// Configure the POST request
+		xhr.open('POST', url, true);
+		// No es necesario establecer el Content-Type para FormData, el navegador lo hace automáticamente
+		// Handle the request response
+		xhr.onreadystatechange = function () {
+			if (xhr.readyState === 4) { // La petición ha finalizado
+				if (xhr.status >= 200 && xhr.status < 300) {
+					// The request was successful
+					resolve(JSON.parse(xhr.responseText));
+				} else {
+					// The request failed
+					reject({
+						status: xhr.status,
+						statusText: xhr.statusText
+					});
+				}
+			}
+		};
+		// Handle request errors
+		xhr.onerror = function () {
+			reject({
+				status: xhr.status,
+				statusText: xhr.statusText
+			});
+		};
+		// Create FormData from the data object
+		const formData = new FormData();
+		for (const key in data) {
+			if (data.hasOwnProperty(key)) {
+				formData.append(key, data[key]);
+			}
+		}
+		// Send the data as FormData
+		xhr.send(formData);
+	});
 }
 
 /**
@@ -56,21 +56,46 @@ function send_data(url, data) {
  * specify the name of the form element in the HTML document that you want to extract data from.
  * @returns An empty object `{}` is being returned.
  */
-function get_elements_form(form_name="") {
-    return new Promise((resolve, reject) => {
-        const formObject = {};
-        try {
-            if (form_name == "") throw new Error('Form_name is empty');
-            document.getElementById(form_name).addEventListener('submit', function(event) {
-                event.preventDefault();
-                const formData = new FormData(event.target);
-                formData.forEach((value, key) => {
-                    formObject[key] = value;
-                });
-                resolve(formObject); // Resuelve la promesa con los datos del formulario
-            });
-        } catch (error) {
-            reject(error);
-        }
-    });
+function get_elements_form(form_name = "") {
+	return new Promise((resolve, reject) => {
+		const formObject = {};
+		try {
+			if (form_name == "") throw new Error('Form_name is empty');
+			document.getElementById(form_name).addEventListener('submit', function (event) {
+				event.preventDefault();
+				const formData = new FormData(event.target);
+				formData.forEach((value, key) => {
+					formObject[key] = value;
+				});
+				resolve(formObject); // Resuelve la promesa con los datos del formulario
+			});
+		} catch (error) {
+			console.log('error');
+
+			reject(error);
+		}
+	});
+}
+
+const paint_datatable = async (table_name, columns, data) => {
+	$(`#${table_name}`).DataTable({
+		data: data,
+		columns: columns,
+		paging: true,
+		dom: '<"top"f>rt<"bottom"lp><"clear">',
+		language: {
+			search: "Buscar:",
+			lengthMenu: "Mostrar _MENU_ registros por página",
+			zeroRecords: "No se encontraron resultados",
+			info: "Mostrando página _PAGE_ de _PAGES_",
+			infoEmpty: "No hay registros disponibles",
+			infoFiltered: "(filtrado de _MAX_ registros totales)",
+			paginate: {
+				first: "Primero",
+				last: "Último",
+				next: "Siguiente",
+				previous: "Anterior"
+			}
+		}
+	});
 }

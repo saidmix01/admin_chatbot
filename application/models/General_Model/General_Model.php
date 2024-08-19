@@ -18,7 +18,7 @@ class General_Model extends CI_Model
 		$response = array(
 			"status" => false,
 			"data" => array(),
-			"message" => "";
+			"message" => ""
 		);
 		try {
 			if(empty($this->table_name)) throw new Exception("Database Error: table name is empty", 1);
@@ -49,14 +49,14 @@ class General_Model extends CI_Model
 		$response = array(
 			"status" => false,
 			"data" => array(),
-			"message" => "";
+			"message" => ""
 		);
 		try {
 			if(empty($this->table_name)) throw new Exception("Database Error: table name is empty", 1);
 			if(empty($this->data)) throw new Exception("Database Error: data is empty", 1);
 			if(empty($this->where)) throw new Exception("Database Error: Where is empty", 1);
 
-			if(!$this->db->update($this->table_name, $data, $where)) throw new Exception("Database Error: Update Error", 1);
+			if(!$this->db->update($this->table_name, $this->data, $this->where)) throw new Exception("Database Error: Update Error", 1);
 			$response["status"] = true;
 			$response["data"] = $this->db->insert_id();
 		} catch (\Throwable $th) {
@@ -76,13 +76,13 @@ class General_Model extends CI_Model
 	public function delete(){
 		$response = array(
 			"status" => false,
-			"message" => "";
+			"message" => ""
 		);
 		try {
 			if(empty($this->table_name)) throw new Exception("Database Error: table name is empty", 1);
 			if(empty($this->where)) throw new Exception("Database Error: Where is empty", 1);
 
-			if(!$this->db->delete($this->table_name, $where)) throw new Exception("Database Error: Delete Error", 1);
+			if(!$this->db->delete($this->table_name, $this->where)) throw new Exception("Database Error: Delete Error", 1);
 			$response["status"] = true;
 		} catch (\Throwable $th) {
 			$response["message"] = $th->getMessage();
