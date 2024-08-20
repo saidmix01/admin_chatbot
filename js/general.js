@@ -99,3 +99,26 @@ const paint_datatable = async (table_name, columns, data) => {
 		}
 	});
 }
+
+function load_form_data(data, name_form) {
+	const form = document.querySelector(`#${name_form}`);
+	const elements = form.querySelectorAll('input, select, textarea');
+
+	elements.forEach(e => {
+		const name = e.name;
+
+		if (data.hasOwnProperty(name)) {
+			switch (e.type) {
+				case 'checkbox':
+				case 'radio':
+					e.checked = data[name];
+					break;
+				case 'select-one':
+					e.value = data[name];
+					break;
+				default:
+					e.value = data[name];
+			}
+		}
+	});
+}

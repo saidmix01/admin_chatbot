@@ -11,6 +11,10 @@ class Menu extends CI_Controller
 		$this->load->helper('general_helper');
 	}
 
+	/**
+	 * The index function checks for a valid session, retrieves user data, and loads views for the header,
+	 * menu, and footer in a PHP codebase.
+	 */
 	public function index(){
 		try {
 			if(!validate_session()) throw new Exception("The unauthenticated user", 1);
@@ -30,6 +34,10 @@ class Menu extends CI_Controller
 		}
 	}
 
+	/**
+	 * The `save` function in PHP attempts to save data to a database table and returns a JSON response
+	 * indicating success or failure.
+	 */
 	public function save(){
 		$response = array(
 			"status" => false,
@@ -45,13 +53,40 @@ class Menu extends CI_Controller
 			if(!$data_insert["status"]) throw new Exception($data_insert["message"], 1);
 			
 			$response["status"] = true;
-			$response["message"] = "Registro guardado correctamente";
+			$response["message"] = "data created successfully";
 		} catch (\Throwable $th) {
 			$response["message"] = $th->getMessage();
 		}
 		echo json_encode($response);
 	}
 
+	public function update(){
+		$response = array(
+			"status" => false,
+			"message" => ""
+		);
+		try {
+			if(!validate_session()) throw new Exception("The unauthenticated user", 1);
+			if(empty($this->input->POST())) throw new Exception("There is empty data", 1);
+
+			$this->General_Model->table_name = "menus";
+			$this->General_Model->data = $this->input->POST();
+			$this->General_Model->where = array("men_id"=>$this->input->POST('men_id'));
+			$data_update = $this->General_Model->update();
+			if(!$data_update["status"]) throw new Exception($data_update["message"], 1);
+			
+			$response["status"] = true;
+			$response["message"] = "data updated successfully";
+		} catch (\Throwable $th) {
+			$response["message"] = $th->getMessage();
+		}
+		echo json_encode($response);
+	}
+
+/**
+ * The function `get_menus` in PHP retrieves menu data and returns a JSON response with status, data,
+ * and message.
+ */
 	public function get_menus(){
 		$response = array(
 			"status" => false,
@@ -65,8 +100,8 @@ class Menu extends CI_Controller
 				$input = file_get_contents("php://input");
 				$data = json_decode($input, true);
 				if (json_last_error() === JSON_ERROR_NONE) {
-					$men_status = $data["men_status"];
-					$this->Menus_model->data = array("men_status"=>$men_status);
+					//$men_status = $data["men_status"];
+					$this->Menus_model->data = $data;
 					$data_response = $this->Menus_model->get_menus();
 					if(!$data_response["status"]) throw new Exception($data_response["message"], 1);
 					$response["status"] = true;
@@ -80,6 +115,10 @@ class Menu extends CI_Controller
 		echo json_encode($response);
 	}
 
+	/**
+	 * The `delete` function in PHP handles the deletion of a menu item based on the provided ID and
+	 * returns a JSON response indicating the status of the operation.
+	 */
 	public function delete(){
 		$response = array(
 			"status" => false,

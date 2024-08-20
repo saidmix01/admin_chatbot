@@ -48,7 +48,6 @@ class General_Model extends CI_Model
 	public function update(){
 		$response = array(
 			"status" => false,
-			"data" => array(),
 			"message" => ""
 		);
 		try {
@@ -58,7 +57,6 @@ class General_Model extends CI_Model
 
 			if(!$this->db->update($this->table_name, $this->data, $this->where)) throw new Exception("Database Error: Update Error", 1);
 			$response["status"] = true;
-			$response["data"] = $this->db->insert_id();
 		} catch (\Throwable $th) {
 			$response["message"] = $th->getMessage();
 		}
