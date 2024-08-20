@@ -16,6 +16,7 @@
 					<h6 class="card-header">Add new menu</h6>
 					<div class="card-body">
 						<form id="form_menu">
+							<input type="hidden" name="men_id" id="men_id">
 							<div class="form-row">
 								<div class="form-group col-md-4">
 									<label class="form-label">Status</label>
@@ -36,7 +37,7 @@
 									<div class="clearfix"></div>
 								</div>
 							</div>
-							<button type="submit" onclick="save_menu()" class="btn btn-success">Save</button>
+							<button type="submit" onclick="save_menu()" id="btn_save_update" class="btn btn-success">Save</button>
 						</form>
 					</div>
 				</div>
