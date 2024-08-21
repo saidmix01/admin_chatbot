@@ -122,3 +122,27 @@ function load_form_data(data, name_form) {
 		}
 	});
 }
+
+/**
+ * The function "pintarOpciones" populates a select element with options based on the data provided.
+ * @param data - An array of objects containing information about the options to be displayed in the
+ * select element. Each object should have properties like `id` and `name` to populate the `value` and
+ * `textContent` of the option elements respectively.
+ * @param select_id - The `select_id` parameter is the id of the HTML select element where you want to
+ * dynamically populate options based on the data provided.
+ */
+function paint_select(data, select_id) {
+    const element = document.getElementById(select_id);
+    element.innerHTML = '';
+	const opt_default = document.createElement('option');
+	opt_default.value = '';
+	opt_default.textContent = 'Select something';
+	element.appendChild(opt_default);
+    data.forEach(e => {
+        // Crear un nuevo elemento option
+        const optionElement = document.createElement('option');
+        optionElement.value = e.id; 
+        optionElement.textContent = e.name;
+        element.appendChild(optionElement);
+    });
+}
