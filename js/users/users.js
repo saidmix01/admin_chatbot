@@ -1,6 +1,6 @@
 window.addEventListener('load', async function () {
 	await load_profiles();
-	await get_users();
+	await get_users({us_status:1});
 });
 
 /**
