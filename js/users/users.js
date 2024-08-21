@@ -64,7 +64,7 @@ const get_users = async (data = {}) => {
 					item.us_status,
 					item.us_name,
 					item.us_email,
-					item.Profile,
+					item.pro_name,
 					`<button class="btn btn-danger btn-sm" onclick="delete_menu(${item.men_id})"><i class="feather icon-trash-2"></i></button>
 					<button class="btn btn-warning btn-sm" onclick="load_data_form('form_menu',${item.men_id})"><i class="feather icon-edit"></i></button>`
 				];
