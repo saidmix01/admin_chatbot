@@ -53,7 +53,7 @@
 									<input type="password" class="form-control" name="us_password_confirm" id="us_password_confirm" placeholder="Repeat Your password">
 								</div>
 							</div>
-							<button type="submit" onclick="save_menu()" id="btn_save_update" class="btn btn-success">Save</button>
+							<button type="submit" onclick="save_user()" id="btn_save_update" class="btn btn-success">Save</button>
 						</form>
 					</div>
 				</div>
