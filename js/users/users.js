@@ -2,6 +2,10 @@ window.addEventListener('load', async function () {
 	await load_profiles();
 });
 
+/**
+ * The function `load_profiles` fetches user profiles data from a server, processes the response, and
+ * displays it in a select dropdown or shows an error message if there is an issue.
+ */
 const load_profiles = async () => {
 	try {
 		fetch(`${base_url}Users/load_profiles`, {
