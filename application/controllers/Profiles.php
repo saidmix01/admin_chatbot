@@ -1,21 +1,17 @@
 <?php
 
-class Menu extends CI_Controller
+class Profiles extends CI_Controller
 {
 	public function __construct()
 	{
 		parent::__construct();
 		//Models
 		$this->load->model('General_Model/General_Model', 'General_Model');
-		$this->load->model('Menus/Menus_model', 'Menus_model');
+		$this->load->model('Profiles/Profile_model', 'Profile_model');
 		//Helpers
 		$this->load->helper('general_helper');
 	}
 
-	/**
-	 * The index function checks for a valid session, retrieves user data, and loads views for the header,
-	 * menu, and footer in a PHP codebase.
-	 */
 	public function index()
 	{
 		try {
@@ -26,10 +22,10 @@ class Menu extends CI_Controller
 
 			$data_header["user_data"] = $user_data["data"];
 			$data_footer["scripts"] = [
-				"js/menu/menu.js"
+				"js/profiles/profile.js"
 			];
 			$this->load->view('includes/header', $data_header);
-			$this->load->view('menu/menu_view');
+			$this->load->view('profiles/profile_view');
 			$this->load->view('includes/footer', $data_footer);
 		} catch (\Throwable $th) {
 			//throw $th;
@@ -50,7 +46,7 @@ class Menu extends CI_Controller
 			if (!validate_session()) throw new Exception("The unauthenticated user", 1);
 			if (empty($this->input->POST())) throw new Exception("There is empty data", 1);
 
-			$this->General_Model->table_name = "menus";
+			$this->General_Model->table_name = "profiles";
 			$this->General_Model->data = $this->input->POST();
 			$data_insert = $this->General_Model->insert();
 			if (!$data_insert["status"]) throw new Exception($data_insert["message"], 1);
@@ -77,9 +73,9 @@ class Menu extends CI_Controller
 			if (!validate_session()) throw new Exception("The unauthenticated user", 1);
 			if (empty($this->input->POST())) throw new Exception("There is empty data", 1);
 
-			$this->General_Model->table_name = "menus";
+			$this->General_Model->table_name = "profiles";
 			$this->General_Model->data = $this->input->POST();
-			$this->General_Model->where = array("men_id" => $this->input->POST('men_id'));
+			$this->General_Model->where = array("pro_id" => $this->input->POST('pro_id'));
 			$data_update = $this->General_Model->update();
 			if (!$data_update["status"]) throw new Exception($data_update["message"], 1);
 
@@ -95,7 +91,7 @@ class Menu extends CI_Controller
 	 * The function `get_menus` in PHP retrieves menu data and returns a JSON response with status, data,
 	 * and message.
 	 */
-	public function get_menus()
+	public function get_profiles()
 	{
 		$response = array(
 			"status" => false,
@@ -110,8 +106,8 @@ class Menu extends CI_Controller
 				$data = json_decode($input, true);
 				if (json_last_error() === JSON_ERROR_NONE) {
 					//$men_status = $data["men_status"];
-					$this->Menus_model->data = $data;
-					$data_response = $this->Menus_model->get_menus();
+					$this->Profile_model->data = $data;
+					$data_response = $this->Profile_model->get_profiles_v2();
 					if (!$data_response["status"]) throw new Exception($data_response["message"], 1);
 					$response["status"] = true;
 					$response["data"] = $data_response["data"];
@@ -124,7 +120,7 @@ class Menu extends CI_Controller
 		echo json_encode($response);
 	}
 
-	/**
+		/**
 	 * The `delete` function in PHP handles the deletion of a menu item based on the provided ID and
 	 * returns a JSON response indicating the status of the operation.
 	 */
@@ -142,9 +138,9 @@ class Menu extends CI_Controller
 				$input = file_get_contents("php://input");
 				$data = json_decode($input, true);
 				if (json_last_error() === JSON_ERROR_NONE) {
-					$men_id = $data["men_id"];
-					$this->General_Model->where = array("men_id" => $men_id);
-					$this->General_Model->table_name = "menus";
+					$pro_id = $data["pro_id"];
+					$this->General_Model->where = array("pro_id" => $pro_id);
+					$this->General_Model->table_name = "profiles";
 					$data_response = $this->General_Model->delete();
 					if (!$data_response["status"]) throw new Exception($data_response["message"], 1);
 					$response["status"] = true;
