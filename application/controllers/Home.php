@@ -14,8 +14,10 @@ class Home extends CI_Controller
 			$user_content["us_id"] = $this->session->userdata('us_id');
 			$user_data = get_user_content($user_content);
 			if($user_data["status"] == false) throw new Exception($user_data["message"], 1);
-			//Dats header
+			//Data header
 			$data_header["user_data"] = $user_data["data"];
+			$data_header["menus"] = get_user_menus(array("us_id" => $this->session->userdata('us_id')))["data"];
+			// Data body
 			$this->load->view('includes/header',$data_header);
 			$this->load->view('home/home_view');
 			$this->load->view('includes/footer');

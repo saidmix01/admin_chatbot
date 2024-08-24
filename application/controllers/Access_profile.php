@@ -22,6 +22,7 @@ class Access_profile extends CI_Controller
 			$user_data = get_user_content($user_content);
 			if ($user_data["status"] == false) throw new Exception($user_data["message"], 1);
 
+			$data_header["menus"] = get_user_menus(array("us_id" => $this->session->userdata('us_id')))["data"];
 			$data_header["user_data"] = $user_data["data"];
 			$data_body["pro_id"] = $this->input->post('pro_id');
 			$data_footer["scripts"] = [

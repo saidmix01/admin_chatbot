@@ -1,6 +1,6 @@
 window.addEventListener('load', async function () {
-	await load_profiles();
 	await get_users({us_status:1});
+	await load_profiles();
 });
 
 /**
@@ -49,6 +49,7 @@ const load_profiles = async () => {
 }
 
 const get_users = async (data = {}) => {
+	document.querySelector('.loading').style.display = "flex";
 	fetch(`${base_url}Users/get_users`, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
@@ -79,8 +80,10 @@ const get_users = async (data = {}) => {
 				{ title: "Actions" }
 			];
 			await paint_datatable('table_users', columns, table_data);
+			document.querySelector('.loading').style.display = "none";
 		})
 		.catch(error => {
+			document.querySelector('.loading').style.display = "none";
 			console.log(error);
 			Swal.fire({
 				icon: "error",
@@ -116,6 +119,7 @@ const save_user = async () => {
 			url_users = `${base_url}Users/update`
 			data_send = { us_status, us_name, us_email, pro_id, us_password, us_id  }
 		}
+		document.querySelector('.loading').style.display = "flex";
 		send_data(url_users, data_send)
 			.then(response => {
 				if (response.status) {
@@ -129,6 +133,7 @@ const save_user = async () => {
 						}
 					});
 				} else {
+					document.querySelector('.loading').style.display = "none";
 					Swal.fire({
 						icon: "error",
 						title: "Opss...",
@@ -137,11 +142,13 @@ const save_user = async () => {
 				}
 			})
 			.catch(error => {
+				document.querySelector('.loading').style.display = "none";
 				console.error('Error:', error);
 				throw new Error(error);
 			});
 	} catch (error) {
 		console.log(error);
+		document.querySelector('.loading').style.display = "none";
 		Swal.fire({
 			icon: "error",
 			title: "Something went wrong!",
@@ -154,7 +161,7 @@ const load_data_form = async (name_form = "", us_id = "") => {
 	try {
 		if (name_form == "") throw new Error("Form not found");
 		if (us_id == "") throw new Error("men_id not found");
-
+		document.querySelector('.loading').style.display = "flex";
 		fetch(`${base_url}Users/get_users`, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
@@ -174,9 +181,11 @@ const load_data_form = async (name_form = "", us_id = "") => {
 					btn.classList.add('btn-success');
 					btn.textContent = 'Save';
 				}
+				document.querySelector('.loading').style.display = "none";
 			})
 			.catch(error => {
 				console.log(error);
+				document.querySelector('.loading').style.display = "none";
 				Swal.fire({
 					icon: "error",
 					title: "Something went wrong!",
@@ -184,6 +193,7 @@ const load_data_form = async (name_form = "", us_id = "") => {
 				});
 			});
 	} catch (error) {
+		document.querySelector('.loading').style.display = "none";
 		Swal.fire({
 			icon: "error",
 			title: "Something went wrong!",
