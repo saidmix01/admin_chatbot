@@ -56,6 +56,26 @@ function send_data(url, data) {
  * specify the name of the form element in the HTML document that you want to extract data from.
  * @returns An empty object `{}` is being returned.
  */
+// function get_elements_form(form_name = "") {
+// 	return new Promise((resolve, reject) => {
+// 		const formObject = {};
+// 		try {
+// 			if (form_name == "") throw new Error('Form_name is empty');
+// 			document.getElementById(form_name).addEventListener('submit', function (event) {
+// 				event.preventDefault();
+// 				const formData = new FormData(event.target);
+// 				formData.forEach((value, key) => {
+// 					formObject[key] = value;
+// 				});
+// 				resolve(formObject); // Resuelve la promesa con los datos del formulario
+// 			});
+// 		} catch (error) {
+// 			console.log('error');
+// 			reject(error);
+// 		}
+// 	});
+// }
+
 function get_elements_form(form_name = "") {
 	return new Promise((resolve, reject) => {
 		const formObject = {};
@@ -67,15 +87,22 @@ function get_elements_form(form_name = "") {
 				formData.forEach((value, key) => {
 					formObject[key] = value;
 				});
-				resolve(formObject); // Resuelve la promesa con los datos del formulario
+				const checkboxes = event.target.querySelectorAll('input[type="checkbox"]');
+				checkboxes.forEach(checkbox => {
+					if (!formObject.hasOwnProperty(checkbox.name)) {
+						formObject[checkbox.name] = checkbox.checked ? checkbox.value : '';
+					}
+				});
+
+				resolve(formObject);
 			});
 		} catch (error) {
 			console.log('error');
-
 			reject(error);
 		}
 	});
 }
+
 
 const paint_datatable = async (table_name, columns, data) => {
 	$(`#${table_name}`).DataTable({
@@ -145,4 +172,13 @@ function paint_select(data, select_id) {
         optionElement.textContent = e.name;
         element.appendChild(optionElement);
     });
+}
+
+function open_url(url = ""){
+	try {
+		if(url == "") throw new Error("Paramn is empty");
+		location.href = url;
+	} catch (error) {
+		console.log(error);
+	}
 }
