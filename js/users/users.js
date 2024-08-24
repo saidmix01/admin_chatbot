@@ -122,6 +122,7 @@ const save_user = async () => {
 		document.querySelector('.loading').style.display = "flex";
 		send_data(url_users, data_send)
 			.then(response => {
+				document.querySelector('.loading').style.display = "none";
 				if (response.status) {
 					Swal.fire({
 						icon: "success",
