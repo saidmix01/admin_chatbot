@@ -11,6 +11,7 @@ window.addEventListener('load', async function () {
  * response, it processes the data and dynamically generates a table with the retrieved information.
  */
 const get_profiles = async (data = {}) => {
+	document.querySelector('.loading').style.display = "flex";
 	fetch(`${base_url}Profiles/get_profiles`, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
@@ -25,8 +26,12 @@ const get_profiles = async (data = {}) => {
 					item.pro_id,
 					item.pro_status,
 					item.pro_description,
-					`<button class="btn btn-danger btn-sm" onclick="delete_profile(${item.pro_id})"><i class="feather icon-trash-2"></i></button>
-					<button class="btn btn-warning btn-sm" onclick="load_data_form('form_profile',${item.pro_id})"><i class="feather icon-edit"></i></button>`
+					`<div style="display: flex;"><button class="btn btn-danger btn-sm" onclick="delete_profile(${item.pro_id})"><i class="feather icon-trash-2"></i></button>
+					<button class="btn btn-warning btn-sm" onclick="load_data_form('form_profile',${item.pro_id})"><i class="feather icon-edit"></i></button>
+					<form action="${base_url}Access_profile/" method="POST">
+						<input type="hidden" name="pro_id" id="pro_id" value="${item.pro_id}">
+						<button class="btn btn-info btn-sm"><i class="feather icon-lock"></i></button>
+					</form></div>`
 				];
 			});
 
@@ -37,8 +42,10 @@ const get_profiles = async (data = {}) => {
 				{ title: "Actions" }
 			];
 			await paint_datatable('table_profiles', columns, table_data);
+			document.querySelector('.loading').style.display = "none";
 		})
 		.catch(error => {
+			document.querySelector('.loading').style.display = "none";
 			console.log(error);
 			Swal.fire({
 				icon: "error",
@@ -54,6 +61,7 @@ const get_profiles = async (data = {}) => {
  */
 const save_profile = async () => {
 	try {
+		document.querySelector('.loading').style.display = "flex";
 		const { pro_id, pro_status, pro_description } = await get_elements_form('form_profile');
 		//Validate form fields
 		if (pro_description == "") throw new Error("Profile is required");
@@ -92,6 +100,7 @@ const save_profile = async () => {
 				throw new Error(error);
 			});
 	} catch (error) {
+		document.querySelector('.loading').style.display = "none";
 		console.log(error);
 		Swal.fire({
 			icon: "error",
@@ -110,6 +119,7 @@ const save_profile = async () => {
  */
 const delete_profile = async (pro_id = "") => {
 	try {
+		document.querySelector('.loading').style.display = "flex";
 		if (pro_id == "") throw new Error("Empty field");
 
 		fetch(`${base_url}Profiles/delete`, {
@@ -131,6 +141,7 @@ const delete_profile = async (pro_id = "") => {
 						}
 					});
 				} else {
+					document.querySelector('.loading').style.display = "none";
 					Swal.fire({
 						icon: "error",
 						title: "Opss...",
@@ -140,6 +151,7 @@ const delete_profile = async (pro_id = "") => {
 			})
 			.catch(error => {
 				console.log(error);
+				document.querySelector('.loading').style.display = "none";
 				Swal.fire({
 					icon: "error",
 					title: "Something went wrong!",
@@ -147,7 +159,7 @@ const delete_profile = async (pro_id = "") => {
 				});
 			});
 	} catch (error) {
-
+		document.querySelector('.loading').style.display = "none";
 	}
 }
 
@@ -163,6 +175,7 @@ const delete_profile = async (pro_id = "") => {
  */
 const load_data_form = async (name_form = "", pro_id = "") => {
 	try {
+		document.querySelector('.loading').style.display = "flex";
 		if (name_form == "") throw new Error("Form not found");
 		if (pro_id == "") throw new Error("pro_id not found");
 
@@ -194,7 +207,9 @@ const load_data_form = async (name_form = "", pro_id = "") => {
 					text: error
 				});
 			});
+			document.querySelector('.loading').style.display = "none";
 	} catch (error) {
+		document.querySelector('.loading').style.display = "none";
 		Swal.fire({
 			icon: "error",
 			title: "Something went wrong!",

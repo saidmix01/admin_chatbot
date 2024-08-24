@@ -32,10 +32,14 @@
     <!-- Libs -->
     <link rel="stylesheet" href="<?=base_url()?>assets/libs/perfect-scrollbar/perfect-scrollbar.css">
     <link rel="stylesheet" href="<?=base_url()?>assets/libs/flot/flot.css">
+	<link rel="stylesheet" href="<?=base_url()?>css/general.css">
 
 </head>
 
 <body>
+	<div class="overlay loading" style="display: none;">
+        <div class="icon"><img class="rotate-img" src="<?=base_url()?>assets/img/logo_128.png" alt=""></div> <!-- Puedes cambiar este icono por el que prefieras -->
+    </div>
     <!-- [ Preloader ] Start -->
     <div class="page-loader">
         <div class="bg-primary"></div>
