@@ -56,14 +56,13 @@ class Menus_profile_model extends CI_Model
 				}
 				$where = "WHERE " . implode(" AND ", $conditions);
 			}
-	
 			$sql = "SELECT m.men_id, m.men_description, m.men_status, m.men_url, m.men_icon FROM {$this->table_db} a
 					INNER JOIN {$this->table_db_profiles} b
 					ON a.pro_id = b.pro_id 
 					INNER JOIN {$this->table_db_users} u ON u.pro_id = b.pro_id 
 					INNER JOIN {$this->table_db_menus} m ON m.men_id = a.men_id $where";
 			$query = $this->db->query($sql);
-	
+			
 			if ($query) {
 				$response["status"] = true;
 				if ($query->num_rows() > 0) {

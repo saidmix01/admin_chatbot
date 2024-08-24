@@ -29,7 +29,7 @@ if (!function_exists('get_user_menus')) {
 		if(empty($us_id)) throw new Exception("User data is empty", 1);
 		$CI =& get_instance();
 		$CI->load->model('Menus_profile/Menus_profile_model','Menus_profile_model');
-		$CI->Menus_profile_model->us_id = $us_id["us_id"];
+		$CI->Menus_profile_model->data = array("us_id"=>$us_id["us_id"]);
 		$response = $CI->Menus_profile_model->get_menu_user();
 	   } catch (\Throwable $th) {
 		echo "<pre>"; print_r($th); echo "</pre>";
