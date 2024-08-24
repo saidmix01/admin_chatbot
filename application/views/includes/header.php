@@ -56,7 +56,7 @@
                     <span class="app-brand-logo demo">
                         <img src="<?=base_url()?>assets/img/logo.png" alt="Brand Logo" class="img-fluid">
                     </span>
-                    <a href="index.html" class="app-brand-text demo sidenav-text font-weight-normal ml-2">Empire</a>
+                    <a href="index.html" class="app-brand-text demo sidenav-text font-weight-normal ml-2" style="font-size: 12px;">Chat Bot Whatsapp</a>
                     <a href="javascript:" class="layout-sidenav-toggle sidenav-link text-large ml-auto">
                         <i class="ion ion-md-menu align-middle"></i>
                     </a>
@@ -68,7 +68,7 @@
 
                     <!-- Dashboards -->
                     <li class="sidenav-item active">
-                        <a href="index.html" class="sidenav-link">
+                        <a href="<?=base_url()?>Home" class="sidenav-link">
                             <i class="sidenav-icon feather icon-home"></i>
                             <div>Dashboards</div>
                             <div class="pl-1 ml-auto">
@@ -79,14 +79,17 @@
 
                     <!-- Layouts -->
                     <li class="sidenav-divider mb-1"></li>
-                    <li class="sidenav-header small font-weight-semibold">UI Components</li>
+                    <li class="sidenav-header small font-weight-semibold">Main Menu</li>
+					<?php
+						foreach ($menus as $menu) {
+					?>
                     <li class="sidenav-item">
-                        <a href="typography.html" class="sidenav-link">
-                            <i class="sidenav-icon feather icon-type"></i>
-                            <div>Typography</div>
+                        <a href="<?=base_url()?><?=$menu->men_url?>" class="sidenav-link">
+                            <i class="<?=$menu->men_icon?>"></i>
+                            &nbsp;<div><?=$menu->men_description;?></div>
                         </a>
                     </li>
-
+					<?php } ?>
                 </ul>
             </div>
             <!-- [ Layout sidenav ] End -->

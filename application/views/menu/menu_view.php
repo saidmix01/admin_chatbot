@@ -18,7 +18,7 @@
 						<form id="form_menu">
 							<input type="hidden" name="men_id" id="men_id">
 							<div class="form-row">
-								<div class="form-group col-md-4">
+								<div class="form-group col-md-3">
 									<label class="form-label">Status</label>
 									<select class="custom-select" name="men_status" id="men_status">
 										<option value="">Select Status</option>
@@ -26,12 +26,17 @@
 										<option value="0">Inactive</option>
 									</select>
 								</div>
-								<div class="form-group col-md-4">
+								<div class="form-group col-md-3">
 									<label class="form-label">Menu name</label>
 									<input type="text" class="form-control" placeholder="Name" name="men_description" id="men_description">
 									<div class="clearfix"></div>
 								</div>
-								<div class="form-group col-md-4">
+								<div class="form-group col-md-3">
+									<label class="form-label">Url</label>
+									<input type="text" class="form-control" placeholder="/controller" name="men_url" id="men_url">
+									<div class="clearfix"></div>
+								</div>
+								<div class="form-group col-md-3">
 									<label class="form-label">Icon</label>
 									<input type="text" class="form-control" name="men_icon" id="men_icon">
 									<div class="clearfix"></div>
@@ -54,6 +59,7 @@
 									<th>Id</th>
 									<th>Status</th>
 									<th>Name</th>
+									<th>Url</th>
 									<th>Icon</th>
 									<th>Actions</th>
 								</tr>

@@ -8,23 +8,26 @@ window.addEventListener('load', async function () {
  */
 const save_menu = async () => {
 	try {
-		const { men_description, men_status, men_icon,men_id } = await get_elements_form('form_menu');
+		const { men_description, men_status, men_icon,men_id,men_url } = await get_elements_form('form_menu');
 		//Validate form fields
 		if (men_description == "") throw new Error("Name is required");
 		if (men_status == "") throw new Error("Status is required");
 		if (men_icon == "") throw new Error("Icon is required");
+		if (men_url == "") throw new Error("Url is required");
 		let now = new Date();
 		let men_create_date = now.toISOString();
 		const men_id_input = document.querySelector(`#men_id`).value;
 		let url_menu = `${base_url}Menu/save`
-		let data_send = { men_status, men_description, men_icon, men_create_date }
+		let data_send = { men_status, men_description, men_icon, men_create_date,men_url }
 		if(men_id_input != ""){
 			url_menu = `${base_url}Menu/update`
-			data_send = { men_status, men_description, men_icon, men_create_date,men_id  }
+			data_send = { men_status, men_description, men_icon, men_create_date,men_id,men_url  }
 		}
+		document.querySelector('.loading').style.display = "flex";
 		send_data(url_menu, data_send)
 			.then(response => {
 				if (response.status) {
+					document.querySelector('.loading').style.display = "none";
 					Swal.fire({
 						icon: "success",
 						title: "Success",
@@ -35,6 +38,7 @@ const save_menu = async () => {
 						}
 					});
 				} else {
+					document.querySelector('.loading').style.display = "none";
 					Swal.fire({
 						icon: "error",
 						title: "Opss...",
@@ -43,11 +47,13 @@ const save_menu = async () => {
 				}
 			})
 			.catch(error => {
+				document.querySelector('.loading').style.display = "none";
 				console.error('Error:', error);
 				throw new Error(error);
 			});
 	} catch (error) {
 		console.log(error);
+		document.querySelector('.loading').style.display = "none";
 		Swal.fire({
 			icon: "error",
 			title: "Something went wrong!",
@@ -66,7 +72,7 @@ const save_menu = async () => {
 const delete_menu = async (men_id = "") => {
 	try {
 		if (men_id == "") throw new Error("Empty field");
-
+		document.querySelector('.loading').style.display = "flex";
 		fetch(`${base_url}Menu/delete`, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
@@ -86,6 +92,7 @@ const delete_menu = async (men_id = "") => {
 						}
 					});
 				} else {
+					document.querySelector('.loading').style.display = "none";
 					Swal.fire({
 						icon: "error",
 						title: "Opss...",
@@ -95,6 +102,7 @@ const delete_menu = async (men_id = "") => {
 			})
 			.catch(error => {
 				console.log(error);
+				document.querySelector('.loading').style.display = "none";
 				Swal.fire({
 					icon: "error",
 					title: "Something went wrong!",
@@ -115,6 +123,7 @@ const delete_menu = async (men_id = "") => {
  * the body of the
  */
 const get_menus = async (data = {}) => {
+	document.querySelector('.loading').style.display = "flex";
 	fetch(`${base_url}Menu/get_menus`, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
@@ -129,6 +138,7 @@ const get_menus = async (data = {}) => {
 					item.men_id,
 					item.men_status,
 					item.men_description,
+					item.men_url,
 					item.men_icon,
 					`<button class="btn btn-danger btn-sm" onclick="delete_menu(${item.men_id})"><i class="feather icon-trash-2"></i></button>
 					<button class="btn btn-warning btn-sm" onclick="load_data_form('form_menu',${item.men_id})"><i class="feather icon-edit"></i></button>`
@@ -139,12 +149,15 @@ const get_menus = async (data = {}) => {
 				{ title: 'id' },
 				{ title: 'Status' },
 				{ title: 'Name' },
+				{ title: 'Url' },
 				{ title: 'Icon' },
 				{ title: "Actions" }
 			];
 			await paint_datatable('table_menus', columns, table_data);
+			document.querySelector('.loading').style.display = "none";
 		})
 		.catch(error => {
+			document.querySelector('.loading').style.display = "none";
 			console.log(error);
 			Swal.fire({
 				icon: "error",
@@ -166,9 +179,10 @@ const get_menus = async (data = {}) => {
  */
 const load_data_form = async (name_form = "", men_id = "") => {
 	try {
+		
 		if (name_form == "") throw new Error("Form not found");
 		if (men_id == "") throw new Error("men_id not found");
-
+		document.querySelector('.loading').style.display = "flex";
 		fetch(`${base_url}Menu/get_menus`, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
@@ -188,9 +202,11 @@ const load_data_form = async (name_form = "", men_id = "") => {
 					btn.classList.add('btn-success');
 					btn.textContent = 'Save';
 				}
+				document.querySelector('.loading').style.display = "none";
 			})
 			.catch(error => {
 				console.log(error);
+				document.querySelector('.loading').style.display = "none";
 				Swal.fire({
 					icon: "error",
 					title: "Something went wrong!",
@@ -198,6 +214,7 @@ const load_data_form = async (name_form = "", men_id = "") => {
 				});
 			});
 	} catch (error) {
+		document.querySelector('.loading').style.display = "none";
 		Swal.fire({
 			icon: "error",
 			title: "Something went wrong!",
