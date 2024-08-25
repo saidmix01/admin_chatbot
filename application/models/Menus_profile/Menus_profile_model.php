@@ -48,6 +48,7 @@ class Menus_profile_model extends CI_Model
 			"message" => ""
 		);
 		try {
+			$this->db->cache_on();
 			$where = "";
 			if (!empty($this->data)) {
 				$conditions = array();
@@ -69,6 +70,7 @@ class Menus_profile_model extends CI_Model
 					$response["data"] = $query->result();
 				}
 			}
+			$this->db->cache_off();
 		} catch (\Throwable $th) {
 			echo "<pre>"; print_r($th); echo "</pre>";
 			$response["message"] = $th->getMessage();

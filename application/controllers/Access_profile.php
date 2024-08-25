@@ -102,13 +102,22 @@ class Access_profile extends CI_Controller
 					$i = 0;
 					foreach ($data as $key) {
 						if($key["action"] == "save"){
-							$this->General_Model->table_name = "menu_profile";
-							$this->General_Model->data = array(
-								"men_id" => $key["men_id"],
-								"pro_id" => $key["pro_id"],
-								"men_pro_create_date" => $key["men_pro_create_date"]
+							//Validate if exists
+							$this->Menus_profile_model->data = array(
+								"us_id" => $this->session->userdata('us_id'),
+								"m.men_id" => $key["men_id"]
 							);
-							$this->General_Model->insert();
+							$response_validation = $this->Menus_profile_model->get_menu_user();
+							if($response_validation["status"] == false) throw new Exception($response_validation["message"], 1);
+							if(count((array) $response_validation["data"]) <= 0 ){
+								$this->General_Model->table_name = "menu_profile";
+								$this->General_Model->data = array(
+									"men_id" => $key["men_id"],
+									"pro_id" => $key["pro_id"],
+									"men_pro_create_date" => $key["men_pro_create_date"]
+								);
+								$this->General_Model->insert();
+							}
 							$i++;
 						}elseif($key["action"] == "delete"){
 							$this->General_Model->table_name = "menu_profile";

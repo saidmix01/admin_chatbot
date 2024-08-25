@@ -68,9 +68,6 @@
                         <a href="<?=base_url()?>Home" class="sidenav-link">
                             <i class="sidenav-icon feather icon-home"></i>
                             <div>Dashboards</div>
-                            <div class="pl-1 ml-auto">
-                                <div class="badge badge-danger">Hot</div>
-                            </div>
                         </a>
                     </li>
 
@@ -98,7 +95,7 @@
                     <!-- Brand demo (see assets/css/demo/demo.css) -->
                     <a href="<?=base_url()?>Home" class="navbar-brand app-brand demo d-lg-none py-0 mr-4">
                         <span class="">
-                            <img src="assets/img/logo-dark.png" alt="Brand Logo" class="img-fluid">
+                            <img src="<?=base_url()?>assets/img/logo.png" alt="Brand Logo" class="img-fluid">
                         </span>
                         <span class="app-brand-text demo font-weight-normal ml-2" style="font-size: 15px;">Chat Bot Whatsapp</span>
                     </a>
@@ -140,7 +137,7 @@
                                     <a href="javascript:" class="dropdown-item">
                                         <i class="feather icon-settings text-muted"></i> &nbsp; Account settings</a>
                                     <div class="dropdown-divider"></div>
-                                    <a href="javascript:" class="dropdown-item">
+                                    <a href="<?=base_url()?>Login/logout" class="dropdown-item">
                                         <i class="feather icon-power text-danger"></i> &nbsp; Log Out</a>
                                 </div>
                             </div>

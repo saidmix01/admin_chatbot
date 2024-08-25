@@ -26,6 +26,9 @@ class Login extends CI_Controller
 			$response_model = $this->Login_Model->get_user_data();
 			if($response_model["status"] == true && !empty($response_model["data"])){
 				if($response_model["data"]->us_status == 1){
+					if($response_model["data"]->us_password != $this->input->post('us_password')){
+						throw new Exception("Incorrect password", 1);
+					}
 					$this->session->set_userdata('us_email', $response_model["data"]->us_email);
 					$this->session->set_userdata('us_id', $response_model["data"]->us_id);
 					$this->session->set_userdata('login', true);
@@ -40,6 +43,12 @@ class Login extends CI_Controller
 			$response["message"] = $th->getMessage();
 		}
 		echo json_encode($response);
+	}
+
+	public function logout() {
+		$this->load->library('session');
+		$this->session->sess_destroy();
+		redirect(base_url());
 	}
 }
 
