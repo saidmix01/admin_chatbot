@@ -7,7 +7,7 @@ html {
 }
 
 .layout-content{
-	max-height: 100vh;
+	max-height: 90vh;
 	overflow-y: auto;
 }
 
