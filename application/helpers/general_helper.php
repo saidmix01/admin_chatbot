@@ -26,11 +26,13 @@ if (!function_exists('get_user_menus')) {
     function get_user_menus($us_id = "") {
 		$response = array();
        try {
-		if(empty($us_id)) throw new Exception("User data is empty", 1);
-		$CI =& get_instance();
-		$CI->load->model('Menus_profile/Menus_profile_model','Menus_profile_model');
-		$CI->Menus_profile_model->data = array("us_id"=>$us_id["us_id"]);
-		$response = $CI->Menus_profile_model->get_menu_user();
+			if(empty($us_id)) throw new Exception("User data is empty", 1);
+			$CI =& get_instance();
+			$CI->db->cache_on();
+			$CI->load->model('Menus_profile/Menus_profile_model','Menus_profile_model');
+			$CI->Menus_profile_model->data = array("us_id"=>$us_id["us_id"]);
+			$response = $CI->Menus_profile_model->get_menu_user();
+			$CI->db->cache_off();
 	   } catch (\Throwable $th) {
 		echo "<pre>"; print_r($th); echo "</pre>";
 	   }

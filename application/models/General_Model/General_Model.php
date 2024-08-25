@@ -21,6 +21,7 @@ class General_Model extends CI_Model
 			"message" => ""
 		);
 		try {
+			$this->db->cache_delete_all();
 			if(empty($this->table_name)) throw new Exception("Database Error: table name is empty", 1);
 			if(empty($this->data)) throw new Exception("Database Error: data is empty", 1);
 			if(!$this->db->insert($this->table_name,$this->data)) throw new Exception("Database Error: Insert Error", 1);
@@ -51,6 +52,7 @@ class General_Model extends CI_Model
 			"message" => ""
 		);
 		try {
+			$this->db->cache_delete_all();
 			if(empty($this->table_name)) throw new Exception("Database Error: table name is empty", 1);
 			if(empty($this->data)) throw new Exception("Database Error: data is empty", 1);
 			if(empty($this->where)) throw new Exception("Database Error: Where is empty", 1);
@@ -77,6 +79,7 @@ class General_Model extends CI_Model
 			"message" => ""
 		);
 		try {
+			$this->db->cache_delete_all();
 			if(empty($this->table_name)) throw new Exception("Database Error: table name is empty", 1);
 			if(empty($this->where)) throw new Exception("Database Error: Where is empty", 1);
 
