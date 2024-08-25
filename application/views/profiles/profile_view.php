@@ -43,18 +43,20 @@
 			<div class="col-md-12">
 				<div class="card mb-4">
 					<div class="card-body">
-						<table id="table_profiles" class="table card-table" style="width:100%">
-							<thead>
-								<tr>
-									<th>Id</th>
-									<th>Status</th>
-									<th>Name</th>
-									<th>Actions</th>
-								</tr>
-							</thead>
-							<tbody>
-							</tbody>
-						</table>
+						<div class="table-responsive">
+							<table id="table_profiles" class="table card-table" style="width:100%">
+								<thead>
+									<tr>
+										<th>Id</th>
+										<th>Status</th>
+										<th>Name</th>
+										<th>Actions</th>
+									</tr>
+								</thead>
+								<tbody>
+								</tbody>
+							</table>	
+						</div>
 					</div>
 				</div>
 			</div>
