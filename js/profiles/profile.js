@@ -77,6 +77,7 @@ const save_profile = async () => {
 		}
 		send_data(url_profile, data_send)
 			.then(response => {
+				document.querySelector('.loading').style.display = "none";
 				if (response.status) {
 					Swal.fire({
 						icon: "success",

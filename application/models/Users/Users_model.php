@@ -39,11 +39,12 @@ class Users_model extends CI_Model
 			if(!empty($this->data)){
 				$where = "WHERE ";
 				foreach ($this->data as $key => $value) {
-					$where .= $key . " = '" . $value . "' AND";
+					$where .= $key . " = '" . $value . "' AND ";
 				}
 				$where = explode(' ', $where);
 				array_pop($where);
 				$where = implode(' ', $where);
+				$where = rtrim($where, 'AND');
 			}
 			$sql = "SELECT * FROM {$this->table_name} u
 					INNER JOIN profiles p ON p.pro_id = u.pro_id

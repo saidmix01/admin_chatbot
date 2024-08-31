@@ -8,6 +8,7 @@ window.addEventListener('load', async function () {
  */
 const save_menu = async () => {
 	try {
+		document.querySelector('.loading').style.display = "flex";
 		const { men_description, men_status, men_icon,men_id,men_url } = await get_elements_form('form_menu');
 		//Validate form fields
 		if (men_description == "") throw new Error("Name is required");
@@ -23,16 +24,15 @@ const save_menu = async () => {
 			url_menu = `${base_url}Menu/update`
 			data_send = { men_status, men_description, men_icon, men_create_date,men_id,men_url  }
 		}
-		document.querySelector('.loading').style.display = "flex";
 		send_data(url_menu, data_send)
 			.then(response => {
 				if (response.status) {
-					document.querySelector('.loading').style.display = "none";
 					Swal.fire({
 						icon: "success",
 						title: "Success",
 						text: response.message
 					}).then(async (result) => {
+						document.querySelector('.loading').style.display = "none";
 						if (result.isConfirmed) {
 							location.reload();
 						}
@@ -82,6 +82,7 @@ const delete_menu = async (men_id = "") => {
 			.then(async data => {
 				if (!data.status) throw new Error(data.message);
 				if (data.status) {
+					document.querySelector('.loading').style.display = "none";
 					Swal.fire({
 						icon: "success",
 						title: "Success",
@@ -110,7 +111,7 @@ const delete_menu = async (men_id = "") => {
 				});
 			});
 	} catch (error) {
-
+		console.log(error);
 	}
 }
 
