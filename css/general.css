@@ -67,3 +67,8 @@ html {
 .rotate-img {
 	animation: rotate 3s linear infinite;
 }
+
+.btn.btn-success{
+	background-color: #08DBAE !important;
+	background: #08DBAE !important;
+}
