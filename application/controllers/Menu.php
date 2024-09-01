@@ -33,7 +33,7 @@ class Menu extends CI_Controller
 			$this->load->view('menu/menu_view');
 			$this->load->view('includes/footer', $data_footer);
 		} catch (\Throwable $th) {
-			//throw $th;
+			$this->load->view('error_pages/500');
 		}
 	}
 

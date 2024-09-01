@@ -33,7 +33,7 @@ class List_manage extends CI_Controller
 			$this->load->view('list/list_view');
 			$this->load->view('includes/footer', $data_footer);
 		} catch (\Throwable $th) {
-			//throw $th;
+			$this->load->view('error_pages/500');
 		}
 	}
 
@@ -55,7 +55,7 @@ class List_manage extends CI_Controller
 			$this->load->view('list/options_view',$data_body);
 			$this->load->view('includes/footer', $data_footer);
 		} catch (\Throwable $th) {
-			//throw $th;
+			$this->load->view('error_pages/500');
 		}
 	}
 
