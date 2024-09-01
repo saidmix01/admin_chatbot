@@ -40,6 +40,36 @@ class Stores extends CI_Controller
 		}
 	}
 
+	public function my_store()
+	{
+		try {
+			if(empty($this->input->get())) throw new Exception("data not found", 1);
+			if (!validate_session()) throw new Exception("The unauthenticated user", 1);
+			$validate_store = validate_store_user($this->session->userdata('us_id'),$this->input->get('id'));
+			if($validate_store["status"] == false || $validate_store["data"] == false){
+				throw new Exception("Access denied", 1);
+			}
+			$user_content["us_id"] = $this->session->userdata('us_id');
+			$user_data = get_user_content($user_content);
+			if ($user_data["status"] == false) throw new Exception($user_data["message"], 1);
+
+			$data_header["user_data"] = $user_data["data"];
+			$data_header["menus"] = get_user_menus(array("us_id" => $this->session->userdata('us_id')))["data"];
+			
+			$data_body["sto_id"] = $this->input->get('id');
+			$data_body["us_id"] = $this->session->userdata('us_id');
+
+			$data_footer["scripts"] = [
+				"js/store/my_store.js"
+			];
+			$this->load->view('includes/header', $data_header);
+			$this->load->view('store/my_store_view',$data_body);
+			$this->load->view('includes/footer', $data_footer);
+		} catch (\Throwable $th) {
+			//throw $th;
+		}
+	}
+
 	/**
 	 * The function `get_stores` retrieves store data and returns a JSON response with status, data, and
 	 * message.

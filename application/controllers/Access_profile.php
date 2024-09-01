@@ -104,10 +104,9 @@ class Access_profile extends CI_Controller
 						if($key["action"] == "save"){
 							//Validate if exists
 							$this->Menus_profile_model->data = array(
-								"us_id" => $this->session->userdata('us_id'),
-								"m.men_id" => $key["men_id"]
+								"pro_id" => $key["pro_id"]
 							);
-							$response_validation = $this->Menus_profile_model->get_menu_user();
+							$response_validation = $this->Menus_profile_model->get_menu_profile();
 							if($response_validation["status"] == false) throw new Exception($response_validation["message"], 1);
 							if(count((array) $response_validation["data"]) <= 0 ){
 								$this->General_Model->table_name = "menu_profile";

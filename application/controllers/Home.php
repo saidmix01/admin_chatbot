@@ -8,6 +8,10 @@ class Home extends CI_Controller
 		$this->load->helper('general_helper');
 	}
 
+	/**
+	 * The index function in PHP checks for a valid session, retrieves user data and menus, and loads
+	 * corresponding views, handling exceptions if any occur.
+	 */
 	public function index(){
 		try {
 			if(!validate_session()) throw new Exception("The unauthenticated user", 1);
@@ -17,10 +21,13 @@ class Home extends CI_Controller
 			//Data header
 			$data_header["user_data"] = $user_data["data"];
 			$data_header["menus"] = get_user_menus(array("us_id" => $this->session->userdata('us_id')))["data"];
-			// Data body
+			// Data footer
+			$data_footer["scripts"] = [
+				"js/dashboard/dashboard.js"
+			];
 			$this->load->view('includes/header',$data_header);
 			$this->load->view('home/home_view');
-			$this->load->view('includes/footer');
+			$this->load->view('includes/footer',$data_footer);
 		} catch (\Throwable $th) {
 			echo "<pre>"; print_r($th); echo "</pre>";
 		}

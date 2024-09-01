@@ -20,7 +20,7 @@ const get_menus = async (data = {}) => {
 		.then(async data => {
 			if (!data.status) throw new Error(data.message);
 			const container = document.getElementById('checkbox_menus');
-			container.innerHTML = ''; // Limpiar el contenedor antes de agregar los checkboxes
+			container.innerHTML = '';
 			const pro_id = document.getElementById('pro_id').value;
 			data.data.forEach(async item => {
 				const validation = await validate_menu_profile(item.men_id);
