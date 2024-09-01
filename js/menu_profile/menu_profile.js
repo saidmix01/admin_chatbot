@@ -28,7 +28,7 @@ const get_menus = async (data = {}) => {
 				
 				let val_chk = false;
 				let val = '1';
-				if (validation >= 1) {
+				if (validation) {
 					val_chk = true;
 					val = '2';
 				}
@@ -101,6 +101,10 @@ const validate_menu_profile = async (men_id = "") => {
 	}
 };
 
+/**
+ * The function `save_men_prof` asynchronously saves or deletes menu profiles based on form data and
+ * displays success or error messages accordingly.
+ */
 const save_men_prof = async () => {
 	try {
 		document.querySelector('.loading').style.display = "flex";
@@ -136,7 +140,7 @@ const save_men_prof = async () => {
 					text: data.message
 				}).then(async (result) => {
 					if (result.isConfirmed) {
-						location.reload();
+						//location.reload();
 					}
 				});
 				document.querySelector('.loading').style.display = "none";
