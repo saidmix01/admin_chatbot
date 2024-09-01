@@ -26,6 +26,7 @@ const save_menu = async () => {
 		}
 		send_data(url_menu, data_send)
 			.then(response => {
+				document.querySelector('.loading').style.display = "none";
 				if (response.status) {
 					Swal.fire({
 						icon: "success",
