@@ -23,7 +23,7 @@ class Menus_model extends CI_Model
 				$where = implode(' ', $where);
 				$where = rtrim($where, 'AND');
 			}
-			$sql = "SELECT * FROM {$this->table_name} {$where}";
+			$sql = "SELECT * FROM {$this->table_name} {$where} ORDER BY men_description DESC";
 			if($query = $this->db->query($sql)){
 				$response["status"] = true;
 				if($query->num_rows() > 0){

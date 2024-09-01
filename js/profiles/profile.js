@@ -2,7 +2,6 @@ window.addEventListener('load', async function () {
 	await get_profiles({ pro_status: 1 });
 });
 
-
 /**
  * The `get_profiles` function fetches profile data, processes it, and displays it in a datatable with
  * options for editing and deleting profiles.

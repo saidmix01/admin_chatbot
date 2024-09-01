@@ -75,10 +75,10 @@ class Access_profile extends CI_Controller
 				$data = json_decode($input, true);
 				if (json_last_error() === JSON_ERROR_NONE) {
 					$this->Menus_profile_model->data = $data;
-					$data_model = $this->Menus_profile_model->get_menu_profile();
+					$data_model = $this->Menus_profile_model->validate_menu_profile();
 					if($data_model["status"] == false) throw new Exception($data_model["message"], 1);
 					$response["status"] = true;
-					$response["data"] = count((array) $data_model["data"]);
+					$response["data"] = $data_model["exits"];
 				}
 			}
 		} catch (\Throwable $th) {
@@ -104,11 +104,12 @@ class Access_profile extends CI_Controller
 						if($key["action"] == "save"){
 							//Validate if exists
 							$this->Menus_profile_model->data = array(
-								"pro_id" => $key["pro_id"]
+								"pro_id" => $key["pro_id"],
+								"men_id" => $key["men_id"],
 							);
-							$response_validation = $this->Menus_profile_model->get_menu_profile();
+							$response_validation = $this->Menus_profile_model->validate_menu_profile();
 							if($response_validation["status"] == false) throw new Exception($response_validation["message"], 1);
-							if(count((array) $response_validation["data"]) <= 0 ){
+							if($response_validation["exits"] == false){
 								$this->General_Model->table_name = "menu_profile";
 								$this->General_Model->data = array(
 									"men_id" => $key["men_id"],
