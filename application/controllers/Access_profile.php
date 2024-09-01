@@ -32,7 +32,7 @@ class Access_profile extends CI_Controller
 			$this->load->view('profiles/menu_profile_view',$data_body);
 			$this->load->view('includes/footer', $data_footer);
 		} catch (\Throwable $th) {
-			echo "<pre>"; print_r($th); echo "</pre>";
+			$this->load->view('error_pages/500');
 		}
 	}
 

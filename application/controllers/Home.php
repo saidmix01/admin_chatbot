@@ -29,7 +29,7 @@ class Home extends CI_Controller
 			$this->load->view('home/home_view');
 			$this->load->view('includes/footer',$data_footer);
 		} catch (\Throwable $th) {
-			echo "<pre>"; print_r($th); echo "</pre>";
+			$this->load->view('error_pages/500');
 		}
 	}
 }
