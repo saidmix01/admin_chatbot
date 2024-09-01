@@ -233,6 +233,14 @@ const load_data_form = async (name_form = "", chq_id = "") => {
 	}
 }
 
+/**
+ * The function `delete_question` is an asynchronous function that sends a POST request to delete a
+ * question based on the provided ID, displaying success or error messages using SweetAlert and
+ * reloading the page upon successful deletion.
+ * @param [chq_id] - The `delete_question` function is an asynchronous function that deletes a question
+ * based on the `chq_id` provided. The function first checks if the `chq_id` is empty, and if it is, it
+ * throws an error with the message "Empty field".
+ */
 const delete_question = async (chq_id = "") => {
 	try {
 		if (chq_id == "") throw new Error("Empty field");
