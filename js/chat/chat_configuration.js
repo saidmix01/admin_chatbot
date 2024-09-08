@@ -1,6 +1,7 @@
 window.addEventListener('load', async function () {
 	await load_list({ lis_status: 1 });
 	await get_questions({ chq_status: 1 });
+	await get_questions_select( { chq_status: 1 } );
 });
 
 
@@ -109,6 +110,45 @@ const get_questions = async (data = {}) => {
 				{ title: "Actions" }
 			];
 			await paint_datatable('table_questions', columns, table_data);
+			document.querySelector('.loading').style.display = "none";
+		})
+		.catch(error => {
+			document.querySelector('.loading').style.display = "none";
+			console.log(error);
+			Swal.fire({
+				icon: "error",
+				title: "Something went wrong!",
+				text: error
+			});
+		});
+}
+
+const get_questions_select = async (data = {}) => {
+	document.querySelector('.loading').style.display = "flex";
+	fetch(`${base_url}Chat_configuration/get_questions`, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify(data)
+	})
+		.then(response => response.json())
+		.then(async data => {
+			if (!data.status) throw new Error(data.message);
+				document.querySelector('.loading').style.display = "none";
+				if (!data.status) throw new Error(data.message);
+				let data_resp = [];
+				data_resp.push({id:0,name:'Main question'});
+				data.data.forEach(element => {
+					data_resp.push({id:element.chq_id,name:element.chq_text});
+				});
+				if (data.status) {
+					paint_select(data_resp,'chq_parent');
+				} else {
+					Swal.fire({
+						icon: "error",
+						title: "Opss...",
+						text: `${data.message}`
+					})
+				}
 			document.querySelector('.loading').style.display = "none";
 		})
 		.catch(error => {
