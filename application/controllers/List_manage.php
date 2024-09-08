@@ -253,7 +253,7 @@ class List_manage extends CI_Controller
 
 			$this->General_Model->table_name = "options";
 			$this->General_Model->data = $this->input->POST();
-			$this->General_Model->where = array("lis_id" => $this->input->POST('lis_id'));
+			$this->General_Model->where = array("opt_id" => $this->input->POST('opt_id'));
 			$data_update = $this->General_Model->update();
 			if (!$data_update["status"]) throw new Exception($data_update["message"], 1);
 
