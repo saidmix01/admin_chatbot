@@ -24,7 +24,7 @@
 					</div>
 				</div>
 			</div>
-			<div class="col-md-6">
+			<div class="col-md-6" onclick="chats_view('<?=$sto_id?>','<?=$us_id ?>')">
 				<div class="card mb-4">
 					<div class="card-body">
 						<div class="d-flex align-items-center justify-content-between">
@@ -91,3 +91,4 @@
     </div>
   </div>
 </div>
+

@@ -70,6 +70,64 @@ class Stores extends CI_Controller
 		}
 	}
 
+	public function my_chats()
+	{
+		try {
+			if(empty($this->input->get())) throw new Exception("data not found", 1);
+			if (!validate_session()) throw new Exception("The unauthenticated user", 1);
+			$validate_store = validate_store_user($this->session->userdata('us_id'),$this->input->get('id'));
+			if($validate_store["status"] == false || $validate_store["data"] == false){
+				throw new Exception("Access denied", 1);
+			}
+			$user_content["us_id"] = $this->session->userdata('us_id');
+			$user_data = get_user_content($user_content);
+			if ($user_data["status"] == false) throw new Exception($user_data["message"], 1);
+
+			$data_header["user_data"] = $user_data["data"];
+			$data_header["menus"] = get_user_menus(array("us_id" => $this->session->userdata('us_id')))["data"];
+			
+			$data_body["sto_id"] = $this->input->get('id');
+			$data_body["us_id"] = $this->session->userdata('us_id');
+
+			$data_footer["scripts"] = [
+				"js/store/my_chats.js"
+			];
+			$this->load->view('includes/header', $data_header);
+			$this->load->view('store/my_chats_view',$data_body);
+			$this->load->view('includes/footer', $data_footer);
+		} catch (\Throwable $th) {
+			$this->load->view('error_pages/500');
+		}
+	}
+
+	public function get_chats_by_store(){
+		$response = array(
+			"status" => false,
+			"data" => array(),
+			"message" => ""
+		);
+		try {
+			if (!validate_session()) throw new Exception("The unauthenticated user", 1);
+			header("Content-Type: application/json; charset=UTF-8");
+			if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+				$input = file_get_contents("php://input");
+				$data = json_decode($input, true);
+				if (json_last_error() === JSON_ERROR_NONE) {
+					$this->load->model('Chat/Chat_model', 'Chat_model');
+					$this->Chat_model->data = $data;
+					$data_response = $this->Chat_model->get_chats_by_store();
+					if (!$data_response["status"]) throw new Exception($data_response["message"], 1);
+					$response["status"] = true;
+					$response["data"] = $data_response["data"];
+					$response["message"] = "Query executed correctly";
+				}
+			}
+		} catch (\Throwable $th) {
+			$response["message"] = $th->getMessage();
+		}
+		echo json_encode($response);
+	}
+
 	/**
 	 * The function `get_stores` retrieves store data and returns a JSON response with status, data, and
 	 * message.

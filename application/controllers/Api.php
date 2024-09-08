@@ -161,6 +161,7 @@ class Api extends CI_Controller
 							"st_information" => json_encode($data["st_information"]),
 							"st_status" => $data["st_status"],
 							"st_log" => $st_log,
+							"us_id" => $data["us_id"],
 							"st_create_date" => $data["st_create_date"]
 						);
 						$data_opt = $this->General_Model->insert();

@@ -1,3 +1,12 @@
+/**
+ * The function `show_modal_store_info` displays a modal with store information after loading data
+ * based on the provided store and user IDs.
+ * @param [sto_id] - The `sto_id` parameter in the `show_modal_store_info` function represents the ID
+ * of a store. It is used to load data for a specific store in a modal window.
+ * @param [us_id] - The `us_id` parameter in the `show_modal_store_info` function likely represents the
+ * user ID, which is used to identify a specific user in the system. This parameter is used to load
+ * data related to a specific store for a given user.
+ */
 const show_modal_store_info = async (sto_id = "", us_id = "") => {
 	try {
 		if(sto_id == "" || us_id == "") throw new Error("Unknown data ");
@@ -10,6 +19,24 @@ const show_modal_store_info = async (sto_id = "", us_id = "") => {
 		});
 	}
 }
+
+/**
+ * The function `chats_view` opens a URL with parameters `sto_id` and `us_id` if they are not empty.
+ * @param [sto_id] - The `sto_id` parameter in the `chats_view` function represents the ID of a store.
+ * @param [us_id] - The `us_id` parameter in the `chats_view` function likely represents the user ID,
+ * which is used to identify a specific user in the context of viewing chats.
+ */
+function chats_view(sto_id = "", us_id = ""){
+	try {
+		if(sto_id == "" || us_id == ""){
+			throw new Error("Empty params");
+		}
+		open_url(`${base_url}Stores/my_chats?id=${sto_id}`);
+	} catch (error) {
+		
+	}
+}
+
 
 
 const update = async () => {
@@ -62,6 +89,16 @@ const update = async () => {
 	}
 }
 
+/**
+ * The function `load_data_form` fetches store data based on the provided store ID and loads it into a
+ * specified form, displaying an error message if any issues occur.
+ * @param [name_form] - The `name_form` parameter in the `load_data_form` function is used to specify
+ * the name of the form that needs to be loaded. If the `name_form` parameter is not provided or is an
+ * empty string, an error "Form not found" will be thrown.
+ * @param [sto_id] - The `sto_id` parameter in the `load_data_form` function is used to specify the ID
+ * of the store for which data needs to be loaded. This ID is then sent as part of the request to fetch
+ * store data from the server.
+ */
 const load_data_form = async (name_form = "", sto_id = "") => {
 	try {
 
