@@ -12,7 +12,7 @@
 		</div>
 		<div class="row">
 			<div class="col-sm-6 col-md-3">
-				<div class="card mb-4" onclick="show_modal_store_info('<?=$sto_id?>','<?=$us_id ?>')">
+				<div class="card mb-4" onclick="load_chats_table(1)">
 					<div class="card-body">
 						<div class="d-flex align-items-center justify-content-between">
 							<div class="">
@@ -25,7 +25,7 @@
 				</div>
 			</div>
 			<div class="col-sm-6 col-md-3">
-				<div class="card mb-4">
+				<div class="card mb-4" onclick="load_chats_table(2)">
 					<div class="card-body">
 						<div class="d-flex align-items-center justify-content-between">
 							<div class="">
@@ -38,7 +38,7 @@
 				</div>
 			</div>
 			<div class="col-sm-6 col-md-3">
-				<div class="card mb-4">
+				<div class="card mb-4" onclick="load_chats_table(3)">
 					<div class="card-body">
 						<div class="d-flex align-items-center justify-content-between">
 							<div class="">
@@ -51,7 +51,7 @@
 				</div>
 			</div>
 			<div class="col-sm-6 col-md-3">
-				<div class="card mb-4">
+				<div class="card mb-4" onclick="load_chats_table(4)">
 					<div class="card-body">
 						<div class="d-flex align-items-center justify-content-between">
 							<div class="">
@@ -64,10 +64,40 @@
 				</div>
 			</div>
 		</div>
+		<div class="row">
+			<div class="col-md-12">
+			<div class="card mb-12" onclick="">
+				<div class="card-body">
+					<div class="table-responsive">
+						<table id="table_chats" class="table card-table" style="width:100%">
+							<thead>
+								<tr>
+									<th>Phone</th>
+									<th>Name</th>
+									<th>Date</th>
+									<th>Log</th>
+								</tr>
+							</thead>
+							<tbody>
+							</tbody>
+						</table>
+					</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-md-12">
+			<div class="card mb-12" onclick="">
+				<div class="card-body">
+					<div id="chartContainer" style="height: 370px; width: 100%;"></div>
+				</div>
+			</div>
+		</div>
 	</div>
 	<!-- [ content ] End -->
 </div>
 <script>
-	const sto_id = '<?=$sto_id?>';
-	const us_id_view = '<?=$us_id?>';
+	const sto_id = '<?= $sto_id ?>';
+	const us_id_view = '<?= $us_id ?>';
 </script>

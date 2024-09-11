@@ -30,6 +30,10 @@
  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
  <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
  <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+ <script src="https://cdn.canvasjs.com/canvasjs.min.js"></script>
+
+
+
  <script src="<?= base_url() ?>js/general.js"></script>
  <!-- My scripts -->
  <?php foreach ($scripts as $key) {
