@@ -1,3 +1,7 @@
+window.addEventListener('load', async function () {
+	await get_all_chats('total_chat',"1,2,3,4");
+});
+
 /**
  * The function `show_modal_store_info` displays a modal with store information after loading data
  * based on the provided store and user IDs.
@@ -39,6 +43,10 @@ function chats_view(sto_id = "", us_id = ""){
 
 
 
+/**
+ * The function `update` is an asynchronous function that handles form submission, validates form
+ * fields, sends data to a server, and displays success or error messages accordingly.
+ */
 const update = async () => {
 	try {
 		const { sto_id, sto_name, sto_email, sto_direction, sto_phone, sto_wellcome_message } = await get_elements_form('form_store_modal');
@@ -134,4 +142,49 @@ const load_data_form = async (name_form = "", sto_id = "") => {
 			text: error
 		});
 	}
+}
+
+/**
+ * The function `get_chats` fetches chat data based on store status and updates the specified HTML
+ * element with the number of chats retrieved.
+ * @param id_content - The `id_content` parameter in the `get_chats` function is used to specify the ID
+ * of the HTML element where the number of chats will be displayed.
+ * @param status - The `status` parameter in the `get_chats` function is used to filter the chats based
+ * on their status. It is passed as a parameter to the `fetch` request to retrieve chats with a
+ * specific status from the server.
+ */
+const get_all_chats = async(id_content,status) =>{
+	document.querySelector('.loading').style.display = "flex";
+	fetch(`${base_url}Stores/get_chats_by_store`, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({us_id:us_id_view, st_status: status})
+	})
+		.then(response => response.json())
+		.then(async data => {
+			document.querySelector('.loading').style.display = "none";
+			if (!data.status) throw new Error(data.message);
+			
+			if (data.status) {
+				document.getElementById(id_content).innerHTML = Object.keys(data.data).length;
+				console.log(Object.keys(data.data).length);
+				
+			} else {
+				Swal.fire({
+					icon: "error",
+					title: "Opss...",
+					text: `${data.message}`
+				})
+			}
+
+		})
+		.catch(error => {
+			document.querySelector('.loading').style.display = "none";
+			console.log(error);
+			Swal.fire({
+				icon: "error",
+				title: "Something went wrong!",
+				text: error
+			});
+		});
 }

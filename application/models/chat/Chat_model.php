@@ -122,7 +122,7 @@ class Chat_model extends CI_Model
 			if(!empty($this->data)){
 				$where = "WHERE ";
 				foreach ($this->data as $key => $value) {
-					$where .= $key . " = '" . $value . "' AND ";
+					$where .= $key . " IN (" . $value . ") AND ";
 				}
 				$where = explode(' ', $where);
 				array_pop($where);

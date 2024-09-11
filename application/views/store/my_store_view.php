@@ -30,7 +30,7 @@
 						<div class="d-flex align-items-center justify-content-between">
 							<div class="">
 								<h2 class="mb-2">View Chats</h2>
-								<p class="text-muted mb-0"><span class="badge badge-success">20</span> Chats</p>
+								<p class="text-muted mb-0"><span class="badge badge-success" id="total_chat">0</span> Chats</p>
 							</div>
 							<div class="lnr lnr-bubble display-4 text-success"></div>
 						</div>
@@ -91,4 +91,6 @@
     </div>
   </div>
 </div>
-
+<script>
+	const us_id_view = '<?=$us_id ?>';
+</script>
