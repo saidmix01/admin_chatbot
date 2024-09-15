@@ -242,7 +242,7 @@ const get_stores = async (data = {}) => {
 			let table_data = data.data.map(item => {
 				return [
 					item.sto_id,
-					item.sto_status,
+					format_status(item.sto_status),
 					item.sto_name,
 					item.us_name,
 					item.sto_email,

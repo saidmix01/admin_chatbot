@@ -87,7 +87,7 @@ const get_list = async (data = {}) => {
 			let table_data = data.data.map(item => {
 				return [
 					item.lis_id,
-					item.lis_status,
+					format_status(item.lis_status),
 					item.lis_name,
 					`<div style="display: flex;"><button class="btn btn-danger btn-sm" onclick="delete_list(${item.lis_id})"><i class="feather icon-trash-2"></i></button>
 					 <button class="btn btn-warning btn-sm" onclick="load_data_form('form_list',${item.lis_id})"><i class="feather icon-edit"></i></button>

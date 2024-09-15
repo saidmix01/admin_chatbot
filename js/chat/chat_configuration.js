@@ -2,6 +2,7 @@ window.addEventListener('load', async function () {
 	await load_list({ lis_status: 1 });
 	await get_questions({ chq_status: 1 });
 	await get_questions_select( { chq_status: 1 } );
+	await get_title_question();
 });
 
 
@@ -69,6 +70,38 @@ const save_question = async (us_id = "") => {
 	}
 }
 
+const get_title_question = async () => {
+	let parent = document.getElementById('chq_parent').value;
+	if(parent == 0){
+		document.getElementById('question_selected').innerHTML = 'Main questions';
+	}else{
+		document.querySelector('.loading').style.display = "flex";
+		fetch(`${base_url}Chat_configuration/get_questions`, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({chq_id:parent})
+		})
+			.then(response => response.json())
+			.then(async data => {
+				if (!data.status) throw new Error(data.message);
+				console.log({data:data.data});
+				
+				document.getElementById('question_selected').innerHTML = `<strong>Question: </strong>${data.data[0].chq_text}`;
+				await get_options({ lis_id: data.data[0].lis_id });
+				document.querySelector('.loading').style.display = "none";
+			})
+			.catch(error => {
+				document.querySelector('.loading').style.display = "none";
+				console.log(error);
+				Swal.fire({
+					icon: "error",
+					title: "Something went wrong!",
+					text: error
+				});
+			});
+	}
+}
+
 /**
  * The function `get_questions` fetches question data from a server, populates a table with the data,
  * and handles errors with a user-friendly message.
@@ -78,6 +111,8 @@ const save_question = async (us_id = "") => {
  */
 const get_questions = async (data = {}) => {
 	document.querySelector('.loading').style.display = "flex";
+	let parent = document.getElementById('chq_parent').value;
+	data.chq_parent = parent;
 	fetch(`${base_url}Chat_configuration/get_questions`, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
@@ -91,12 +126,13 @@ const get_questions = async (data = {}) => {
 				return [
 					item.chq_id,
 					item.chq_order,
-					item.chq_status,
+					format_status(item.chq_status),
 					item.lis_name,
 					item.chq_parent,
 					item.chq_text,
 					`<button class="btn btn-danger btn-sm" onclick="delete_question(${item.chq_id})"><i class="feather icon-trash-2"></i></button>
-					<button class="btn btn-warning btn-sm" onclick="load_data_form('form_question',${item.chq_id})"><i class="feather icon-edit"></i></button>`
+					<button class="btn btn-warning btn-sm" onclick="load_data_form('form_question',${item.chq_id})"><i class="feather icon-edit"></i></button>
+					<button class="btn btn-info btn-sm" onclick="view_question(${item.chq_id})"><i class="feather icon-plus-circle"></i></button>`
 				];
 			});
 
@@ -121,6 +157,10 @@ const get_questions = async (data = {}) => {
 				text: error
 			});
 		});
+}
+
+const view_question = (chq_id = "") => {
+	open_url(`${base_url}Chat_configuration?q=${chq_id}`)
 }
 
 const get_questions_select = async (data = {}) => {
@@ -188,7 +228,7 @@ const load_list = async (data) => {
 					data_resp.push({id:element.lis_id,name:element.lis_name});
 				});
 				if (data.status) {
-					paint_select(data_resp,'chq_type');
+					paint_select(data_resp,'lis_id');
 				} else {
 					Swal.fire({
 						icon: "error",
@@ -327,3 +367,44 @@ const delete_question = async (chq_id = "") => {
 	}
 }
 
+const get_options = async (data = {}) => {
+	document.querySelector('.loading').style.display = "flex";
+	fetch(`${base_url}List_manage/get_options`, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify(data)
+	})
+		.then(response => response.json())
+		.then(async data => {
+			if (!data.status) throw new Error(data.message);
+
+			let table_data = data.data.map(item => {
+				return [
+					item.opt_order,
+					item.opt_description,
+					item.opt_price,
+					item.opt_qty,
+					item.opt_more_information,
+				];
+			});
+
+			let columns = [
+				{ title: 'Order' },
+				{ title: 'Description' },
+				{ title: 'Price' },
+				{ title: 'Quantity' },
+				{ title: 'More Information' },
+			];
+			await paint_datatable('table_options', columns, table_data);
+			document.querySelector('.loading').style.display = "none";
+		})
+		.catch(error => {
+			document.querySelector('.loading').style.display = "none";
+			console.log(error);
+			Swal.fire({
+				icon: "error",
+				title: "Something went wrong!",
+				text: error
+			});
+		});
+}

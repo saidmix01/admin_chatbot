@@ -22,13 +22,49 @@ class Chat_configuration extends CI_Controller
 
 			$data_header["user_data"] = $user_data["data"];
 			$data_header["menus"] = get_user_menus(array("us_id" => $this->session->userdata('us_id')))["data"];
+			$question = "";
+			if(!empty($this->input->get('q'))){
+				$question = $this->input->get('q');
+			}
+			$data_view["question"] = $question;
 			$data_footer["scripts"] = [
 				"js/chat/chat_configuration.js"
 			];
 			$this->load->view('includes/header', $data_header);
-			$this->load->view('chat/chat_configuration_view');
+			$this->load->view('chat/chat_configuration_view',$data_view);
 			$this->load->view('includes/footer', $data_footer);
 		} catch (\Throwable $th) {
+			http_response_code(500);
+			$this->load->view('error_pages/500');
+		}
+	}
+
+	public function questions()
+	{
+		try {
+			if (!validate_session()) throw new Exception("The unauthenticated user", 1);
+			if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
+				http_response_code(405);
+				throw new Exception("Incorrect Method", 1);
+			}
+			if(empty($this->input->get()) && empty($this->input->get('chq_id'))){
+				http_response_code(400);
+				throw new Exception("Data not found", 1);
+			}
+			$user_content["us_id"] = $this->session->userdata('us_id');
+			$user_data = get_user_content($user_content);
+			if ($user_data["status"] == false) throw new Exception($user_data["message"], 1);
+
+			$data_header["user_data"] = $user_data["data"];
+			$data_header["menus"] = get_user_menus(array("us_id" => $this->session->userdata('us_id')))["data"];
+			$data_footer["scripts"] = [
+				"js/chat/question.js"
+			];
+			$this->load->view('includes/header', $data_header);
+			$this->load->view('chat/question_view');
+			$this->load->view('includes/footer', $data_footer);
+		} catch (\Throwable $th) {
+			http_response_code(500);
 			$this->load->view('error_pages/500');
 		}
 	}
