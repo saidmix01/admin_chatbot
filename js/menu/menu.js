@@ -138,7 +138,7 @@ const get_menus = async (data = {}) => {
 			let table_data = data.data.map(item => {
 				return [
 					item.men_id,
-					item.men_status,
+					format_status(item.men_status),
 					item.men_description,
 					item.men_url,
 					item.men_icon,

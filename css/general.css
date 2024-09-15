@@ -72,3 +72,12 @@ html {
 	background-color: #08DBAE !important;
 	background: #08DBAE !important;
 }
+
+.chat_configurarion .header_question {
+	display: flex;
+	align-items: baseline;
+}
+
+.chat_configurarion .header_question h6{
+	padding-left: 10px;
+}

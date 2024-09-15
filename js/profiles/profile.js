@@ -23,7 +23,7 @@ const get_profiles = async (data = {}) => {
 			let table_data = data.data.map(item => {
 				return [
 					item.pro_id,
-					item.pro_status,
+					format_status(item.pro_status),
 					item.pro_description,
 					`<div style="display: flex;"><button class="btn btn-danger btn-sm" onclick="delete_profile(${item.pro_id})"><i class="feather icon-trash-2"></i></button>
 					<button class="btn btn-warning btn-sm" onclick="load_data_form('form_profile',${item.pro_id})"><i class="feather icon-edit"></i></button>

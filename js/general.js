@@ -190,3 +190,18 @@ function open_url(url = "") {
 		console.log(error);
 	}
 }
+
+function format_status(status = ""){
+	let response = "";
+	if(status != ""){
+		if(status == 0){
+			response = "Deactive";
+		}
+		if(status == 1){
+			response = "Active";
+		}
+	}
+	return response;
+}
+
+

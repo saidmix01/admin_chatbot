@@ -62,7 +62,7 @@ const get_users = async (data = {}) => {
 			let table_data = data.data.map(item => {
 				return [
 					item.us_id,
-					item.us_status,
+					format_status(item.us_status),
 					item.us_name,
 					item.us_email,
 					item.pro_description,
