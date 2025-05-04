@@ -93,3 +93,9 @@ if (!function_exists('validate_store_user')) {
 		return $response;
 	}
 }
+
+if (!function_exists('control_version')) {
+	function control_version () {
+		return rand(1,9999);
+	}
+}

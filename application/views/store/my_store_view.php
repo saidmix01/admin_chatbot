@@ -81,7 +81,9 @@
 					<small class="form-text text-muted">Max 200 characteres</small>
 				</div>
 			</div>
-		
+			<div class="form-row" id="qr_content" style="display:flex;flex-wrap: nowrap;justify-content: center;">
+	
+			</div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>

@@ -34,7 +34,7 @@
 
 
 
- <script src="<?= base_url() ?>js/general.js"></script>
+ <script src="<?= base_url() ?>js/general.js?cv=<?= control_version()?>"></script>
  <!-- My scripts -->
  <?php foreach ($scripts as $key) {
 		echo '<script src="' . base_url() . $key . '"></script>';

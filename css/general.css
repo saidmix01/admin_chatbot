@@ -81,3 +81,9 @@ html {
 .chat_configurarion .header_question h6{
 	padding-left: 10px;
 }
+
+#qr_content{
+	display: flex;
+	flex-wrap: nowrap;
+	justify-content: center;
+}

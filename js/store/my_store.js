@@ -124,6 +124,7 @@ const load_data_form = async (name_form = "", sto_id = "") => {
 				load_form_data(data.data[0], name_form);
 				document.querySelector('.loading').style.display = "none";
 				$('#update_my_store_info').modal('show');
+				document.getElementById('qr_content').innerHTML = data.data[0].sto_qr;
 			})
 			.catch(error => {
 				console.log(error);
