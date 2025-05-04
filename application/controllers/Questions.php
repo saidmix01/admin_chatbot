@@ -39,6 +39,10 @@ final class Questions extends CI_Controller
 		}
 	}
 
+	/**
+	 * The `save_question` function in PHP validates session and input data, inserts a new question into
+	 * the database, and returns a JSON response indicating success or failure.
+	 */
 	public function save_question(){
 		try {
 			$response = array(
@@ -64,6 +68,10 @@ final class Questions extends CI_Controller
 		echo json_encode($response);
 	}
 
+	/**
+	 * The `save_answer` function in PHP validates session and input data, inserts data into the database,
+	 * and returns a JSON response indicating success or failure.
+	 */
 	public function save_answer(){
 		try {
 			$response = array(
@@ -76,6 +84,11 @@ final class Questions extends CI_Controller
 			if (empty($this->input->POST())) throw new Exception("There is empty data", 1);
 			$data_send = $this->input->POST();
 			$data_send["us_id"] = $this->session->userdata('us_id');
+			//get Order
+			$this->Question_model->que_id = $data_send["que_id"];
+			$answer_data_order = $this->Question_model->get_order_answer();
+			if ($answer_data_order["status"] == false) throw new Exception($answer_data_order["message"], 1);
+			$data_send["ans_order"] = $answer_data_order["data"];
 			$this->General_Model->table_name = "answer";
 			$this->General_Model->data = $data_send;
 			//Insert into db
@@ -89,6 +102,10 @@ final class Questions extends CI_Controller
 		echo json_encode($response);
 	}
 
+	/**
+	 * The function `get_questions` retrieves questions from the Question_model after validating the
+	 * session and returns the result in JSON format.
+	 */
 	public function get_questions(){
 		try {
 			$response = array(
@@ -101,6 +118,28 @@ final class Questions extends CI_Controller
 			$data_send["us_id"] = $this->session->userdata('us_id');
 			$response["status"] = true;
 			$response["data"] = $this->Question_model->get_questions(); 
+		} catch (\Throwable $th) {
+			$response["message"] = $th->getMessage();
+		}
+		echo json_encode($response);
+	}
+
+	/**
+	 * The function `get_answers` in PHP retrieves answers from the Question_model after validating the
+	 * session and returns the response in JSON format.
+	 */
+	public function get_answers(){
+		try {
+			$response = array(
+				"status" => false,
+				"message" => ""
+			);
+			//Validate sesion
+			if (!validate_session()) throw new Exception("The unauthenticated user", 1);
+			$data_send = $this->input->POST();
+			$data_send["us_id"] = $this->session->userdata('us_id');
+			$response["status"] = true;
+			$response["data"] = $this->Question_model->get_answers(); 
 		} catch (\Throwable $th) {
 			$response["message"] = $th->getMessage();
 		}
