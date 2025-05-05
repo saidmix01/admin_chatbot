@@ -21,7 +21,7 @@
 		</div>
 		<div class="row" id="content_questions">
 			<div class="col-sm-12" id="user_question_content">
-				<div class="accordion" id="accordionExample">
+				<!-- <div class="accordion" id="accordionExample">
 					<div class="card">
 						<div class="card-header" id="headingOne">
 						<h2 class="mb-0">
@@ -37,7 +37,7 @@
 							</div>
 						</div>
 					</div>
-				</div>
+				</div> -->
 			</div>
 		</div>
 	</div>

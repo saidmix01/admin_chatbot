@@ -2,6 +2,57 @@ window.addEventListener('load', async function () {
 	await load_questions();
 });
 
+/* The `document.addEventListener("DOMContentLoaded", function () { ... })` code snippet is setting up
+an event listener that triggers when the DOM content has been fully loaded. Within this event
+listener, a new instance of `Sortable` is created on the element with the ID
+`user_question_content`. */
+document.addEventListener("DOMContentLoaded", function () {
+	new Sortable(document.getElementById('user_question_content'), {
+		animation: 150,
+		handle: '.question-card', // o '.drag-handle' si usas un ícono
+		onEnd: async function (/**Event*/evt) {
+			console.log('Nuevo orden:');
+			document.querySelectorAll('.question-card').forEach((el, index) => {
+				console.log(`ID: ${el.dataset.id}, Orden: ${index + 1}`);
+			});
+			await update_order_question();
+		}
+	});
+});
+
+const update_order_question = async () => {
+	let url_update_order = `${base_url}Questions/update_order_question`;
+	let data_send = [];
+	document.querySelectorAll('.question-card').forEach((el, index) => {
+		data_send.push({
+			que_id: el.id.split('_')[1],
+			que_order: index + 1
+		});
+	});
+	fetch(url_update_order, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({
+			data_send
+		})
+	})
+		.then(response => response.json())
+		.then(async response => {
+			if (!response.status) throw new Error(response.message);
+			document.querySelector('.loading').style.display = "none";
+			await load_questions();
+		})
+		.catch(error => {
+			document.querySelector('.loading').style.display = "none";
+			console.log(error);
+			Swal.fire({
+				icon: "error",
+				title: "Something went wrong!",
+				text: error
+			});
+		});
+}
+
 
 
 /**
@@ -79,10 +130,8 @@ const load_questions = async (que_parent = 0) => {
 				if (!response.data.status) throw new Error(response.data.message);
 				let question_html = '';
 				for (const element of response.data.data) {
-					//get answers
-					await load_answer(element.que_id);
 					question_html += `
-						<div class="accordion" id="question_${element.que_id}">
+						<div class="accordion question-card" id="question_${element.que_id}" data-id="${element.que_order}">
 							<div class="card">
 								<div class="card-header" id="heading_${element.que_id}">
 									<h2 class="mb-0">
@@ -113,6 +162,8 @@ const load_questions = async (que_parent = 0) => {
 							</div>
 						</div>
 					`;
+					//get answers
+					await load_answer(element.que_id);
 				}
 				document.getElementById('user_question_content').innerHTML = question_html;
 				document.querySelector('.loading').style.display = "none";
@@ -205,7 +256,8 @@ const save_answer = async (form="") => {
  * HTML content. Finally, it returns
  */
 const load_answer = async (que_id = "") => {
-	let html_answer = "";
+	console.log({que_id});
+	
 	try {
 		if (que_id == "") throw new Error("que_id is required");
 		document.querySelector('.loading').style.display = "flex";
@@ -214,29 +266,32 @@ const load_answer = async (que_id = "") => {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({
-				que_parent: que_id
+				que_id: que_id
 			})
 		})
 			.then(response => response.json())
 			.then(async response => {
+				let html_answer = "";
 				if (!response.data.status) throw new Error(response.data.message);
-				
-				response.data.data.forEach(element => {
-					html_answer += `
-					<ul class="list-group">
-						<li class="list-group-item d-flex justify-content-between align-items-center">
-							<span><strong>${element.ans_order}</strong> - ${element.ans_text}</span>
-							<button class="btn btn-sm btn-danger" onclick="delete_answer(${element.ans_id})">
-								<span class="feather icon-trash-2"></span>
-							</button>
-						</li>
-					</ul>
-				
-					`;
-				});
+				if(response.data.data.length > 0){
+					response.data.data.forEach(element => {
+						html_answer += `
+						<ul class="list-group">
+							<li class="list-group-item d-flex justify-content-between align-items-center">
+								<span><strong>${element.ans_order}</strong> - ${element.ans_text}</span>
+								<button class="btn btn-sm btn-danger" onclick="delete_answer(${element.ans_id})">
+									<span class="feather icon-trash-2"></span>
+								</button>
+							</li>
+						</ul>
+						`;
+					});
+					document.getElementById(`answer_content_${que_id}`).innerHTML = html_answer;
+					document.querySelector('.loading').style.display = "none";
+				}else{
+					html_answer = "";
+				}
 
-				document.getElementById(`answer_content_${que_id}`).innerHTML = html_answer;
-				document.querySelector('.loading').style.display = "none";
 			})
 			.catch(error => {
 				document.querySelector('.loading').style.display = "none";
@@ -250,5 +305,38 @@ const load_answer = async (que_id = "") => {
 	} catch (error) {
 		console.log(error);
 	}
-	return html_answer;
+
+}
+
+const delete_answer = async (ans_id = "") => {
+	if (ans_id == "") throw new Error("ans_id is required");
+	document.querySelector('.loading').style.display = "flex";
+	let url_delete_answer = `${base_url}Questions/delete_answer`;
+	fetch(url_delete_answer, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({
+			ans_id
+		})
+	})
+		.then(response => response.json())
+		.then(async response => {
+			if (!response.status) throw new Error(response.message);
+			document.querySelector('.loading').style.display = "none";
+			await load_questions();
+			Swal.fire({
+				icon: "success",
+				title: "Success",
+				text: response.message
+			});
+		})
+		.catch(error => {
+			document.querySelector('.loading').style.display = "none";
+			console.log(error);
+			Swal.fire({
+				icon: "error",
+				title: "Something went wrong!",
+				text: error
+			});
+		});
 }

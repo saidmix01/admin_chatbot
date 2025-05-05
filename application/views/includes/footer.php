@@ -31,7 +31,7 @@
  <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
  <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
  <script src="https://cdn.canvasjs.com/canvasjs.min.js"></script>
-
+ <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
 
  <script src="<?= base_url() ?>js/general.js?cv=<?= control_version()?>"></script>
