@@ -87,3 +87,14 @@ html {
 	flex-wrap: nowrap;
 	justify-content: center;
 }
+
+.sortable-chosen {
+	background-color: #ffd699 !important;
+	transform: scale(1.03);
+	box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.sortable-ghost {
+	background-color: #ffe0b3 !important;
+	opacity: 0.7;
+}

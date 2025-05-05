@@ -8,16 +8,17 @@ listener, a new instance of `Sortable` is created on the element with the ID
 `user_question_content`. */
 document.addEventListener("DOMContentLoaded", function () {
 	new Sortable(document.getElementById('user_question_content'), {
-		animation: 150,
-		handle: '.question-card', // o '.drag-handle' si usas un ícono
-		onEnd: async function (/**Event*/evt) {
-			console.log('Nuevo orden:');
+		animation: 300,
+		handle: '.question-card',
+		ghostClass: 'sortable-ghost',
+		chosenClass: 'sortable-chosen',
+		onEnd: async function (evt) {
 			document.querySelectorAll('.question-card').forEach((el, index) => {
-				console.log(`ID: ${el.dataset.id}, Orden: ${index + 1}`);
+				// código aquí si deseas
 			});
 			await update_order_question();
 		}
-	});
+	});	
 });
 
 const update_order_question = async () => {
@@ -256,8 +257,6 @@ const save_answer = async (form="") => {
  * HTML content. Finally, it returns
  */
 const load_answer = async (que_id = "") => {
-	console.log({que_id});
-	
 	try {
 		if (que_id == "") throw new Error("que_id is required");
 		document.querySelector('.loading').style.display = "flex";
