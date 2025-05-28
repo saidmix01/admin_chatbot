@@ -5,6 +5,9 @@ class Login extends CI_Controller
 	public function __construct() {
 		parent::__construct();
 		$this->load->model('Login_Model');
+		//Helpers   
+		$this->load->helper('general_helper');
+        $this->load->helper('website_helper');
 	}
 
 	public function index(){
@@ -22,11 +25,11 @@ class Login extends CI_Controller
 			if(empty($this->input->POST())) throw new Exception("There is empty data", 1);
 			
 			$this->Login_Model->us_email = $this->input->post('us_email');
-			$this->Login_Model->us_password = $this->input->post('us_password');
+			$this->Login_Model->us_password = hash_pass($this->input->post('us_password'));
 			$response_model = $this->Login_Model->get_user_data();
 			if($response_model["status"] == true && !empty($response_model["data"])){
 				if($response_model["data"]->us_status == 1){
-					if($response_model["data"]->us_password != $this->input->post('us_password')){
+					if(!check_pass($this->input->post('us_password'),$response_model["data"]->us_password)){
 						throw new Exception("Incorrect password", 1);
 					}
 					$this->session->set_userdata('us_email', $response_model["data"]->us_email);

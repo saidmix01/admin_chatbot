@@ -164,7 +164,7 @@ const load_questions = async (que_parent = 0) => {
 						</div>
 					`;
 					//get answers
-					await load_answer(element.que_id);
+					await load_services(element.que_id);
 				}
 				document.getElementById('user_question_content').innerHTML = question_html;
 				document.querySelector('.loading').style.display = "none";

@@ -15,7 +15,7 @@ const get_stores = async (data = {}) => {
 			if (!data.status) throw new Error(data.message);
 			data.data.forEach(item => {
 				let card_store = `
-				<div class="col-md-3" onclick="view_store('${item.sto_id}')">
+				<div class="col-md-6" onclick="view_store('${item.sto_id}')">
 					<div class="card mb-4">
 						<div class="card-body">
 							<div class="d-flex align-items-center justify-content-between">
