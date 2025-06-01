@@ -60,56 +60,15 @@ class Checkout extends CI_Controller
 			if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 				$data = $this->input->POST();
                 $ser_id = $data["ser_id"];
-                //Validate if user exist
-                $this->Users_model->data = array("us_email"=>$data["us_email"]);
-                $data_user = $this->Users_model->get_users();
-                if(!$data_user["status"]) throw new Exception($data_user["message"], 1);
-                $us_id = "";
-                foreach ($data_user["data"] as $us) {
-                    $us_id = $us->us_id;
-                    break;
-                }
-                if(count($data_user["data"]) == 0){
-                    //create user
-                    $passwd = generate_password();
-                    unset($data["ser_id"]);
-                    $data["us_password"] = hash_pass($passwd);
-                    $data["us_status"] = 2;
-                    $data["pro_id"] = 2;
-                    $this->General_Model->table_name = "users";
-                    $this->General_Model->data = $data;
-                    $data_insert = $this->General_Model->insert();
-                    if(!$data_insert["status"]) throw new Exception($data_insert["message"], 1);
-                    $us_id = $data_insert["data"];
-                    $data["ser_id"] = $ser_id;
-                    $response["user_created"] = true;
-                    $data_email = [
-                        "password"=>$passwd,
-                        "user"=>$data["us_email"]
-                    ];
-
-                    $data_view_mail = $this->load->view('landing_page/email/credentials_template', $data_email, true);
-                    $email_send = $this->email_helper->send_mail($data["us_email"], 'Credenciales de acceso', $data_view_mail);
-                }
                 //Validate service
                 $this->Services_model->data = array("ser_id"=>$ser_id);
                 $data_service = $this->Services_model->get_services();
                 if(!$data_service["status"]) throw new Exception($data_service["message"], 1);
                 foreach ($data_service["data"] as $service) {
-                    $data_service_send = array(
-                        "ser_us_status" => 2,
-                        "us_id" => $us_id,
-                        "ser_id" => $service->ser_id
-                    );
-                    $this->General_Model->table_name = "service_user";
-                    $this->General_Model->data = $data_service_send;
-                    $data_insert = $this->General_Model->insert();
-                    if(!$data_insert["status"]) throw new Exception($data_insert["message"], 1);
-
                     //Payment Wompy
                     $reference = "ORD-" . time();
                     $signature = hash('sha256', $reference . $service->ser_price * 100 . 'COP' . $this->config_wompi["integrity_key"]);
-                    $data = [
+                    $data_wompi = [
                         'public_key' => $this->config_wompi["public_key"],
                         'amount_in_cents' => $service->ser_price * 100,
                         'reference' => $reference,
@@ -123,17 +82,13 @@ class Checkout extends CI_Controller
                     ];
                     //Insert Payment log
                     $data_payment = array(
-                        "us_id" => $us_id,
+                        "us_id" => 0,
                         "ser_id" => $ser_id,
                         "pay_information" => json_encode(array(
                             "price"=>$service->ser_price,
                             "date"=>date('Y/m/d H:i:s'),
                         )),
-                        "pay_client_information" => json_encode(array(
-                            "name"=>$data['nombre'],
-                            'email' => $data['email'],
-                            'document' => $data['documento'],
-                        )),
+                        "pay_client_information" => json_encode($data),
                         "pay_service_information" => json_encode(array(
                             "name"=>$service->ser_name,
                         )),
@@ -142,7 +97,7 @@ class Checkout extends CI_Controller
                     $this->General_Model->table_name = "payment_log";
                     $this->General_Model->data = $data_payment;
                     $data_insert = $this->General_Model->insert();
-                    $this->load->view('landing_page/wompi/go_to_wompi', $data);
+                    $this->load->view('landing_page/wompi/go_to_wompi', $data_wompi);
                     
                 }
             
@@ -201,7 +156,7 @@ class Checkout extends CI_Controller
                     $information = json_decode($key->pay_information);
 
                     $data_email = [
-                        "client"       => $client_information->name ?? "Cliente",
+                        "client"       => $client_information->us_name ?? "Cliente",
                         "duration"     => "1 Mes",
                         "service_name" => $service_information->name ?? "Servicio",
                         "activacion"   => "pending",
@@ -209,7 +164,55 @@ class Checkout extends CI_Controller
                     ];
 
                     $data_view_mail = $this->load->view('landing_page/email/template_mail', $data_email, true);
-                    $email_send = $this->email_helper->send_mail($client_information->email, 'Confirmación de tu compra', $data_view_mail);
+                    $email_send = $this->email_helper->send_mail($client_information->us_email, 'Confirmación de tu compra', $data_view_mail);
+                
+                    //Validate if user exist
+                    $this->Users_model->data = array("us_email"=>$client_information->us_email);
+                    $data_user = $this->Users_model->get_users();
+                    if(!$data_user["status"]) throw new Exception($data_user["message"], 1);
+                    $us_id = "";
+                    foreach ($data_user["data"] as $us) {
+                        $us_id = $us->us_id;
+                        break;
+                    }
+                    if(count($data_user["data"]) == 0){
+                        //create user
+                        $passwd = generate_password();
+                        $data_user  = json_decode(json_encode($client_information), true);
+                        unset($data_user["ser_id"]);
+
+                        $data_user["us_password"] = hash_pass($passwd);
+                        $data_user["us_status"] = 1;
+                        $data_user["pro_id"] = 2;
+                        $this->General_Model->table_name = "users";
+                        $this->General_Model->data = $data_user;
+                        $data_insert = $this->General_Model->insert();
+                        if(!$data_insert["status"]) throw new Exception($data_insert["message"], 1);
+                        $us_id = $data_insert["data"];
+                        $response["user_created"] = true;
+                        $data_email = [
+                            "password"=>$passwd,
+                            "user"=>$data_user["us_email"]
+                        ];
+
+                        $data_view_mail = $this->load->view('landing_page/email/credentials_template', $data_email, true);
+                        $email_send = $this->email_helper->send_mail($data_user["us_email"], 'Credenciales de acceso', $data_view_mail);
+                    }
+                    //Validate service
+                    $this->Services_model->data = array("ser_id"=>$key->ser_id);
+                    $data_service = $this->Services_model->get_services();
+                    if(!$data_service["status"]) throw new Exception($data_service["message"], 1);
+                    foreach ($data_service["data"] as $service) {
+                        $data_service_send = array(
+                            "ser_us_status" => 2,
+                            "us_id" => $us_id,
+                            "ser_id" => $key->ser_id
+                        );
+                        $this->General_Model->table_name = "service_user";
+                        $this->General_Model->data = $data_service_send;
+                        $data_insert = $this->General_Model->insert();
+                        if(!$data_insert["status"]) throw new Exception($data_insert["message"], 1);
+                    }
                 }
             }
 

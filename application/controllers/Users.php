@@ -10,6 +10,7 @@ class Users extends CI_Controller
 		$this->load->model('Profiles/Profile_model','Profile_model');
 		//Helpers
 		$this->load->helper('general_helper');
+		$this->load->helper('website_helper');
 	}
 
 	public function index(){
@@ -27,6 +28,28 @@ class Users extends CI_Controller
 			];
 			$this->load->view('includes/header',$data_header);
 			$this->load->view('users/user_view');
+			$this->load->view('includes/footer',$data_footer);
+		} catch (\Throwable $th) {
+			$this->load->view('error_pages/500');
+		}
+	}
+
+	public function your_profile(){
+		try {
+			if(!validate_session()) throw new Exception("The unauthenticated user", 1);
+
+			$user_content["us_id"] = $this->session->userdata('us_id');
+			$user_data = get_user_content($user_content);
+			if($user_data["status"] == false) throw new Exception($user_data["message"], 1);
+			
+			$data_header["menus"] = get_user_menus(array("us_id" => $this->session->userdata('us_id')))["data"];
+			$data_header["user_data"] = $user_data["data"];
+			$data_footer["scripts"] = [
+				"js/users/profile.js"
+			];
+			$data_view["us_id"] = $this->session->userdata('us_id');
+			$this->load->view('includes/header',$data_header);
+			$this->load->view('users/profile_user_view',$data_view);
 			$this->load->view('includes/footer',$data_footer);
 		} catch (\Throwable $th) {
 			$this->load->view('error_pages/500');
@@ -64,9 +87,10 @@ class Users extends CI_Controller
 		try {
 			if(!validate_session()) throw new Exception("The unauthenticated user", 1);
 			if(empty($this->input->POST())) throw new Exception("There is empty data", 1);
-
+			$data_send = $this->input->POST();
+			$data_send["us_password"] = hash_pass($data_send["us_password"]);
 			$this->General_Model->table_name = "users";
-			$this->General_Model->data = $this->input->POST();
+			$this->General_Model->data = $data_send;
 			$data_insert = $this->General_Model->insert();
 			if(!$data_insert["status"]) throw new Exception($data_insert["message"], 1);
 			
@@ -90,9 +114,10 @@ class Users extends CI_Controller
 		try {
 			if(!validate_session()) throw new Exception("The unauthenticated user", 1);
 			if(empty($this->input->POST())) throw new Exception("There is empty data", 1);
-
+			$data_send = $this->input->POST();
+			$data_send["us_password"] = hash_pass($data_send["us_password"]);
 			$this->General_Model->table_name = "users";
-			$this->General_Model->data = $this->input->POST();
+			$this->General_Model->data = $data_send;
 			$this->General_Model->where = array("us_id"=>$this->input->POST('us_id'));
 			$data_update = $this->General_Model->update();
 			if(!$data_update["status"]) throw new Exception($data_update["message"], 1);

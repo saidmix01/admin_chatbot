@@ -79,12 +79,12 @@
                 <div class="collapse navbar-collapse justify-content-between px-3" id="navbarCollapse">
                     <div class="navbar-nav ml-auto py-0">
                         <a href="<?=base_url()?>" class="nav-item nav-link active">Inicio</a>
-                        <a href="<?=base_url()?>servicios" class="nav-item nav-link">Planes y Servicios</a>
+                        <a href="<?=base_url()?>servicios" class="nav-item nav-link">Servicios</a>
                         <a href="<?=base_url()?>nosotros" class="nav-item nav-link">Nosotros</a>
                         <a href="<?=base_url()?>faq" class="nav-item nav-link">FAQ</a>
                         <a href="<?=base_url()?>legal" class="nav-item nav-link">Legal</a>
                         <a href="<?=base_url()?>contacto" class="nav-item nav-link">Contacto</a>
-                        <a href="#" data-toggle="modal" data-target="#authModal" class="nav-item nav-link">Iniciar Sesion</a>
+                        <a href="#" data-toggle="modal" data-target="#authModal" class="nav-item nav-link">Ingresa</a>
                     </div>
                 </div>
             </nav>

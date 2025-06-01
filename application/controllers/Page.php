@@ -7,19 +7,22 @@ class Page extends CI_Controller
         $this->load->helper('website_helper');
         //Load Models
         $this->load->model('Page/Services_model','Services_model');
+        //Libraries
+        $this->load->library('Email_helper');
 	}
 
     public function index(){
         $data_header['site_name'] = SITE_NAME;
         $data_footer["scripts"] = [
-            "js/page/general.js"
+            "js/page/general.js",
+            "js/page/send_mail.js"
 		];
         //Load html content
         $this->load->view('landing_page/includes/head',$data_header);
         $this->load->view('landing_page/includes/banner',$data_header);
         $this->load->view('landing_page/index');
         $this->load->view('landing_page/includes/modal_login');
-        $this->load->view('landing_page/includes/footer');
+        $this->load->view('landing_page/includes/footer',$data_footer);
     }
 
     public function servicios(){
@@ -89,6 +92,32 @@ class Page extends CI_Controller
         } catch (\Throwable $th) {
             http_response_code(500);
             $response['message'] = $th->getMessage();
+        }
+        echo json_encode($response);
+    }
+
+    public function send_message_contact(){
+        $response = array(
+            "status" => false,
+            "message" => ""
+        );
+        try {
+            if (empty($this->input->POST())) throw new Exception("There is empty data", 1);
+            $data = $this->input->POST();
+            $data_email = 
+            [
+                "name"    => $data["name"],
+                "email"   => $data["email"],
+                "message" => $data["message"],
+            ];
+
+            $data_view_mail = $this->load->view('landing_page/email/template_contact', $data_email, true);
+            $email_send = $this->email_helper->send_mail(MAIL_CONTACT, 'Contacto desde la web', $data_view_mail);
+            if(!$email_send) throw new Exception("Error sending mail", 1);
+            $response["status"] = true;
+        } catch (\Throwable $th) {
+            http_response_code(500);
+            $response["message"] = $th->getMessage();
         }
         echo json_encode($response);
     }

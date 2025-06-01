@@ -2,7 +2,7 @@
     <div class="container-fluid pt-5 pb-3 servicios_panels">
         <div class="container">
             <h2 class="text-secondary text-uppercase text-center font-weight-medium mb-3">Planes</h2>
-            <h5 class="display-4 text-center mb-5">Tecnología al alcance de todos</h5>
+            <h5 class="text-center mb-5">Tecnología al alcance de todos</h5>
             <div class="row">
                 <div class="col-lg-4 mb-4">
                     <div class="bg-light text-center mb-2 pt-4 content_plan">
@@ -86,7 +86,7 @@
             <hr>
             <div class="row">
                 <div class="col-md-12">
-                    <h2 class="display-4 text-center mb-5">O adquiere nuestros servicios por separado</h2>
+                    <h3 class=" text-center mb-5">O adquiere nuestros servicios por separado</h3>
                     <div class="table-responsive">
                         <table border="1" cellpadding="8" cellspacing="0"
                             style="border-collapse: collapse; width: 100%; font-family: Arial, sans-serif;">
@@ -164,12 +164,12 @@
     <!-- Pricing Plan End -->
     <hr>
     <!-- Features Start -->
-    <div class="container-fluid py-5 how_work_section">
+    <div class="container-fluid py-5 how_work_section" style="background-color: #31c9d2;>
         <div class="container">
             <div class="row">
                 <div class="col-lg-12 m-0">
-                    <h2 class="mb-4 title">¿Como Funciona?</h2>
-                    <p style="text-align: center; max-width: 600px; margin: 0 auto 40px; color: #555;">
+                    <h2 class="mb-4 title" style="color: #fff">¿Como Funciona?</h2>
+                    <p style="text-align: center; max-width: 600px; margin: 0 auto 40px; color: #fff;">
                         Contratar y usar nuestros servicios es fácil y rápido. Sigue estos simples pasos para empezar a
                         crecer con tecnología.
                     </p>
@@ -177,29 +177,29 @@
 
                         <div style="flex: 1 1 200px; text-align: center;">
                             <div style="font-size: 40px; color: #31c9d2;">🛒</div>
-                            <h3 style="color: #333;">1. Elige tu servicio</h3>
-                            <p style="color: #666;">Selecciona el plan o servicio que mejor se adapte a tus necesidades.
+                            <h3 style="color: #fff;">1. Elige tu servicio</h3>
+                            <p style="color: #fff;">Selecciona el plan o servicio que mejor se adapte a tus necesidades.
                             </p>
                         </div>
 
                         <div style="flex: 1 1 200px; text-align: center;">
                             <div style="font-size: 40px; color: #31c9d2;">⚙️</div>
-                            <h3 style="color: #333;">2. Configuramos todo</h3>
-                            <p style="color: #666;">Nos encargamos de la instalación, configuración y puesta en marcha.
+                            <h3 style="color: #fff;">2. Configuramos todo</h3>
+                            <p style="color: #fff;">Nos encargamos de la instalación, configuración y puesta en marcha.
                             </p>
                         </div>
 
                         <div style="flex: 1 1 200px; text-align: center;">
                             <div style="font-size: 40px; color: #31c9d2;">🚀</div>
-                            <h3 style="color: #333;">3. Empieza a usarlo</h3>
-                            <p style="color: #666;">Accede a tu servicio y comienza a disfrutar de sus beneficios
+                            <h3 style="color: #fff;">3. Empieza a usarlo</h3>
+                            <p style="color: #fff;">Accede a tu servicio y comienza a disfrutar de sus beneficios
                                 inmediatamente.</p>
                         </div>
 
                         <div style="flex: 1 1 200px; text-align: center;">
                             <div style="font-size: 40px; color: #31c9d2;">📞</div>
-                            <h3 style="color: #333;">4. Soporte continuo</h3>
-                            <p style="color: #666;">Estamos disponibles para ayudarte y resolver cualquier duda o
+                            <h3 style="color: #fff;">4. Soporte continuo</h3>
+                            <p style="color: #fff;">Estamos disponibles para ayudarte y resolver cualquier duda o
                                 problema.</p>
                         </div>
                     </div>
@@ -212,21 +212,20 @@
     <section id="contacto"
         style="max-width: 600px; margin: 50px auto; font-family: Arial, sans-serif; padding: 0 20px;">
         <h2 style="text-align: center; color: #31c9d2;">Contáctanos</h2>
-        <form action="mailto:tuemail@tudominio.com" method="POST" enctype="text/plain"
-            style="display: flex; flex-direction: column; gap: 15px;">
-            <label for="nombre" style="font-weight: bold; color: #333;">Nombre completo:</label>
-            <input type="text" id="nombre" name="nombre" required placeholder="Tu nombre"
+        <form style="display: flex; flex-direction: column; gap: 15px;" id="form_contact">
+            <label for="name" style="font-weight: bold; color: #333;">Nombre completo:</label>
+            <input type="text" id="name" name="name" required placeholder="Tu nombre"
                 style="padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
 
             <label for="email" style="font-weight: bold; color: #333;">Correo electrónico:</label>
             <input type="email" id="email" name="email" required placeholder="tu@correo.com"
                 style="padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
 
-            <label for="mensaje" style="font-weight: bold; color: #333;">Mensaje:</label>
-            <textarea id="mensaje" name="mensaje" rows="5" required placeholder="Escribe tu mensaje aquí"
+            <label for="message" style="font-weight: bold; color: #333;">Mensaje:</label>
+            <textarea id="message" name="message" rows="5" required placeholder="Escribe tu mensaje aquí"
                 style="padding: 10px; border: 1px solid #ccc; border-radius: 4px;"></textarea>
 
-            <button type="submit"
+            <button type="submit" onclick="send_mail_contact('form_contact')"
                 style="background-color: #31c9d2; color: white; font-weight: bold; padding: 12px; border: none; border-radius: 5px; cursor: pointer; transition: background-color 0.3s;">
                 Enviar mensaje
             </button>

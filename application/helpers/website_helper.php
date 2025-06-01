@@ -4,6 +4,10 @@ if (!defined('SITE_NAME')) {
     define('SITE_NAME', 'WebColSoluciones');
 }
 
+if (!defined('MAIL_CONTACT')) {
+    define('MAIL_CONTACT', ' contact@webcolsoluciones.com.co');
+}
+
 if (!function_exists('get_wompi_config')) {
     function get_wompi_config()
     {

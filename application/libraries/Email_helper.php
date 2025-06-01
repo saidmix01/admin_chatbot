@@ -9,8 +9,8 @@ require_once(APPPATH . 'libraries/PHPMailer/Exception.php');
 class Email_helper
 {
     protected $mail;
-    protected $email = "saidandresmix01@gmail.com";
-    protected $passwd = "gsbepbrwkrwinxnr";
+    protected $email = "noreply@webcolsoluciones.com.co";
+    protected $passwd = "9C{67iWAbQEYR#O[";
     protected $web_name = "WebColSoluciones";
 
     public function __construct()
