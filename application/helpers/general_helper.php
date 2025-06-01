@@ -99,3 +99,27 @@ if (!function_exists('control_version')) {
 		return rand(1,9999);
 	}
 }
+
+if(!function_exists('generate_password')){
+	function generate_password($size = 12, $upper_case = true, $numbers = true, $special_charactes = true) {
+		$minusculas = 'abcdefghijklmnopqrstuvwxyz';
+		$mayusculas = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+		$numeros = '0123456789';
+		$simbolos = '!@#$%&*?';
+
+		$caracteres = $minusculas;
+		if ($upper_case) $caracteres .= $mayusculas;
+		if ($numbers) $caracteres .= $numeros;
+		if ($special_charactes) $caracteres .= $simbolos;
+
+		$password = '';
+		$maxIndex = strlen($caracteres) - 1;
+
+		for ($i = 0; $i < $size; $i++) {
+			$password .= $caracteres[random_int(0, $maxIndex)];
+		}
+
+		return $password;
+	}
+
+}

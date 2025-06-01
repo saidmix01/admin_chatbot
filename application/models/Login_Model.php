@@ -11,8 +11,8 @@ class Login_Model extends CI_Model
 			"message" => ""
 		);
 		try {
-			if(empty($this->us_email) || empty($this->us_password)){
-				throw new Exception("Email or password is empty", 1);
+			if(empty($this->us_email)){
+				throw new Exception("Email is empty", 1);
 			}
 			$sql = "SELECT us_id, us_status,us_name,us_email,us_password
 						FROM {$this->db_table_users}

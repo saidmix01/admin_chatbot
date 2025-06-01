@@ -1,0 +1,109 @@
+.carousel-inner .carousel-item .carousel-caption h4 {
+    font-size: 40px;
+}
+
+.basic_plan li,
+.standart_plan li,
+.premium_plan li {
+    list-style: none;
+    text-align: left;
+}
+
+.cards-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    justify-content: center;
+    padding: 20px 0;
+}
+
+.servicios_panels .row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
+    /* opcional: para controlar espacio entre columnas */
+}
+
+.servicios_panels .col-lg-4 {
+    display: flex;
+    flex-direction: column;
+}
+
+.servicios_panels .content_plan {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+    align-items: center;
+}
+
+.servicios_panels .plan {
+    flex-grow: 1;
+}
+
+.servicios_panels .btn_plan {
+    margin-bottom: 20px;
+}
+
+.container_empty_cart{
+    display: flex;
+    align-items: center;
+}
+
+
+
+/*Services*/
+.service-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    max-width: 320px;
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.service-icon {
+    font-size: 2.5rem;
+    margin-bottom: 12px;
+}
+
+.service-name {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #2b7a78;
+    margin-bottom: 10px;
+}
+
+.service-desc {
+    font-size: 1rem;
+    margin-bottom: 15px;
+    color: #555;
+}
+
+.service-price {
+    font-weight: 600;
+    color: #004d40;
+    margin-bottom: 20px;
+}
+
+.btn-buy {
+    background-color: #00796b;
+    color: white;
+    border: none;
+    padding: 12px 18px;
+    border-radius: 6px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-buy:hover {
+    background-color: #004d40;
+}

@@ -179,13 +179,15 @@ const paint_datatable = async (table_name, columns, data) => {
 	});
 }
 
-function load_form_data(data, name_form) {
+function load_form_data(data, name_form, exclude = []) {
 	const form = document.querySelector(`#${name_form}`);
 	const elements = form.querySelectorAll('input, select, textarea');
 
 	elements.forEach(e => {
 		const name = e.name;
-
+		if(exclude.includes(e.name)){
+			return;
+		}
 		if (data.hasOwnProperty(name)) {
 			switch (e.type) {
 				case 'checkbox':

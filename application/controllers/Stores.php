@@ -146,6 +146,7 @@ class Stores extends CI_Controller
 				$input = file_get_contents("php://input");
 				$data = json_decode($input, true);
 				if (json_last_error() === JSON_ERROR_NONE) {
+					$data["s.us_id"] = $this->session->userdata('us_id');
 					$this->Store_model->data = $data;
 					$data_response = $this->Store_model->get_stores();
 					if (!$data_response["status"]) throw new Exception($data_response["message"], 1);

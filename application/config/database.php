@@ -76,10 +76,10 @@ $query_builder = TRUE;
 $db['default'] = array(
 	'dsn'	=> '',
 	'hostname' => 'localhost',
-	'username' => 'postgres',
-	'password' => '1994',
-	'database' => 'chat_bot_ws',
-	'dbdriver' => 'postgre',
+	'username' => 'webcol',
+	'password' => 'q5NPIm0DLO?(=N^6',
+	'database' => 'webcolsoluciones_chat_bot_ws',
+	'dbdriver' => 'mysqli',
 	'dbprefix' => '',
 	'pconnect' => FALSE,
 	'db_debug' => (ENVIRONMENT !== 'production'),
@@ -93,5 +93,4 @@ $db['default'] = array(
 	'stricton' => FALSE,
 	'failover' => array(),
 	'save_queries' => TRUE,
-	'port' => 5432
 );
