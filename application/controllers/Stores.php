@@ -243,7 +243,6 @@ class Stores extends CI_Controller
 			$data_user_store = array(
 				"sto_id" => $data_insert["data"],
 				"us_id" => $this->input->POST('us_id'),
-				"ussto_create_date" => $this->input->POST('sto_create_date')
 			);
 			$this->General_Model->table_name = "user_store";
 			$this->General_Model->data = $data_user_store;

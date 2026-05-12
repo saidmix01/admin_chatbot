@@ -114,7 +114,6 @@ class Access_profile extends CI_Controller
 								$this->General_Model->data = array(
 									"men_id" => $key["men_id"],
 									"pro_id" => $key["pro_id"],
-									"men_pro_create_date" => $key["men_pro_create_date"]
 								);
 								$this->General_Model->insert();
 							}
