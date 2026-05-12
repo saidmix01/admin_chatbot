@@ -74,19 +74,28 @@
             </div>
             <!-- / Sidebar -->
 
+            <!-- Mobile overlay -->
+            <div class="layout-overlay"></div>
+
             <!-- MAIN CONTENT -->
             <div class="layout-container">
 
                 <!-- Top Navbar -->
-                <nav class="layout-navbar navbar navbar-expand-lg align-items-lg-center" id="layout-navbar">
+                <nav class="layout-navbar navbar navbar-expand-lg align-items-lg-center" id="layout-navbar" style="background: #fff !important;">
 
-                    <a href="<?=base_url()?>Home" class="navbar-brand app-brand demo d-lg-none py-0 mr-4">
-                        <span><img src="<?=base_url()?>assets/img/logo-wapi.svg" alt="Wapi" style="height: 28px; filter: brightness(0) invert(1);"></span>
-                        <span class="app-brand-text font-weight-semibold ml-2">Wapi</span>
+                    <!-- Sidebar toggle (mobile) -->
+                    <button class="navbar-toggler" type="button" id="sidebarToggle" style="border: none; outline: none; padding: 0.25rem 0.5rem; margin-right: 0.5rem; color: var(--saas-gray-600); font-size: 1.25rem;">
+                        <i class="feather icon-menu"></i>
+                    </button>
+
+                    <a href="<?=base_url()?>Home" class="navbar-brand app-brand demo d-lg-none py-0 mr-4" style="padding: 0 !important; border: none !important;">
+                        <img src="<?=base_url()?>assets/img/logo-wapi.svg" alt="Wapi" style="height: 24px;">
                     </a>
 
-                    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#layout-navbar-collapse">
-                        <span class="navbar-toggler-icon"></span>
+                    <div style="flex: 1;"></div>
+
+                    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#layout-navbar-collapse" style="border: none; outline: none; padding: 0.25rem 0.5rem; color: var(--saas-gray-600); font-size: 1.25rem;">
+                        <i class="feather icon-more-vertical"></i>
                     </button>
 
                     <div class="navbar-collapse collapse" id="layout-navbar-collapse">
@@ -118,3 +127,25 @@
                     </div>
                 </nav>
                 <!-- / Top Navbar -->
+<script>
+// Mobile sidebar toggle
+document.addEventListener('DOMContentLoaded', function() {
+    const sidebar = document.getElementById('layout-sidenav');
+    const toggleBtn = document.getElementById('sidebarToggle');
+    const overlay = document.querySelector('.layout-overlay');
+    
+    if (toggleBtn && sidebar) {
+        toggleBtn.addEventListener('click', function() {
+            sidebar.classList.toggle('sidenav-open');
+            if (overlay) overlay.classList.toggle('active');
+        });
+    }
+    
+    if (overlay) {
+        overlay.addEventListener('click', function() {
+            sidebar.classList.remove('sidenav-open');
+            overlay.classList.remove('active');
+        });
+    }
+});
+</script>
