@@ -7,7 +7,7 @@ services:
       dockerfile: Dockerfile
     container_name: admin_chatbot_app
     ports:
-      - "8080:80"
+      - "3035:80"
     volumes:
       - ./:/var/www/html
       - ./docker/php.ini:/usr/local/etc/php/conf.d/custom.ini
@@ -17,7 +17,7 @@ services:
       - DB_PASSWORD=wapi_secret_2026
       - DB_NAME=admin_chatbot
       - APP_ENV=development
-      - BASE_URL=http://localhost:8080/
+      - BASE_URL=http://localhost:3035/
     depends_on:
       db:
         condition: service_healthy
@@ -32,7 +32,7 @@ services:
       POSTGRES_USER: wapi
       POSTGRES_PASSWORD: wapi_secret_2026
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./database/init.sql:/docker-entrypoint-initdb.d/01-init.sql
