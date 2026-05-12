@@ -17,13 +17,11 @@ const save = async () => {
 		if (sto_phone == "") throw new Error("Phone is required");
 		if (sto_wellcome_message == "") throw new Error("Wellcome message is required");
 		const sto_id = document.querySelector(`#sto_id`).value;
-		let now = new Date();
-		let sto_create_date = now.toISOString();
 		let url_store = `${base_url}Stores/save`
-		let data_send = { sto_status, us_id, sto_name, sto_email, sto_direction, sto_phone, sto_wellcome_message, sto_create_date }
+		let data_send = { sto_status, us_id, sto_name, sto_email, sto_direction, sto_phone, sto_wellcome_message }
 		if (sto_id != "") {
 			url_store = `${base_url}Stores/update`
-			data_send = { sto_id, sto_status, us_id, sto_name, sto_email, sto_direction, sto_phone, sto_wellcome_message, sto_create_date }
+			data_send = { sto_id, sto_status, us_id, sto_name, sto_email, sto_direction, sto_phone, sto_wellcome_message }
 		}
 		document.querySelector('.loading').style.display = "flex";
 		send_data(url_store, data_send)
