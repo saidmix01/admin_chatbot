@@ -6,6 +6,7 @@ class Home extends CI_Controller
 		parent::__construct();
 
 		$this->load->helper('general_helper');
+		$this->load->model('Menus_profile/Menus_profile_model', 'Menus_profile_model');
 	}
 
 	/**
@@ -20,7 +21,8 @@ class Home extends CI_Controller
 			if($user_data["status"] == false) throw new Exception($user_data["message"], 1);
 			//Data header
 			$data_header["user_data"] = $user_data["data"];
-			$data_header["menus"] = get_user_menus(array("us_id" => $this->session->userdata('us_id')))["data"];
+			$this->Menus_profile_model->data = array("us_id" => $this->session->userdata('us_id'));
+			$data_header["menus"] = $this->Menus_profile_model->get_menu_user()["data"];
 			// Data footer
 			$data_footer["scripts"] = [
 				"js/dashboard/dashboard.js"
