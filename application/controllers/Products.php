@@ -14,7 +14,8 @@ class Products extends CI_Controller {
 			$this->Menus_profile_model->data = array("us_id" => $this->session->userdata('us_id'));
 			$menus = $this->Menus_profile_model->get_menu_user();
 
-			$services = $this->Services_model->get_services();
+			$this->Services_model->data = array("su.us_id" => $this->session->userdata('us_id'));
+			$services = $this->Services_model->get_service_user();
 
 			$data = array(
 				"title" => "Productos",
@@ -25,7 +26,7 @@ class Products extends CI_Controller {
 			);
 			$this->load->view('includes/header', $data);
 			$this->load->view('products/products_view');
-			$this->load->view('includes/footer');
+			$data_footer = array(); if(isset($data_header['scripts'])) $data_footer['scripts'] = $data_header['scripts']; $this->load->view('includes/footer', $data_footer);
 		} catch (\Throwable $th) {
 			$this->load->view('error_pages/500');
 		}

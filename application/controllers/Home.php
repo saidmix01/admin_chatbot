@@ -27,17 +27,6 @@ class Home extends CI_Controller
 				"whatsapp_status" => $this->get_whatsapp_status(),
 				"whatsapp_number" => $this->get_whatsapp_number(),
 				"bot_status" => $this->get_bot_status(),
-				"products_count" => $this->get_products_count(),
-				"last_activity" => $this->get_last_activity()
-			);
-
-			$this->load->view('includes/header', $data_header);
-			$this->load->view('home/home_view');
-			$this->load->view('includes/footer');
-		} catch (\Throwable $th) {
-			$this->load->view('error_pages/500');
-		}
-	}
 
 	private function get_whatsapp_status() {
 		// TODO: Implement with actual bot status check
@@ -56,8 +45,9 @@ class Home extends CI_Controller
 
 	private function get_products_count() {
 		$this->load->model('Page/Services_model', 'Services_model');
-		$services = $this->Services_model->get_services();
-		return count($services["data"] ?? []);
+		$this->Services_model->data = array('su.us_id' => $this->session->userdata('us_id'));
+		$services = $this->Services_model->get_service_user();
+		return count($services['data'] ?? []);
 	}
 
 	private function get_last_activity() {
