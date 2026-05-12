@@ -51,7 +51,6 @@
             <div id="layout-sidenav" class="layout-sidenav sidenav sidenav-vertical bg-white logo-dark">
                 
                 <!-- Brand -->
-                <!-- Brand -->
                 <div class="app-brand" style="padding: 1rem 1.25rem;">
                     <img src="<?=base_url()?>assets/img/logo-wapi.svg" alt="Wapi" style="height: 32px;">
                 </div>
