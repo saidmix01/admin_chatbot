@@ -1,19 +1,112 @@
-<!-- [ Layout content ] Start -->
-<div class="layout-content">
+<!-- [ content ] Start -->
+<div class="container-fluid flex-grow-1 container-p-y">
 
-	<!-- [ content ] Start -->
-	<div class="container-fluid flex-grow-1 container-p-y">
-		<h4 class="font-weight-bold py-3 mb-0">Dashboard</h4>
-		<div class="text-muted small mt-0 mb-4 d-block breadcrumb">
-			<ol class="breadcrumb">
-				<li class="breadcrumb-item"><a href="#"><i class="feather icon-home"></i></a></li>
-				<li class="breadcrumb-item active">Dashboard</li>
-			</ol>
-		</div>
-		<div class="row" id="content_stores">
-			
-		</div>
+    <!-- Page Header -->
+    <div class="page-header">
+        <h4>Dashboard</h4>
+        <p>Resumen del estado de tu bot y negocio</p>
+    </div>
 
-	</div>
-	<!-- [ content ] End -->
+    <!-- Status Cards Row -->
+    <div class="row" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; margin: 0;">
+
+        <!-- WhatsApp Status -->
+        <div class="stat-card">
+            <div class="stat-card-icon <?=$whatsapp_status === 'connected' ? 'green' : ($whatsapp_status === 'reconnecting' ? 'yellow' : 'red')?>">
+                <i class="fab fa-whatsapp"></i>
+            </div>
+            <div class="stat-card-content">
+                <div class="stat-card-label">WhatsApp</div>
+                <div class="stat-card-value">
+                    <span class="status-badge <?=$whatsapp_status ?? 'disconnected'?>">
+                        <?= ucfirst($whatsapp_status ?? 'desconectado') ?>
+                    </span>
+                </div>
+                <div class="stat-card-sub">
+                    <?= $whatsapp_number ?? 'No conectado' ?>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bot Status -->
+        <div class="stat-card">
+            <div class="stat-card-icon blue">
+                <i class="feather icon-message-square"></i>
+            </div>
+            <div class="stat-card-content">
+                <div class="stat-card-label">Bot</div>
+                <div class="stat-card-value">
+                    <span class="status-badge <?= $bot_status === 'active' ? 'connected' : 'disconnected' ?>">
+                        <?= $bot_status === 'active' ? 'Activo' : 'Inactivo' ?>
+                    </span>
+                </div>
+                <div class="stat-card-sub">Respuestas automáticas</div>
+            </div>
+        </div>
+
+        <!-- Server Status -->
+        <div class="stat-card">
+            <div class="stat-card-icon purple">
+                <i class="feather icon-server"></i>
+            </div>
+            <div class="stat-card-content">
+                <div class="stat-card-label">Servidor</div>
+                <div class="stat-card-value">
+                    <span class="status-badge connected">Online</span>
+                </div>
+                <div class="stat-card-sub">PHP <?= phpversion() ?></div>
+            </div>
+        </div>
+
+        <!-- Products Count -->
+        <div class="stat-card">
+            <div class="stat-card-icon <?= ($products_count ?? 0) > 0 ? 'green' : 'yellow' ?>">
+                <i class="feather icon-package"></i>
+            </div>
+            <div class="stat-card-content">
+                <div class="stat-card-label">Productos</div>
+                <div class="stat-card-value"><?= $products_count ?? 0 ?></div>
+                <div class="stat-card-sub">Registrados en tu catálogo</div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Quick Actions -->
+    <div style="margin-top: 2rem;">
+        <h5 style="font-size: 0.9375rem; font-weight: 600; color: var(--saas-gray-700); margin-bottom: 1rem;">Acciones rápidas</h5>
+        <div style="display: flex; flex-wrap: wrap; gap: 0.75rem;">
+            <a href="<?=base_url()?>Whatsapp" class="btn-saas btn-saas-outline">
+                <i class="fab fa-whatsapp"></i> Conectar WhatsApp
+            </a>
+            <a href="<?=base_url()?>Business" class="btn-saas btn-saas-outline">
+                <i class="feather icon-briefcase"></i> Configurar negocio
+            </a>
+            <a href="<?=base_url()?>BotConfig" class="btn-saas btn-saas-outline">
+                <i class="feather icon-message-square"></i> Configurar bot
+            </a>
+            <a href="<?=base_url()?>Products" class="btn-saas btn-saas-outline">
+                <i class="feather icon-package"></i> Agregar productos
+            </a>
+        </div>
+    </div>
+
+    <!-- Last Activity -->
+    <div style="margin-top: 2rem;">
+        <div class="card">
+            <div class="card-header">Última actividad</div>
+            <div class="card-body" style="color: var(--saas-gray-500); font-size: 0.875rem;">
+                <?php if(!empty($last_activity)): ?>
+                    <p><?= $last_activity ?></p>
+                <?php else: ?>
+                    <p style="text-align: center; padding: 2rem 0; margin: 0;">No hay actividad reciente</p>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content stores (existing) -->
+    <div class="row" id="content_stores" style="margin-top: 2rem;"></div>
+
 </div>
+<!-- [ content ] End -->
