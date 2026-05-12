@@ -48,7 +48,7 @@ class Menus_profile_model extends CI_Model
 			"message" => ""
 		);
 		try {
-			$this->db->cache_on();
+			// $this->db->cache_on();
 			$where = "";
 			if (!empty($this->data)) {
 				$conditions = array();
@@ -61,7 +61,7 @@ class Menus_profile_model extends CI_Model
 					INNER JOIN {$this->table_db_profiles} b
 					ON a.pro_id = b.pro_id 
 					INNER JOIN {$this->table_db_users} u ON u.pro_id = b.pro_id 
-					INNER JOIN {$this->table_db_menus} m ON m.men_id = a.men_id $where";
+					INNER JOIN {$this->table_db_menus} m ON m.men_id = a.men_id AND m.men_status = 1 $where";
 			$query = $this->db->query($sql);
 			
 			if ($query) {
@@ -70,7 +70,7 @@ class Menus_profile_model extends CI_Model
 					$response["data"] = $query->result();
 				}
 			}
-			$this->db->cache_off();
+			// $this->db->cache_off();
 		} catch (\Throwable $th) {
 			echo "<pre>"; print_r($th); echo "</pre>";
 			$response["message"] = $th->getMessage();
@@ -86,7 +86,7 @@ class Menus_profile_model extends CI_Model
 			"message" => ""
 		);
 		try {
-			$this->db->cache_on();
+			// $this->db->cache_on();
 			$where = "";
 			if (!empty($this->data)) {
 				$conditions = array();
@@ -104,7 +104,7 @@ class Menus_profile_model extends CI_Model
 					$response["exits"] = true;
 				}
 			}
-			$this->db->cache_off();
+			// $this->db->cache_off();
 		} catch (\Throwable $th) {
 			echo "<pre>"; print_r($th); echo "</pre>";
 			$response["message"] = $th->getMessage();
