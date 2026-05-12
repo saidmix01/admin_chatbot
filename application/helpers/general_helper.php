@@ -32,7 +32,6 @@ if (!function_exists('get_user_menus')) {
 		try {
 			if (empty($us_id)) throw new Exception("User data is empty", 1);
 			$CI = &get_instance();
-			$CI->db->cache_on();
 			$CI->load->model('Menus_profile/Menus_profile_model', 'Menus_profile_model');
 			$CI->Menus_profile_model->data = array("us_id" => $us_id["us_id"]);
 			$response = $CI->Menus_profile_model->get_menu_user();
@@ -78,7 +77,6 @@ if (!function_exists('validate_store_user')) {
 			if (empty($us_id)) throw new Exception("User data is empty", 1);
 			if (empty($sto_id)) throw new Exception("Store data is empty", 1);
 			$CI = &get_instance();
-			$CI->db->cache_on();
 			$CI->load->model('Store/Store_model', 'Store_model');
 			$CI->Store_model->data = array("u.us_id" => $us_id, "s.sto_id" => $sto_id);
 			$data = $CI->Store_model->get_stores();
