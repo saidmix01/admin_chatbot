@@ -148,7 +148,7 @@
                 <nav class="layout-navbar navbar navbar-expand-lg align-items-lg-center" id="layout-navbar">
 
                     <a href="<?=base_url()?>Home" class="navbar-brand app-brand demo d-lg-none py-0 mr-4">
-                        <span><img src="<?=base_url()?>assets/img/logo.png" alt="Wapi" class="img-fluid" style="height: 28px;"></span>
+                        <span><img src="<?=base_url()?>assets/img/logo-wapi.svg" alt="Wapi" style="height: 28px; filter: brightness(0) invert(1);"></span>
                         <span class="app-brand-text font-weight-semibold ml-2">Wapi</span>
                     </a>
 
