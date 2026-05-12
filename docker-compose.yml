@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: admin_chatbot_app
+    ports:
+      - "8080:80"
+    volumes:
+      - ./:/var/www/html
+      - ./docker/php.ini:/usr/local/etc/php/conf.d/custom.ini
+    environment:
+      - DB_HOST=db
+      - DB_USER=wapi
+      - DB_PASSWORD=wapi_secret_2026
+      - DB_NAME=admin_chatbot
+      - APP_ENV=development
+      - BASE_URL=http://localhost:8080/
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - wapi-network
+
+  db:
+    image: postgres:16-alpine
+    container_name: admin_chatbot_db
+    environment:
+      POSTGRES_DB: admin_chatbot
+      POSTGRES_USER: wapi
+      POSTGRES_PASSWORD: wapi_secret_2026
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U wapi -d admin_chatbot"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - wapi-network
+
+volumes:
+  pgdata:
+
+networks:
+  wapi-network:
+    driver: bridge
