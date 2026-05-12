@@ -31,6 +31,66 @@
     <link rel="stylesheet" href="<?=base_url()?>css/saas.css?v=1">
     <link rel="stylesheet" href="<?=base_url()?>css/general.css">
 
+    <style>
+        /* Mobile nav dropdown */
+        .mobile-nav-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #fff;
+            border-bottom: 1px solid var(--saas-gray-200);
+            box-shadow: var(--saas-shadow-lg);
+            z-index: 999;
+            max-height: 70vh;
+            overflow-y: auto;
+            padding: 0.5rem 0;
+        }
+        .mobile-nav-dropdown.open {
+            display: block;
+        }
+        .mobile-nav-dropdown a {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1.25rem;
+            color: var(--saas-gray-700);
+            font-size: 0.9375rem;
+            text-decoration: none;
+            transition: background 0.15s;
+        }
+        .mobile-nav-dropdown a:hover,
+        .mobile-nav-dropdown a:active {
+            background: var(--saas-gray-50);
+        }
+        .mobile-nav-dropdown a.active {
+            color: var(--saas-primary);
+            background: var(--saas-primary-light);
+            font-weight: 500;
+        }
+        .mobile-nav-dropdown i {
+            width: 20px;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+        .mobile-nav-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.3);
+            z-index: 998;
+        }
+        .mobile-nav-overlay.open {
+            display: block;
+        }
+        @media (min-width: 992px) {
+            .mobile-nav-dropdown,
+            .mobile-nav-overlay {
+                display: none !important;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -45,15 +105,13 @@
     <div class="layout-wrapper layout-2">
         <div class="layout-inner">
 
-            <!-- SIDEBAR -->
-            <div id="layout-sidenav" class="layout-sidenav sidenav sidenav-vertical bg-white logo-dark">
+            <!-- DESKTOP SIDEBAR (solo > 992px) -->
+            <div id="layout-sidenav" class="layout-sidenav sidenav sidenav-vertical bg-white logo-dark d-none d-lg-block">
                 
-                <!-- Brand -->
                 <div class="app-brand" style="padding: 1rem 1.25rem;">
                     <img src="<?=base_url()?>assets/img/logo-wapi.svg" alt="Wapi" style="height: 32px;">
                 </div>
 
-                <!-- Navigation (dinámico desde DB) -->
                 <ul class="sidenav-inner py-1">
                     <?php if(!empty($menus)): ?>
                     <?php 
@@ -72,79 +130,108 @@
                     <?php endif; ?>
                 </ul>
             </div>
-            <!-- / Sidebar -->
+            <!-- / Desktop Sidebar -->
 
-            <!-- Mobile overlay -->
-            <div class="layout-overlay"></div>
+            <!-- MOBILE MENU OVERLAY -->
+            <div class="mobile-nav-overlay" id="mobileNavOverlay"></div>
+
+            <!-- MOBILE DROPDOWN NAV -->
+            <div class="mobile-nav-dropdown" id="mobileNavDropdown">
+                <?php if(!empty($menus)): ?>
+                <?php foreach ($menus as $menu):
+                    $is_active = ($current_url ?? '') === $menu->men_url || 
+                                 (($current_url ?? '') === '' && $menu->men_url === 'home');
+                ?>
+                <a href="<?=base_url()?><?=$menu->men_url?>" class="<?= $is_active ? 'active' : '' ?>" <?= $menu->men_url === 'preview' ? 'target="_blank"' : '' ?>>
+                    <i class="<?=$menu->men_icon?>"></i>
+                    <?=$menu->men_description?>
+                </a>
+                <?php endforeach; ?>
+                <hr style="margin: 0.5rem 1rem; border-color: var(--saas-gray-100);">
+                <a href="<?=base_url()?>Login/logout">
+                    <i class="feather icon-power" style="color: var(--saas-danger);"></i>
+                    Cerrar sesión
+                </a>
+                <?php endif; ?>
+            </div>
 
             <!-- MAIN CONTENT -->
             <div class="layout-container">
 
                 <!-- Top Navbar -->
-                <nav class="layout-navbar navbar navbar-expand-lg align-items-lg-center" id="layout-navbar" style="background: #fff !important;">
+                <nav class="layout-navbar navbar navbar-expand-lg align-items-lg-center" id="layout-navbar" style="background: #fff !important; position: relative;">
 
-                    <!-- Sidebar toggle (mobile) -->
-                    <button class="navbar-toggler" type="button" id="sidebarToggle" style="border: none; outline: none; padding: 0.25rem 0.5rem; margin-right: 0.5rem; color: var(--saas-gray-600); font-size: 1.25rem;">
+                    <!-- Hamburger for mobile dropdown -->
+                    <button class="navbar-toggler d-lg-none" type="button" id="mobileMenuToggle" style="border: none; outline: none; padding: 0.25rem 0.5rem; margin-right: 0.5rem; color: var(--saas-gray-600); font-size: 1.25rem; cursor: pointer;">
                         <i class="feather icon-menu"></i>
                     </button>
 
-                    <a href="<?=base_url()?>Home" class="navbar-brand app-brand demo d-lg-none py-0 mr-4" style="padding: 0 !important; border: none !important;">
+                    <a href="<?=base_url()?>Home" class="navbar-brand d-lg-none py-0 mr-4" style="padding: 0 !important; border: none !important;">
                         <img src="<?=base_url()?>assets/img/logo-wapi.svg" alt="Wapi" style="height: 24px;">
                     </a>
 
                     <div style="flex: 1;"></div>
 
-                    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#layout-navbar-collapse" style="border: none; outline: none; padding: 0.25rem 0.5rem; color: var(--saas-gray-600); font-size: 1.25rem;">
-                        <i class="feather icon-more-vertical"></i>
-                    </button>
-
-                    <div class="navbar-collapse collapse" id="layout-navbar-collapse">
-                        <hr class="d-lg-none w-100 my-2">
-
-                        <div class="navbar-nav align-items-lg-center ml-auto">
-
-                            <!-- User dropdown -->
-                            <div class="demo-navbar-user nav-item dropdown">
-                                <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" data-toggle="dropdown">
-                                    <div class="d-flex align-items-center gap-2" style="gap: 0.5rem;">
-                                        <div style="width: 32px; height: 32px; background: var(--saas-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 0.8125rem; font-weight: 600;">
-                                            <?= strtoupper(substr($user_data->us_name ?? 'U', 0, 1)) ?>
-                                        </div>
-                                        <span class="d-none d-lg-inline font-weight-medium" style="font-size: 0.875rem; color: var(--saas-gray-700);"><?=$user_data->us_name ?? 'Usuario'?></span>
+                    <!-- Desktop user dropdown -->
+                    <div class="d-none d-lg-block">
+                        <div class="demo-navbar-user nav-item dropdown">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" data-toggle="dropdown" style="padding: 0;">
+                                <div class="d-flex align-items-center" style="gap: 0.5rem;">
+                                    <div style="width: 32px; height: 32px; background: var(--saas-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 0.8125rem; font-weight: 600;">
+                                        <?= strtoupper(substr($user_data->us_name ?? 'U', 0, 1)) ?>
                                     </div>
-                                </a>
-                                <div class="dropdown-menu dropdown-menu-right" style="border-radius: var(--saas-radius-sm); border: 1px solid var(--saas-gray-200); box-shadow: var(--saas-shadow-lg);">
-                                    <div class="dropdown-item" style="font-size: 0.8125rem; color: var(--saas-gray-500); padding: 0.5rem 1rem;">
-                                        <?=$user_data->us_email ?? ''?>
-                                    </div>
-                                    <div class="dropdown-divider"></div>
-                                    <a href="<?=base_url()?>Login/logout" class="dropdown-item">
-                                        <i class="feather icon-power" style="color: var(--saas-danger);"></i> &nbsp; Cerrar sesión
-                                    </a>
+                                    <span class="font-weight-medium" style="font-size: 0.875rem; color: var(--saas-gray-700);"><?=$user_data->us_name ?? 'Usuario'?></span>
                                 </div>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-right" style="border-radius: var(--saas-radius-sm); border: 1px solid var(--saas-gray-200); box-shadow: var(--saas-shadow-lg);">
+                                <div class="dropdown-item" style="font-size: 0.8125rem; color: var(--saas-gray-500); padding: 0.5rem 1rem;">
+                                    <?=$user_data->us_email ?? ''?>
+                                </div>
+                                <div class="dropdown-divider"></div>
+                                <a href="<?=base_url()?>Login/logout" class="dropdown-item">
+                                    <i class="feather icon-power" style="color: var(--saas-danger);"></i> &nbsp; Cerrar sesión
+                                </a>
                             </div>
                         </div>
                     </div>
+
+                    <!-- Mobile user icon -->
+                    <div class="d-lg-none" style="color: var(--saas-gray-600); font-size: 1.1rem; display: flex; align-items: center;">
+                        <div style="width: 30px; height: 30px; background: var(--saas-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 0.75rem; font-weight: 600;">
+                            <?= strtoupper(substr($user_data->us_name ?? 'U', 0, 1)) ?>
+                        </div>
+                    </div>
+
                 </nav>
                 <!-- / Top Navbar -->
+
 <script>
-// Mobile sidebar toggle
 document.addEventListener('DOMContentLoaded', function() {
-    const sidebar = document.getElementById('layout-sidenav');
-    const toggleBtn = document.getElementById('sidebarToggle');
-    const overlay = document.querySelector('.layout-overlay');
+    var toggle = document.getElementById('mobileMenuToggle');
+    var dropdown = document.getElementById('mobileNavDropdown');
+    var overlay = document.getElementById('mobileNavOverlay');
     
-    if (toggleBtn && sidebar) {
-        toggleBtn.addEventListener('click', function() {
-            sidebar.classList.toggle('sidenav-open');
-            if (overlay) overlay.classList.toggle('active');
+    function closeMenu() {
+        dropdown.classList.remove('open');
+        overlay.classList.remove('open');
+    }
+    
+    if (toggle && dropdown) {
+        toggle.addEventListener('click', function(e) {
+            e.stopPropagation();
+            dropdown.classList.toggle('open');
+            overlay.classList.toggle('open');
         });
     }
     
     if (overlay) {
-        overlay.addEventListener('click', function() {
-            sidebar.classList.remove('sidenav-open');
-            overlay.classList.remove('active');
+        overlay.addEventListener('click', closeMenu);
+    }
+    
+    // Close on link click
+    if (dropdown) {
+        dropdown.querySelectorAll('a').forEach(function(link) {
+            link.addEventListener('click', closeMenu);
         });
     }
 });

@@ -843,3 +843,31 @@ textarea.form-saas {
   font-size: 1.25rem;
   line-height: 1;
 }
+
+/* ============================================
+   MOBILE: navbar + dropdown menu
+   ============================================ */
+
+@media (max-width: 991px) {
+  /* Navbar fijo arriba */
+  .layout-navbar {
+    position: sticky !important;
+    top: 0;
+    z-index: 100;
+  }
+  
+  /* Sidebar invisible en mobile */
+  .layout-sidenav.d-none {
+    display: none !important;
+  }
+  
+  /* El layout-container toma todo el ancho */
+  .layout-container {
+    margin-left: 0 !important;
+  }
+  
+  /* Ajustar padding del contenido */
+  .container-p-y {
+    padding: 1rem !important;
+  }
+}
