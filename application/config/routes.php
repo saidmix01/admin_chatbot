@@ -59,3 +59,10 @@ $route['translate_uri_dashes'] = FALSE;
 // $route['faq'] = 'Page/faq';
 // $route['legal'] = 'Page/legal';
 // $route['contacto'] = 'Page/contacto';
+// Rutas para controladores con camelCase
+$route['botconfig'] = 'BotConfig';
+$route['techconfig'] = 'TechConfig';
+$route['business'] = 'Business';
+$route['whatsapp'] = 'Whatsapp';
+$route['products'] = 'Products';
+
