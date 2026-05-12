@@ -616,3 +616,9 @@ textarea.form-saas {
     align-items: stretch;
   }
 }
+
+/* Kill the ugly gray from template logo-dark */
+.sidenav.logo-dark .app-brand {
+  background: #fff !important;
+  height: auto !important;
+}
