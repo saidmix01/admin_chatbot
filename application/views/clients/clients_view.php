@@ -15,48 +15,50 @@
 
     <div class="card">
         <div class="card-body" style="padding: 0;">
-            <table class="table-saas">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Nombre</th>
-                        <th>Email</th>
-                        <th>Perfil</th>
-                        <th>Negocio</th>
-                        <th>Estado</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php if(!empty($clients)): ?>
-                    <?php foreach($clients as $c): ?>
-                    <tr>
-                        <td>#<?= $c->us_id ?></td>
-                        <td style="font-weight: 500;"><?= $c->us_name ?></td>
-                        <td><?= $c->us_email ?></td>
-                        <td><span class="status-badge connected" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;"><?= $c->pro_description ?></span></td>
-                        <td><?= $c->store_name ?? '—' ?></td>
-                        <td>
-                            <span class="status-badge <?= $c->us_status == 1 ? 'connected' : 'disconnected' ?>" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;">
-                                <?= $c->us_status == 1 ? 'Activo' : 'Inactivo' ?>
-                            </span>
-                        </td>
-                        <td>
-                            <a href="<?=base_url()?>Login/logout" class="btn-saas btn-saas-outline btn-saas-sm">
-                                <i class="feather icon-eye"></i>
-                            </a>
-                        </td>
-                    </tr>
-                    <?php endforeach; ?>
-                    <?php else: ?>
-                    <tr>
-                        <td colspan="7" style="text-align: center; padding: 3rem; color: var(--saas-gray-400);">
-                            No hay clientes registrados aún
-                        </td>
-                    </tr>
-                    <?php endif; ?>
-                </tbody>
-            </table>
+            <div class="table-responsive-wrap">
+                <table class="table-saas table-saas-card-mode">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Email</th>
+                            <th>Perfil</th>
+                            <th>Negocio</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if(!empty($clients)): ?>
+                        <?php foreach($clients as $c): ?>
+                        <tr>
+                            <td data-label="ID">#<?= $c->us_id ?></td>
+                            <td data-label="Nombre" style="font-weight: 500;"><?= $c->us_name ?></td>
+                            <td data-label="Email"><?= $c->us_email ?></td>
+                            <td data-label="Perfil"><span class="status-badge connected" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;"><?= $c->pro_description ?></span></td>
+                            <td data-label="Negocio"><?= $c->store_name ?? '—' ?></td>
+                            <td data-label="Estado">
+                                <span class="status-badge <?= $c->us_status == 1 ? 'connected' : 'disconnected' ?>" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;">
+                                    <?= $c->us_status == 1 ? 'Activo' : 'Inactivo' ?>
+                                </span>
+                            </td>
+                            <td data-label="Acciones">
+                                <a href="<?=base_url()?>Login/logout" class="btn-saas btn-saas-outline btn-saas-sm">
+                                    <i class="feather icon-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                        <?php else: ?>
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: 3rem; color: var(--saas-gray-400);">
+                                No hay clientes registrados aún
+                            </td>
+                        </tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
