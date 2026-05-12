@@ -66,3 +66,4 @@ $route['business'] = 'Business';
 $route['whatsapp'] = 'Whatsapp';
 $route['products'] = 'Products';
 
+$route['clients'] = 'Clients';
