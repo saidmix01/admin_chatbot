@@ -15,6 +15,10 @@
 
     <script>var base_url = '<?=base_url()?>';</script>
 
+    <!-- Global libs -->
+    <script src="<?=base_url()?>js/general.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <?php if(!empty($scripts)): ?>
     <?php foreach($scripts as $script): ?>
     <script src="<?=base_url()?><?=$script?>"></script>
