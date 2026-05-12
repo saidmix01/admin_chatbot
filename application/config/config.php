@@ -24,7 +24,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 |
 */
 
-$config['base_url'] = 'http://localhost/admin_chatbot/';
+$config['base_url'] = getenv('BASE_URL') ?: 'http://localhost:8080/';
 
 /*
 |--------------------------------------------------------------------------
@@ -226,7 +226,7 @@ $config['allow_get_array'] = TRUE;
 | your log files will fill up very fast.
 |
 */
-$config['log_threshold'] = 0;
+$config['log_threshold'] = (getenv('APP_ENV') !== 'production') ? 2 : 0;
 
 /*
 |--------------------------------------------------------------------------
@@ -327,7 +327,7 @@ $config['cache_query_string'] = FALSE;
 | https://codeigniter.com/userguide3/libraries/encryption.html
 |
 */
-$config['encryption_key'] = '';
+$config['encryption_key'] = getenv('ENCRYPTION_KEY') ?: 'a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6';
 
 /*
 |--------------------------------------------------------------------------
