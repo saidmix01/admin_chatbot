@@ -9,6 +9,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
     <meta name="description" content="Wapi - Plataforma WhatsApp para negocios" />
+    <link rel="icon" type="image/svg+xml" href="<?=base_url()?>assets/img/favicon.svg">
     <link rel="icon" type="image/x-icon" href="<?=base_url()?>assets/img/favicon.ico">
 
     <!-- Google fonts -->
@@ -50,11 +51,9 @@
             <div id="layout-sidenav" class="layout-sidenav sidenav sidenav-vertical bg-white logo-dark">
                 
                 <!-- Brand -->
-                <div class="app-brand">
-                    <span class="app-brand-logo">
-                        <img src="<?=base_url()?>assets/img/logo.png" alt="Wapi" class="img-fluid" style="height: 32px;">
-                    </span>
-                    <span class="app-brand-text font-weight-semibold ml-2">Wapi</span>
+                <!-- Brand -->
+                <div class="app-brand" style="padding: 1rem 1.25rem;">
+                    <img src="<?=base_url()?>assets/img/logo-wapi.svg" alt="Wapi" style="height: 32px;">
                 </div>
 
                 <!-- Navigation -->
