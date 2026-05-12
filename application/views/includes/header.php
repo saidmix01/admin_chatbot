@@ -45,9 +45,7 @@
     <div class="layout-wrapper layout-2">
         <div class="layout-inner">
 
-            <!-- ============================================
-                 SIDEBAR
-            ============================================ -->
+            <!-- SIDEBAR -->
             <div id="layout-sidenav" class="layout-sidenav sidenav sidenav-vertical bg-white logo-dark">
                 
                 <!-- Brand -->
@@ -55,93 +53,28 @@
                     <img src="<?=base_url()?>assets/img/logo-wapi.svg" alt="Wapi" style="height: 32px;">
                 </div>
 
-                <!-- Navigation -->
+                <!-- Navigation (dinámico desde DB) -->
                 <ul class="sidenav-inner py-1">
-
-                    <li class="sidenav-header">Navegación</li>
-
-                    <!-- Dashboard -->
-                    <li class="sidenav-item <?php $active_menu = $active_menu ?? ''; ?><?= $active_menu === 'dashboard' ? 'active' : '' ?>">
-                        <a href="<?=base_url()?>Home" class="sidenav-link">
-                            <i class="sidenav-icon feather icon-home"></i>
-                            <div>Dashboard</div>
-                        </a>
-                    </li>
-
-                    <!-- WhatsApp QR -->
-                    <li class="sidenav-item <?= $active_menu === 'whatsapp' ? 'active' : '' ?>">
-                        <a href="<?=base_url()?>Whatsapp" class="sidenav-link">
-                            <i class="sidenav-icon fab fa-whatsapp"></i>
-                            <div>WhatsApp QR</div>
-                        </a>
-                    </li>
-
-                    <li class="sidenav-divider"></li>
-                    <li class="sidenav-header">Configuración</li>
-
-                    <!-- Business Config -->
-                    <li class="sidenav-item <?= $active_menu === 'negocio' ? 'active' : '' ?>">
-                        <a href="<?=base_url()?>Business" class="sidenav-link">
-                            <i class="sidenav-icon feather icon-briefcase"></i>
-                            <div>Mi Negocio</div>
-                        </a>
-                    </li>
-
-                    <!-- Bot Config -->
-                    <li class="sidenav-item <?= $active_menu === 'bot' ? 'active' : '' ?>">
-                        <a href="<?=base_url()?>BotConfig" class="sidenav-link">
-                            <i class="sidenav-icon feather icon-message-square"></i>
-                            <div>Bot Mensajes</div>
-                        </a>
-                    </li>
-
-                    <!-- Products -->
-                    <li class="sidenav-item <?= $active_menu === 'productos' ? 'active' : '' ?>">
-                        <a href="<?=base_url()?>Products" class="sidenav-link">
-                            <i class="sidenav-icon feather icon-package"></i>
-                            <div>Productos</div>
-                        </a>
-                    </li>
-
-                    <!-- Existing dynamic menus -->
                     <?php if(!empty($menus)): ?>
-                    <li class="sidenav-divider"></li>
-                    <li class="sidenav-header">Gestión</li>
-                    <?php foreach ($menus as $menu): ?>
-                    <li class="sidenav-item">
-                        <a href="<?=base_url()?><?=$menu->men_url?>" class="sidenav-link">
+                    <?php 
+                    $current_url = trim($this->uri->segment(1));
+                    foreach ($menus as $menu):
+                        $is_active = ($current_url === $menu->men_url || 
+                                     ($current_url === '' && $menu->men_url === 'home'));
+                    ?>
+                    <li class="sidenav-item <?= $is_active ? 'active' : '' ?>">
+                        <a href="<?=base_url()?><?=$menu->men_url?>" class="sidenav-link" <?= $menu->men_url === 'preview' ? 'target="_blank"' : '' ?>>
                             <i class="sidenav-icon <?=$menu->men_icon?>"></i>
                             <div><?=$menu->men_description?></div>
                         </a>
                     </li>
                     <?php endforeach; ?>
                     <?php endif; ?>
-
-                    <li class="sidenav-divider"></li>
-
-                    <!-- Public Preview -->
-                    <li class="sidenav-item <?= $active_menu === 'preview' ? 'active' : '' ?>">
-                        <a href="<?=base_url()?>Preview" class="sidenav-link" target="_blank">
-                            <i class="sidenav-icon feather icon-external-link"></i>
-                            <div>Ver Página Pública</div>
-                        </a>
-                    </li>
-
-                    <!-- Technical -->
-                    <li class="sidenav-item <?= $active_menu === 'tecnico' ? 'active' : '' ?>">
-                        <a href="<?=base_url()?>TechConfig" class="sidenav-link">
-                            <i class="sidenav-icon feather icon-server"></i>
-                            <div>Config. Técnica</div>
-                        </a>
-                    </li>
-
                 </ul>
             </div>
             <!-- / Sidebar -->
 
-            <!-- ============================================
-                 MAIN CONTENT
-            ============================================ -->
+            <!-- MAIN CONTENT -->
             <div class="layout-container">
 
                 <!-- Top Navbar -->
