@@ -61,7 +61,7 @@
                     <li class="sidenav-header">Navegación</li>
 
                     <!-- Dashboard -->
-                    <li class="sidenav-item <?= $active_menu === 'dashboard' ? 'active' : '' ?>">
+                    <li class="sidenav-item <?php $active_menu = $active_menu ?? ''; ?><?= $active_menu === 'dashboard' ? 'active' : '' ?>">
                         <a href="<?=base_url()?>Home" class="sidenav-link">
                             <i class="sidenav-icon feather icon-home"></i>
                             <div>Dashboard</div>
