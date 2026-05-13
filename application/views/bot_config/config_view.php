@@ -43,7 +43,9 @@
     </div>
 </div>
 
+
 <script>
+var base_url = "'<?= base_url() ?>'";
 
 async function loadStarters() {
     try {
