@@ -21,12 +21,7 @@
                         Estas frases se mostraran al cliente cuando inicie una conversacion. El bot elegira una al azar.
                     </div>
                     <div id="starters-container">
-                        <div class="input-group mb-2" style="display:none" id="starter-template">
-                            <input type="text" class="form-saas starter-input" placeholder="Ej: Hola! En que puedo ayudarte?" style="max-width:500px" />
-                            <div class="input-group-append">
-                                <button class="btn btn-sm btn-outline-danger" onclick="this.closest('.input-group').remove()" style="height:38px">X</button>
-                            </div>
-                        </div>
+                        
                     </div>
                     <button type="button" class="btn-saas btn-saas-outline mt-1" onclick="addStarter()" style="font-size:13px">+ Agregar frase</button>
                 </div>
@@ -45,7 +40,7 @@
 
 
 <script>
-var base_url = "'<?= base_url() ?>'";
+var base_url = '<?= base_url() ?>';
 
 async function loadStarters() {
     try {
@@ -61,12 +56,13 @@ function getStarters() {
     return starters;
 }
 function addStarterInput(value) {
-    const tpl = document.getElementById('starter-template');
-    const clone = tpl.cloneNode(true);
-    clone.style.display = 'flex';
-    const inp = clone.querySelector('.starter-input');
+    const div = document.createElement('div');
+    div.className = 'input-group mb-2';
+    div.innerHTML = '<input type="text" class="form-saas starter-input" placeholder="Ej: Hola! En que puedo ayudarte?" style="max-width:500px" />' +
+        '<div class="input-group-append"><button class="btn btn-sm btn-outline-danger" onclick="this.closest(\'.input-group\').remove()" style="height:38px">X</button></div>';
+    const inp = div.querySelector('.starter-input');
     if (value) inp.value = value;
-    document.getElementById('starters-container').appendChild(clone);
+    document.getElementById('starters-container').appendChild(div);
 }
 function addStarter() { addStarterInput(''); }
 
