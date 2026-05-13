@@ -284,4 +284,86 @@ class BotApi extends CI_Controller
         }
         $this->json(["status" => true, "data" => $result]);
     }
+
+    /**
+     * Get the full published flow for a user's store
+     * Used by the WhatsApp bot service to load & execute conversation flows
+     * GET /BotApi/get_flow/US_ID
+     */
+    public function get_flow($us_id = 0)
+    {
+        if (!$us_id) {
+            http_response_code(400);
+            echo json_encode(["status" => false, "message" => "us_id requerido"]);
+            return;
+        }
+
+        $store = $this->db->query("SELECT sto_id, sto_name FROM stores WHERE us_id = " . intval($us_id))->row();
+        if (!$store) {
+            echo json_encode(["status" => false, "message" => "Tienda no encontrada"]);
+            return;
+        }
+
+        $flows = $this->db->query("
+            SELECT f.id, f.name, f.description, f.is_active,
+                   fv.id as version_id, fv.version, fv.published_at
+            FROM flows f
+            JOIN flow_versions fv ON fv.flow_id = f.id
+            WHERE f.tenant_id = " . intval($store->sto_id) . "
+              AND f.is_active = 1
+              AND fv.status = 'published'
+            ORDER BY fv.published_at DESC
+        ")->result();
+
+        $result = [];
+        foreach ($flows as $f) {
+            $triggers = $this->db->query(
+                "SELECT trigger_type, trigger_value FROM flow_triggers WHERE flow_id = ?",
+                [$f->id]
+            )->result();
+
+            $nodes = $this->db->query(
+                "SELECT node_key, type, payload_json FROM flow_nodes WHERE flow_version_id = ? ORDER BY id",
+                [$f->version_id]
+            )->result();
+
+            $edges = $this->db->query(
+                "SELECT from_node_key, to_node_key, rule_json FROM flow_edges WHERE flow_version_id = ? ORDER BY id",
+                [$f->version_id]
+            )->result();
+
+            $result[] = [
+                "id" => (int)$f->id,
+                "name" => $f->name,
+                "description" => $f->description,
+                "version" => (int)$f->version,
+                "published_at" => $f->published_at,
+                "triggers" => array_map(function($t) {
+                    return ["type" => $t->trigger_type, "value" => $t->trigger_value];
+                }, $triggers),
+                "nodes" => array_map(function($n) {
+                    return [
+                        "key" => $n->node_key,
+                        "type" => $n->type,
+                        "payload" => json_decode($n->payload_json, true) ?: new stdClass()
+                    ];
+                }, $nodes),
+                "edges" => array_map(function($e) {
+                    return [
+                        "from" => $e->from_node_key,
+                        "to" => $e->to_node_key,
+                        "rule" => $e->rule_json ? json_decode($e->rule_json, true) : null
+                    ];
+                }, $edges)
+            ];
+        }
+
+        $this->output->set_content_type('application/json');
+        echo json_encode([
+            "status" => true,
+            "store" => $store->sto_name,
+            "data" => $result
+        ]);
+    }
+
 }
