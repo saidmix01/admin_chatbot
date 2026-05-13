@@ -445,7 +445,6 @@ function getNodeSummary(n) {
         case 'end': return '⏹️ End flow';
         default: return '';
     }
-}
 
 function renderVisualCanvas() {
     var container = document.getElementById('nodesContainer');
@@ -475,7 +474,7 @@ function renderVisualCanvas() {
         html += '<div class="flow-visual-node node-' + n.type + (isStart ? ' node-start' : '') + (isEnd ? ' node-end' : '') + '" draggable="true" onclick="editNode(' + i + ')" data-idx="' + i + '" ondragstart="onNodeDragStart(event)" ondragover="onNodeDragOver(event)" ondrop="onNodeDrop(event)" ondragend="onNodeDragEnd(event)">';
         html += '<div class="node-actions" onclick="event.stopPropagation();">';
         html += '<button onclick="addEdgeFrom(' + i + ')" title="Connect">🔗</button>';
-        html += '<button onclick="event.stopPropagation(); nodes.splice(' + i + ',1); renderVisualCanvas(); }" title="Delete">✕</button>';
+        html += '<button onclick="event.stopPropagation(); nodes.splice(' + i + ',1); renderVisualCanvas();" title="Delete">✕</button>';
         html += '</div>';
         html += '<div class="node-top">';
         html += '<div><span class="node-key">' + getIcon(n.type) + ' ' + n.node_key + '</span> <span class="node-type-badge" style="background:#f3f4f6">' + getTypeLabel(n.type) + '</span></div>';
