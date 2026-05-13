@@ -94,37 +94,45 @@ class FlowBuilder extends CI_Controller {
         ]);
     }
 
-    public function save_nodes($version_id = 0) {
+        public function save_nodes($version_id = 0) {
         $this->require_auth();
         $input = json_decode(file_get_contents('php://input'), true);
-        if (!$input) { echo json_encode(['status' => false, 'message' => 'Datos inválidos']); return; }
-        $this->db->trans_start();
-        $this->db->where('flow_version_id', $version_id)->delete('flow_nodes');
-        $this->db->where('flow_version_id', $version_id)->delete('flow_edges');
-        if (!empty($input['nodes'])) {
-            foreach ($input['nodes'] as $n) {
-                $this->db->insert('flow_nodes', [
-                    'flow_version_id' => $version_id,
-                    'node_key' => $n['node_key'],
-                    'type' => $n['type'],
-                    'payload_json' => json_encode($n['payload'] ?? [])
-                ]);
+        if (!$input) { echo json_encode(['status' => false, 'message' => 'Datos invalidos']); return; }
+        try {
+            $this->db->trans_start();
+            $this->db->where('flow_version_id', $version_id)->delete('flow_nodes');
+            $this->db->where('flow_version_id', $version_id)->delete('flow_edges');
+            if (!empty($input['nodes'])) {
+                foreach ($input['nodes'] as $n) {
+                    $this->db->insert('flow_nodes', [
+                        'flow_version_id' => $version_id,
+                        'node_key' => $n['node_key'],
+                        'type' => $n['type'],
+                        'payload_json' => json_encode($n['payload'] ?? [])
+                    ]);
+                }
             }
-        }
-        if (!empty($input['edges'])) {
-            foreach ($input['edges'] as $e) {
-                $this->db->insert('flow_edges', [
-                    'flow_version_id' => $version_id,
-                    'from_node_key' => $e['from'],
-                    'to_node_key' => $e['to'],
-                    'rule_json' => isset($e['rule']) ? json_encode($e['rule']) : null
-                ]);
+            if (!empty($input['edges'])) {
+                foreach ($input['edges'] as $e) {
+                    $this->db->insert('flow_edges', [
+                        'flow_version_id' => $version_id,
+                        'from_node_key' => $e['from'],
+                        'to_node_key' => $e['to'],
+                        'rule_json' => isset($e['rule']) ? json_encode($e['rule']) : null
+                    ]);
+                }
             }
+            $trans_ok = $this->db->trans_complete();
+            if ($trans_ok) {
+                echo json_encode(['status' => true, 'message' => 'Nodos guardados']);
+            } else {
+                echo json_encode(['status' => false, 'message' => 'Error: transaccion fallida']);
+            }
+        } catch (Throwable $th) {
+            $this->db->trans_rollback();
+            echo json_encode(['status' => false, 'message' => 'Error: ' . $th->getMessage()]);
         }
-        $this->db->trans_complete();
-        echo json_encode(['status' => true, 'message' => 'Nodos guardados']);
     }
-
     public function validate_version($version_id = 0) {
         $this->require_auth();
         $nodes = $this->db->where('flow_version_id', $version_id)->get('flow_nodes')->result();
