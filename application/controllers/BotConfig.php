@@ -46,25 +46,24 @@ class BotConfig extends CI_Controller {
 			$this->Store_model->data = array("s.us_id" => $us_id);
 			$store = $this->Store_model->get_stores();
 
-			if (!empty($store["data"])) {
-				$update = array();
-				if (!empty($input["welcome_msg"])) $update["sto_wellcome_message"] = $input["welcome_msg"];
-				if (!empty($update)) {
-					$this->db->where("sto_id", $store["data"][0]->sto_id);
-					$this->db->update("stores", $update);
+				if (!empty($store["data"])) {
+					$update = array();
+					if (!empty($input["welcome_msg"])) $update["sto_wellcome_message"] = $input["welcome_msg"];
+					if (!empty($update)) {
+						$this->db->where("sto_id", $store["data"][0]->sto_id);
+						$this->db->update("stores", $update);
+					}
+					if (isset($input["starters"])) {
+						$this->db->where("sto_id", $store["data"][0]->sto_id);
+						$this->db->update("stores", array("sto_starters" => json_encode($input["starters"])));
+					}
 				}
-				if (isset($input["starters"])) {
-					$this->db->where("sto_id", $store["data"][0]->sto_id);
-					$this->db->update("stores", array("sto_starters" => json_encode($input["starters"])));
-				}
-				}
-			}
 
-			$response["status"] = true;
-			$response["message"] = "Configuración guardada correctamente";
-		} catch (\Throwable $th) {
-			$response["message"] = $th->getMessage();
-		}
+				$response["status"] = true;
+				$response["message"] = "Configuración guardada correctamente";
+			} catch (\Throwable $th) {
+				$response["message"] = $th->getMessage();
+			}
 		echo json_encode($response);
 	}
 }
