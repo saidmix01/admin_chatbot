@@ -192,6 +192,7 @@ class Chat_configuration extends CI_Controller
 		try {
 			if (!validate_session()) throw new Exception("No autorizado", 1);
 			$this->load->model("Store/Store_model", "Store_model");
+			$this->Store_model->data = array("s.us_id" => $this->session->userdata("us_id"));
 			$stores = $this->Store_model->get_stores();
 			if ($stores["status"] && !empty($stores["data"])) {
 				$store = $stores["data"][0];
@@ -214,6 +215,7 @@ class Chat_configuration extends CI_Controller
 
 			$starters = $input["starters"] ?? [];
 			$this->load->model("Store/Store_model", "Store_model");
+			$this->Store_model->data = array("s.us_id" => $this->session->userdata("us_id"));
 			$stores = $this->Store_model->get_stores();
 			if ($stores["status"] && !empty($stores["data"])) {
 				$store = $stores["data"][0];
