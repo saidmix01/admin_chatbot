@@ -1004,6 +1004,77 @@
               "body": "{\n  \"status\": true,\n  \"data\": {\n    \"products\": [\n      {\"ser_id\": 1, \"ser_name\": \"Plan Básico\", \"ser_price\": 29.99, \"ser_type\": \"producto\"}\n    ],\n    \"services\": [\n      {\"ser_id\": 6, \"ser_name\": \"Plan Arranca\", \"ser_price\": 20000, \"ser_type\": \"servicio\"}\n    ]\n  }\n}"
             }
           ]
+        },
+        {
+          "name": "Listar flujos (jerarquía)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/FlowBuilder/api_flow_list",
+              "path": [
+                "FlowBuilder",
+                "api_flow_list"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Lista obtenida",
+              "code": 200,
+              "body": "{\"status\":true,\"data\":[{\"id\":1,\"name\":\"Principal\",\"parent_flow_id\":null,\"is_active\":1},{\"id\":2,\"name\":\"Productos\",\"parent_flow_id\":1,\"is_active\":1}]}"
+            }
+          ]
+        },
+        {
+          "name": "Asignar flujo padre",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"flow_id\": 2, \"parent_flow_id\": 1}"
+            },
+            "url": {
+              "raw": "{{base_url}}/FlowBuilder/api_set_parent",
+              "path": [
+                "FlowBuilder",
+                "api_set_parent"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Actualizado",
+              "code": 200,
+              "body": "{\"status\":true,\"message\":\"Flujo actualizado\"}"
+            }
+          ]
+        },
+        {
+          "name": "Obtener flujo publicado (get_flow)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/BotApi/get_flow/{{us_id}}",
+              "path": [
+                "BotApi",
+                "get_flow",
+                "{{us_id}}"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Flujo encontrado",
+              "code": 200,
+              "body": "{\n  \"status\": true,\n  \"store\": \"Mi Tienda\",\n  \"data\": [\n    {\n      \"id\": 1,\n      \"name\": \"Principal\",\n      \"version\": 1,\n      \"triggers\": [{\"type\":\"keyword\",\"value\":\"menu\"}],\n      \"nodes\": [\n        {\"key\":\"start\",\"type\":\"message\",\"payload\":{\"text\":\"Bienvenido\"}},\n        {\"key\":\"menu\",\"type\":\"choice\",\"payload\":{\"text\":\"Elegi:\",\"options\":[{\"value\":1,\"label\":\"Productos\"},{\"value\":2,\"label\":\"Ventas\"}],\"save_to\":\"seleccion\"}},\n        {\"key\":\"go_products\",\"type\":\"call_flow\",\"payload\":{\"target_flow_id\":2,\"target_flow_name\":\"Productos\",\"return_node\":\"\"}}\n      ],\n      \"edges\": [\n        {\"from\":\"start\",\"to\":\"menu\",\"rule\":null},\n        {\"from\":\"menu\",\"to\":\"go_products\",\"rule\":{\"equals\":\"1\"}}\n      ]\n    }\n  ]\n}"
+            }
+          ]
         }
       ]
     }
