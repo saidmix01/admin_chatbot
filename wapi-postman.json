@@ -1,0 +1,372 @@
+{
+  "info": {
+    "name": "Wapi Admin API",
+    "description": "Colección completa de endpoints para integrar el Bot Service con el Admin de Wapi.\n\n## Endpoints del Bot\nEstos endpoints son **públicos** — el bot service los llama sin autenticación.\n\n## Endpoints del Admin\nEndpoints **protegidos por sesión** (cookie ci_session). Requieren login previo en el panel.\n\n## Variables\n- `base_url`: URL base del admin (ej: https://admin.wapiapp.cloud)\n- `us_id`: ID del usuario/negocio en el sistema",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "wapi-bot"
+  },
+  "item": [
+    {
+      "name": "🤖 Bot Service (públicos)",
+      "description": "Endpoints que el bot service llama para operar. No requieren sesión.",
+      "item": [
+        {
+          "name": "Obtener info de tienda",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"us_id\": 2,\n    \"sto_id\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/Api/get_store_information",
+              "host": ["{{base_url}}"],
+              "path": ["Api", "get_store_information"]
+            }
+          },
+          "response": [
+            {"name": "Tienda encontrada", "body": "{\"status\":true,\"data\":[{\"sto_id\":1,\"sto_name\":\"Café Colombia\",\"sto_email\":\"cafe@ejemplo.com\",\"sto_direction\":\"Calle 10 #20-30\",\"sto_phone\":\"573001112233\",\"sto_wellcome_message\":\"¡Bienvenido!\"}]}", "code": 200}
+          ]
+        },
+        {
+          "name": "Obtener preguntas del bot",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"us_id\": 2,\n    \"chq_parent\": null\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/Api/get_questions",
+              "host": ["{{base_url}}"],
+              "path": ["Api", "get_questions"]
+            }
+          },
+          "response": [
+            {"name": "Preguntas encontradas", "body": "{\"status\":true,\"data\":[{\"chq_id\":1,\"chq_text\":\"¿Qué deseas hoy?\",\"chq_type\":2,\"chq_order\":1,\"chq_lists\":null,\"chq_parent\":null,\"options\":[{\"opt_id\":1,\"opt_description\":\"Ver menú\",\"opt_price\":null}]}]}", "code": 200}
+          ]
+        },
+        {
+          "name": "Obtener opciones de una lista",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"us_id\": 2,\n    \"lis_id\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/Api/get_options_by_list",
+              "host": ["{{base_url}}"],
+              "path": ["Api", "get_options_by_list"]
+            }
+          },
+          "response": [
+            {"name": "Opciones encontradas", "body": "{\"status\":true,\"data\":[{\"opt_id\":1,\"opt_description\":\"Café Colombiano\",\"opt_price\":15000,\"opt_qty\":10,\"opt_more_information\":\"Café de origen 250g\"}]}", "code": 200}
+          ]
+        },
+        {
+          "name": "Guardar estadística",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"us_id\": 2,\n    \"st_information\": {\"type\": \"interaction\", \"question_id\": 1, \"answer\": \"ver_menu\"},\n    \"st_status\": 1,\n    \"st_log\": [\"2026-05-12 22:30:01 - usuario eligió ver menú\"],\n    \"st_create_date\": \"2026-05-12\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/Api/save_statistics",
+              "host": ["{{base_url}}"],
+              "path": ["Api", "save_statistics"]
+            }
+          },
+          "response": [
+            {"name": "Estadística guardada", "body": "{\"status\":true,\"data\":[]}", "code": 200}
+          ]
+        },
+        {
+          "name": "Actualizar estadística",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"st_id\": 1,\n    \"st_information\": {\"type\": \"completed_order\"},\n    \"st_status\": 2\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/Api/update_statistics",
+              "host": ["{{base_url}}"],
+              "path": ["Api", "update_statistics"]
+            }
+          },
+          "response": [
+            {"name": "Estadística actualizada", "body": "{\"status\":true}", "code": 200}
+          ]
+        }
+      ]
+    },
+    {
+      "name": "🔌 Bot Service (Nuevos - pendientes de implementar)",
+      "description": "Endpoints planificados para la nueva versión del bot. Pendientes de implementar en el controlador BotApi.",
+      "item": [
+        {
+          "name": "Enviar QR",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"us_id\": 2,\n    \"qr_base64\": \"iVBORw0KGgoAAAANSUhEUgAAASwAAAEsAQAAAABRBrPY...\"\n}"
+            },
+            "url": {"raw": "{{base_url}}/BotApi/update_qr", "host": ["{{base_url}}"], "path": ["BotApi", "update_qr"]}
+          }
+        },
+        {
+          "name": "Reportar estado conexión",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"us_id\": 2,\n    \"status\": \"connected\",\n    \"whatsapp_number\": \"573001234567\"\n}"
+            },
+            "url": {"raw": "{{base_url}}/BotApi/update_status", "host": ["{{base_url}}"], "path": ["BotApi", "update_status"]}
+          }
+        },
+        {
+          "name": "Registrar pedido",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"us_id\": 2,\n    \"customer_name\": \"María Pérez\",\n    \"customer_phone\": \"573001234567\",\n    \"product_name\": \"Café Colombiano\",\n    \"quantity\": 2,\n    \"message\": \"Quiero 2 libras de café, por favor\"\n}"
+            },
+            "url": {"raw": "{{base_url}}/BotApi/new_order", "host": ["{{base_url}}"], "path": ["BotApi", "new_order"]}
+          }
+        },
+        {
+          "name": "Registrar mensaje de chat",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"us_id\": 2,\n    \"from\": \"customer\",\n    \"customer_phone\": \"573001234567\",\n    \"customer_name\": \"María Pérez\",\n    \"message\": \"Hola, ¿tienen café molido?\"\n}"
+            },
+            "url": {"raw": "{{base_url}}/BotApi/log_message", "host": ["{{base_url}}"], "path": ["BotApi", "log_message"]}
+          }
+        },
+        {
+          "name": "Obtener config del bot",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "{{base_url}}/BotApi/get_bot_config/{{us_id}}", "host": ["{{base_url}}"], "path": ["BotApi", "get_bot_config", "{{us_id}}"]}
+          }
+        },
+        {
+          "name": "Obtener productos",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "{{base_url}}/BotApi/get_products/{{us_id}}", "host": ["{{base_url}}"], "path": ["BotApi", "get_products", "{{us_id}}"]}
+          }
+        },
+        {
+          "name": "Obtener info del negocio",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "{{base_url}}/BotApi/get_business/{{us_id}}", "host": ["{{base_url}}"], "path": ["BotApi", "get_business", "{{us_id}}"]}
+          }
+        },
+        {
+          "name": "Actualizar estado del pedido",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"bo_id\": 1,\n    \"status\": \"completado\"\n}"
+            },
+            "url": {"raw": "{{base_url}}/BotApi/update_order_status", "host": ["{{base_url}}"], "path": ["BotApi", "update_order_status"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔐 Admin (requieren sesión)",
+      "description": "Endpoints que el panel admin consume. Requieren cookie de sesión de CodeIgniter.",
+      "item": [
+        {
+          "name": "Obtener QR del bot",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "{{base_url}}/BotApi/get_qr/{{us_id}}", "host": ["{{base_url}}"], "path": ["BotApi", "get_qr", "{{us_id}}"]}
+          }
+        },
+        {
+          "name": "Obtener estado completo del bot",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "{{base_url}}/BotApi/get_status/{{us_id}}", "host": ["{{base_url}}"], "path": ["BotApi", "get_status", "{{us_id}}"]}
+          }
+        },
+        {
+          "name": "Refrescar QR",
+          "request": {
+            "method": "POST",
+            "url": {"raw": "{{base_url}}/BotApi/refresh_qr/{{us_id}}", "host": ["{{base_url}}"], "path": ["BotApi", "refresh_qr", "{{us_id}}"]}
+          }
+        },
+        {
+          "name": "Obtener pedidos",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "{{base_url}}/BotApi/get_orders/{{us_id}}", "host": ["{{base_url}}"], "path": ["BotApi", "get_orders", "{{us_id}}"]}
+          }
+        },
+        {
+          "name": "Obtener mensajes",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "{{base_url}}/BotApi/get_messages/{{us_id}}", "host": ["{{base_url}}"], "path": ["BotApi", "get_messages", "{{us_id}}"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "📋 Administración (CRUD)",
+      "description": "Endpoints de gestión del panel admin.",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/x-www-form-urlencoded"}],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {"key": "us_email", "value": "admin@ejemplo.com"},
+                {"key": "us_password", "value": "mi-clave"}
+              ]
+            },
+            "url": {"raw": "{{base_url}}/Login", "host": ["{{base_url}}"], "path": ["Login"]}
+          }
+        },
+        {
+          "name": "Crear tienda",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/x-www-form-urlencoded"}],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {"key": "sto_name", "value": "Mi Tienda"},
+                {"key": "sto_email", "value": "tienda@ejemplo.com"},
+                {"key": "sto_direction", "value": "Calle 10 #20-30"},
+                {"key": "sto_phone", "value": "573001234567"}
+              ]
+            },
+            "url": {"raw": "{{base_url}}/Stores/save", "host": ["{{base_url}}"], "path": ["Stores", "save"]}
+          }
+        },
+        {
+          "name": "Guardar preguntas del bot",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"chq_text\": \"¿Qué deseas ordenar?\",\n    \"chq_type\": 1,\n    \"chq_order\": 1,\n    \"chq_lists\": 1,\n    \"chq_parent\": null\n}"
+            },
+            "url": {"raw": "{{base_url}}/Chat_configuration/save", "host": ["{{base_url}}"], "path": ["Chat_configuration", "save"]}
+          }
+        },
+        {
+          "name": "Obtener listas (catálogos)",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "{{base_url}}/List_manage", "host": ["{{base_url}}"], "path": ["List_manage"]}
+          }
+        },
+        {
+          "name": "Crear lista",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/x-www-form-urlencoded"}],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {"key": "lis_name", "value": "Productos"}
+              ]
+            },
+            "url": {"raw": "{{base_url}}/List_manage/save", "host": ["{{base_url}}"], "path": ["List_manage", "save"]}
+          }
+        },
+        {
+          "name": "Agregar opción a lista",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"lis_id\": 1,\n    \"opt_description\": \"Café Colombiano 250g\",\n    \"opt_price\": 15000,\n    \"opt_qty\": 50,\n    \"opt_order\": 1\n}"
+            },
+            "url": {"raw": "{{base_url}}/List_manage/save_option", "host": ["{{base_url}}"], "path": ["List_manage", "save_option"]}
+          }
+        },
+        {
+          "name": "Listar usuarios",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "{{base_url}}/Users", "host": ["{{base_url}}"], "path": ["Users"]}
+          }
+        },
+        {
+          "name": "Crear usuario",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/x-www-form-urlencoded"}],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {"key": "us_name", "value": "Juan Pérez"},
+                {"key": "us_email", "value": "juan@ejemplo.com"},
+                {"key": "us_password", "value": "clave123"},
+                {"key": "pro_id", "value": "2"}
+              ]
+            },
+            "url": {"raw": "{{base_url}}/Users/save", "host": ["{{base_url}}"], "path": ["Users", "save"]}
+          }
+        },
+        {
+          "name": "Listar perfiles",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "{{base_url}}/Profiles", "host": ["{{base_url}}"], "path": ["Profiles"]}
+          }
+        },
+        {
+          "name": "Checkout - Ver carrito",
+          "request": {
+            "method": "GET",
+            "url": {"raw": "{{base_url}}/Checkout", "host": ["{{base_url}}"], "path": ["Checkout"]}
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://admin.wapiapp.cloud",
+      "type": "string"
+    },
+    {
+      "key": "us_id",
+      "value": "2",
+      "type": "number"
+    }
+  ]
+}
