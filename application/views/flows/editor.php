@@ -176,6 +176,15 @@
                         <textarea id="c-text" class="flow-input" rows="2" placeholder="Choose an option:"></textarea>
                     </div>
                     <div class="flow-field">
+                        <label class="flow-label">Load from catalog</label>
+                        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                            <button type="button" class="flow-btn flow-btn-outline" style="font-size:0.75rem;padding:4px 12px;" onclick="loadCatalog('producto')">📦 Load Products</button>
+                            <button type="button" class="flow-btn flow-btn-outline" style="font-size:0.75rem;padding:4px 12px;" onclick="loadCatalog('servicio')">🔧 Load Services</button>
+                            <span id="catalogSource" style="font-size:0.7rem;color:#6b7280;align-self:center;"></span>
+                        </div>
+                    </div>
+                    <div id="catalogPreview" style="display:none;background:#f9fafb;border-radius:8px;padding:8px;margin-bottom:8px;max-height:150px;overflow-y:auto;font-size:0.8rem;"></div>
+                    <div class="flow-field">
                         <label class="flow-label">Options (one per line: value|Label)</label>
                         <textarea id="c-options" class="flow-input" rows="4" placeholder="1|Sales&#10;2|Support&#10;3|Info"></textarea>
                     </div>
@@ -350,6 +359,9 @@
 
 <div id=	oastContainer class=	oast-container></div>
 <script>
+
+const BASE_URL = '<?= base_url() ?>';
+
 
 
 // Close dropdown on outside click
@@ -549,7 +561,8 @@ function saveNodeModal() {
         case 'choice':
             var lines = document.getElementById('c-options').value.split('\n').filter(Boolean);
             var opts = lines.map(function(l) { var p = l.split('|'); return { value: parseInt(p[0]) || 1, label: p[1] || p[0] }; });
-            payload = { text: document.getElementById('c-text').value, options: opts, save_to: document.getElementById('c-save').value }; break;
+            var catalogSrc = document.getElementById('catalogSource').dataset.type || '';
+            payload = { text: document.getElementById('c-text').value, options: opts, save_to: document.getElementById('c-save').value, catalog_source: catalogSrc }; break;
         case 'condition': payload = { if: { var: document.getElementById('cond-var').value, op: document.getElementById('cond-op').value, value: document.getElementById('cond-val').value }, true_to: document.getElementById('cond-true').value, false_to: document.getElementById('cond-false').value }; break;
         case 'action_webhook': payload = { url: document.getElementById('wh-url').value, method: document.getElementById('wh-method').value, save_to: document.getElementById('wh-save').value }; break;
         case 'goto': payload = { to: document.getElementById('goto-to').value }; break;

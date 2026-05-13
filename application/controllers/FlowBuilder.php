@@ -163,4 +163,41 @@ class FlowBuilder extends CI_Controller {
         }
         echo json_encode(['status' => true, 'message' => 'Trigger guardado']);
     }
+
+    /**
+     * API: Get products & services catalog for the current user
+     */
+    public function api_catalog()
+    {
+        $this->require_auth();
+        $us_id = $this->session->userdata('us_id');
+        
+        $products = $this->db->query(
+            "SELECT s.ser_id, s.ser_name, s.ser_price, s.ser_description, s.ser_type, s.ser_imagen
+             FROM services s
+             INNER JOIN service_user su ON su.ser_id = s.ser_id
+             WHERE su.us_id = ? AND s.ser_status = 1 AND s.ser_type = 'producto'
+             ORDER BY s.ser_name",
+            [(int)$us_id]
+        )->result();
+        
+        $services = $this->db->query(
+            "SELECT s.ser_id, s.ser_name, s.ser_price, s.ser_description, s.ser_type, s.ser_imagen
+             FROM services s
+             INNER JOIN service_user su ON su.ser_id = s.ser_id
+             WHERE su.us_id = ? AND s.ser_status = 1 AND s.ser_type = 'servicio'
+             ORDER BY s.ser_name",
+            [(int)$us_id]
+        )->result();
+        
+        $this->output->set_content_type('application/json');
+        echo json_encode([
+            'status' => true,
+            'data' => [
+                'products' => $products,
+                'services' => $services
+            ]
+        ]);
+    }
+
 }
