@@ -377,6 +377,13 @@
 .toast-msg.error { background: #EF4444; }
 .toast-msg.info { background: #6366F1; }
  toastIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+.toast-container { position: fixed; top: 20px; right: 20px; z-index: 99999; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+.toast-item { padding: 10px 18px; border-radius: 10px; color: #fff; font-size: 0.8rem; font-weight: 500; box-shadow: 0 8px 24px rgba(0,0,0,0.15); animation: slideInRight 0.3s ease; max-width: 340px; display: flex; align-items: center; gap: 8px; pointer-events: auto; }
+.toast-item.success { background: #22C55E; }
+.toast-item.error { background: #EF4444; }
+.toast-item.info { background: #6366F1; }
+@keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 </style>
 
 <div id=	oastContainer class=	oast-container></div>
@@ -652,6 +659,52 @@ function loadFlowsForSelector() {
 }
 
 // Add call_flow to visual node border
+function showToast(msg, type) {
+    type = type || "info";
+    var c = document.getElementById("toastContainer");
+    if (!c) return;
+    var t = document.createElement("div");
+    t.className = "toast-item " + type;
+    t.innerHTML = msg;
+    c.appendChild(t);
+    setTimeout(function() {
+        t.style.opacity = "0";
+        t.style.transition = "opacity 0.3s";
+        setTimeout(function() { t.remove(); }, 300);
+    }, 3000);
+}
+
+function loadCatalog(type) {
+    var btn = document.getElementById('c-options');
+    if (!btn) { showToast('Catalog not available', 'error'); return; }
+    fetch(BASE_URL + 'FlowBuilder/api_catalog')
+        .then(function(r) { return r.json(); })
+        .then(function(res) {
+            if (!res.status || !res.data) { showToast('Error loading catalog', 'error'); return; }
+            var items = type === 'producto' ? res.data.products : res.data.services;
+            if (!items.length) { showToast('No ' + type + ' found', 'info'); return; }
+            var preview = document.getElementById('catalogPreview');
+            if (!preview) return;
+            var html = '<div style="font-weight:600;margin-bottom:4px;">' + (type === 'producto' ? 'Products' : 'Services') + ' (' + items.length + ')</div>';
+            var opts = '';
+            items.forEach(function(item, idx) {
+                var priceNum = parseFloat(item.ser_price || 0);
+                var priceStr = '$' + priceNum.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                html += '<div style="padding:2px 4px;border-bottom:1px solid #e5e7eb;">' + (idx+1) + '. ' + escapeHtml(item.ser_name) + ' - ' + priceStr + '</div>';
+                opts += (idx+1) + '|' + item.ser_name + '\n';
+            });
+            preview.innerHTML = html;
+            preview.style.display = '';
+            btn.value = opts;
+            var src = document.getElementById('catalogSource');
+            if (src) { src.textContent = 'Loaded from: ' + (type === 'producto' ? 'Products' : 'Services'); src.dataset.type = type; }
+            showToast('Loaded ' + items.length + ' ' + type, 'success');
+        })
+        .catch(function(err) { showToast('Error: ' + err.message, 'error'); });
+}
+
+function escapeHtml(t) { if (!t) return ''; var d = document.createElement('div'); d.appendChild(document.createTextNode(t)); return d.innerHTML; }(t) { if (!t) return ''; var d = document.createElement('div'); d.appendChild(document.createTextNode(t)); return d.innerHTML; }
+
 var origRender = renderVisualCanvas;
 // Call flow border is handled by the node-type class in CSS
 
@@ -695,7 +748,7 @@ function saveTrigger(fid) {
         method: 'POST',
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
         body: 'trigger_value=' + encodeURIComponent(val)
-    }).then(function(r) { return r.json(); }).then(function(d) { showToast(d.message, d.status ? "success" : "error"); showToast(d.message, d.status ? 'success' : 'error'); });
+    }).then(function(r) { return r.json(); }).then(function(d) { showToast(d.message, d.status ? "success" : "error"); });
 }
 
 function saveNodes(vid) {
@@ -703,7 +756,7 @@ function saveNodes(vid) {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({ nodes: nodes, edges: edges })
-    }).then(function(r) { return r.json(); }).then(function(d) { showToast(d.message, d.status ? "success" : "error"); showToast(d.message, d.status ? 'success' : 'error'); });
+    }).then(function(r) { return r.json(); }).then(function(d) { showToast(d.message, d.status ? "success" : "error"); });
 }
 
 function validateFlow(vid) {
