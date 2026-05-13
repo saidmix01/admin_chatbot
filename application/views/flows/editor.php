@@ -339,9 +339,19 @@
 .flow-visual-node.dragging { opacity: 0.5; }
 .flow-visual-node.drag-over { border-color: #6366F1; border-style: dashed; }
 @media (max-width: 768px) { .col-md-9, .col-md-3 { padding: 0 !important; } }
+/* Toast */
+.toast-container { position: fixed; top: 20px; right: 20px; z-index: 99999; display: flex; flex-direction: column; gap: 8px; }
+.toast-msg { padding: 12px 20px; border-radius: 10px; color: #fff; font-size: 0.85rem; font-weight: 500; box-shadow: 0 10px 30px rgba(0,0,0,0.15); animation: toastIn 0.3s ease; max-width: 360px; display: flex; align-items: center; gap: 8px; }
+.toast-msg.success { background: #22C55E; }
+.toast-msg.error { background: #EF4444; }
+.toast-msg.info { background: #6366F1; }
+ toastIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 </style>
 
+<div id=	oastContainer class=	oast-container></div>
 <script>
+
+
 // Close dropdown on outside click
 document.addEventListener('click', function(e) {
     var dd = document.getElementById('flowActionsDropdown');
@@ -422,7 +432,7 @@ function renderVisualCanvas() {
         html += '<div class="flow-visual-node node-' + n.type + (isStart ? ' node-start' : '') + (isEnd ? ' node-end' : '') + '" draggable="true" onclick="editNode(' + i + ')" data-idx="' + i + '" ondragstart="onNodeDragStart(event)" ondragover="onNodeDragOver(event)" ondrop="onNodeDrop(event)" ondragend="onNodeDragEnd(event)">';
         html += '<div class="node-actions" onclick="event.stopPropagation();">';
         html += '<button onclick="addEdgeFrom(' + i + ')" title="Connect">🔗</button>';
-        html += '<button onclick="event.stopPropagation(); if(confirm(\'Delete ' + n.node_key + '?\')) { nodes.splice(' + i + ',1); renderVisualCanvas(); }" title="Delete">✕</button>';
+        html += '<button onclick="event.stopPropagation(); nodes.splice(' + i + ',1); renderVisualCanvas(); }" title="Delete">✕</button>';
         html += '</div>';
         html += '<div class="node-top">';
         html += '<div><span class="node-key">' + getIcon(n.type) + ' ' + n.node_key + '</span> <span class="node-type-badge" style="background:#f3f4f6">' + getTypeLabel(n.type) + '</span></div>';
@@ -519,7 +529,7 @@ function editNode(idx) {
 function deleteCurrentNode() {
     var idx = parseInt(document.getElementById('edit-idx').value);
     if (isNaN(idx) || idx < 0) return;
-    if (!confirm('Delete node "' + nodes[idx].node_key + '"?')) return;
+    
     var key = nodes[idx].node_key;
     nodes.splice(idx, 1);
     edges = edges.filter(function(e) { return e.from !== key && e.to !== key; });
@@ -530,7 +540,7 @@ function deleteCurrentNode() {
 function saveNodeModal() {
     var idx = parseInt(document.getElementById('edit-idx').value);
     var key = document.getElementById('modal-key').value.trim();
-    if (!key) { alert('Node key is required'); return; }
+    if (!key) { showToast('Node key is required', 'error'); return; }
     var type = document.getElementById('modal-type').value;
     var payload = {};
     switch (type) {
@@ -595,9 +605,9 @@ function updateEdgeSelects() {
 function saveEdgeModal() {
     var from = document.getElementById('edge-from').value;
     var to = document.getElementById('edge-to').value;
-    if (!from || !to) { alert('Select From and To nodes'); return; }
-    if (from === to) { alert('Cannot connect a node to itself'); return; }
-    if (edges.some(function(e) { return e.from === from && e.to === to; })) { alert('Connection already exists'); return; }
+    if (!from || !to) { showToast('Select From and To nodes', 'error'); return; }
+    if (from === to) { showToast('Cannot connect a node to itself', 'error'); return; }
+    if (edges.some(function(e) { return e.from === from && e.to === to; })) { showToast('Connection already exists', 'error'); return; }
     var rule = document.getElementById('edge-rule').value.trim();
     var ruleObj = rule ? (function(){ try { return JSON.parse(rule); } catch(e) { return rule; } })() : null;
     edges.push({ from: from, to: to, rule: ruleObj });
@@ -612,7 +622,7 @@ function saveTrigger(fid) {
         method: 'POST',
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
         body: 'trigger_value=' + encodeURIComponent(val)
-    }).then(function(r) { return r.json(); }).then(function(d) { alert(d.message); });
+    }).then(function(r) { return r.json(); }).then(function(d) { showToast(d.message, d.status ? "success" : "error"); showToast(d.message, d.status ? 'success' : 'error'); });
 }
 
 function saveNodes(vid) {
@@ -620,22 +630,22 @@ function saveNodes(vid) {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({ nodes: nodes, edges: edges })
-    }).then(function(r) { return r.json(); }).then(function(d) { alert(d.message); });
+    }).then(function(r) { return r.json(); }).then(function(d) { showToast(d.message, d.status ? "success" : "error"); showToast(d.message, d.status ? 'success' : 'error'); });
 }
 
 function validateFlow(vid) {
     fetch('<?= base_url() ?>FlowBuilder/validate_version/' + vid)
     .then(function(r) { return r.json(); }).then(function(d) {
         var msg = d.status ? '✅ ' + d.message : '❌ Errors:\n' + d.errors.join('\n');
-        alert(msg);
+        showToast(msg, d.status ? "success" : "error");
     });
 }
 
 function publishFlow(vid) {
-    if (!confirm('Publish this version? Active sessions will continue with the previous version.')) return;
+    showToast('Publishing...', 'info');
     fetch('<?= base_url() ?>FlowBuilder/publish/' + vid)
     .then(function(r) { return r.json(); }).then(function(d) {
-        alert(d.message); if (d.status) location.reload();
+        showToast(d.message, d.status ? "success" : "error"); if (d.status) { setTimeout(function() { location.reload(); }, 1500); }
     });
 }
 

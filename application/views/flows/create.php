@@ -41,9 +41,19 @@
 .flow-btn-primary { background: #6366F1; border-color: #6366F1; color: #fff; }
 .flow-btn-primary:hover { background: #4F46E5; color: #fff; }
 input:focus, textarea:focus { border-color: #6366F1 !important; box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
+
+.toast-container { position: fixed; top: 20px; right: 20px; z-index: 99999; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+.toast-item { padding: 10px 18px; border-radius: 10px; color: #fff; font-size: 0.8rem; font-weight: 500; box-shadow: 0 8px 24px rgba(0,0,0,0.15); animation: slideInRight 0.3s ease; max-width: 340px; display: flex; align-items: center; gap: 8px; pointer-events: auto; }
+.toast-item.success { background: #22C55E; }
+.toast-item.error { background: #EF4444; }
+.toast-item.info { background: #6366F1; }
+@keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 </style>
 
+<div id='toastContainer' class='toast-container'></div>
 <script>
+
+function showToast(msg, type) { type = type || 'info'; var c = document.getElementById('toastContainer'); if (!c) return; var t = document.createElement('div'); t.className = 'toast-item ' + type; t.innerHTML = msg; c.appendChild(t); setTimeout(function() { t.style.opacity = '0'; t.style.transition = 'opacity 0.3s'; setTimeout(function() { t.remove(); }, 300); }, 3000); }
 document.getElementById('form_create').addEventListener('submit', function(e) {
     e.preventDefault();
     var btn = this.querySelector('button[type="submit"]');
@@ -53,7 +63,7 @@ document.getElementById('form_create').addEventListener('submit', function(e) {
         body: new URLSearchParams(new FormData(this))
     }).then(function(r) { return r.json(); }).then(function(d) {
         if (d.status) window.location = '<?= base_url() ?>FlowBuilder/edit/' + d.id;
-        else alert(d.message);
+        else showToast(d.message, "error");
         btn.disabled = false; btn.innerHTML = 'Create Flow';
     }).catch(function() { btn.disabled = false; btn.innerHTML = 'Create Flow'; });
 });
