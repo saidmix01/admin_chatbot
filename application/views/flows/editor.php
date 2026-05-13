@@ -31,7 +31,7 @@
             <div class="flow-canvas" id="flowCanvas">
                 <div class="flow-canvas-header">
                     <div class="d-flex align-items-center" style="gap: 8px;">
-                        <div class="flow-view-tabs" style="display:flex;background:#f3f4f6;border-radius:8px;padding:2px;"><button class="flow-view-tab active" data-view="steps" onclick="setFlowView('steps')" style="padding:4px 12px;border:none;border-radius:6px;font-size:0.75rem;cursor:pointer;font-weight:500;background:#fff;color:#6366F1;box-shadow:0 1px 2px rgba(0,0,0,0.06);">Steps</button><button class="flow-view-tab" data-view="canvas" onclick="setFlowView('canvas')" style="padding:4px 12px;border:none;border-radius:6px;font-size:0.75rem;cursor:pointer;font-weight:500;background:transparent;color:#6b7280;">Canvas</button></div>
+                        <span class="flow-view-tab active" data-view="steps" onclick="setFlowView('steps')" style="padding:4px 12px;border:none;border-radius:6px;font-size:0.75rem;cursor:pointer;font-weight:500;background:#fff;color:#6366F1;box-shadow:0 1px 2px rgba(0,0,0,0.06);">Steps</button><button class="flow-view-tab" data-view="canvas" onclick="setFlowView('canvas')" style="padding:4px 12px;border:none;border-radius:6px;font-size:0.75rem;cursor:pointer;font-weight:500;background:transparent;color:#6b7280;">Canvas</button></span>
                         <span class="text-muted" style="font-size: 0.7rem;" id="nodeCount">0 nodes</span>
                     </div>
                     <div class="d-flex" style="gap: 6px;">
@@ -46,7 +46,7 @@
                         <p class="text-muted">Add nodes and connect them to create a conversation path.</p>
                         <button class="flow-btn flow-btn-primary" onclick="openNewNodeModal()">+ Add First Node</button>
                     </div>
-                    <div id="stepsView" style="display:block;"><div id="stepEmptyState" style="display:none;text-align:center;padding:60px 20px;"><div style="font-size:3rem;margin-bottom:12px;">+</div><h5>Start building your flow</h5><p class="text-muted">Add conversation steps to create your flow.</p><button class="flow-btn flow-btn-primary" onclick="openNewNodeModal()">+ Add First Step</button></div><div id="stepsContainer" class="flow-steps-container"></div></div><div id="canvasView" style="display:none;"><div id="nodesContainer" class="flow-nodes-container"></div></div>
+                    <div id="stepsView"><div id="stepEmptyState" style="display:none;text-align:center;padding:60px 20px;"><div style="font-size:3rem;">+</div><h5>Start building your flow</h5><p class="text-muted">Add conversation steps to create your flow.</p><button class="flow-btn flow-btn-primary" onclick="openNewNodeModal()">+ Add First Step</button></div><div id="stepsContainer" class="flow-steps-container"></div></div><div id="canvasView" style="display:none;"><div id="nodesContainer" class="flow-nodes-container"></div></div>
                 </div>
             </div>
         </div>
@@ -385,7 +385,7 @@
 .toast-item.info { background: #6366F1; }
 @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
-.flow-steps-container { display: flex; flex-direction: column; gap: 0; padding: 10px 0; position: relative; }
+.flow-steps-container { display: flex; flex-direction: column; gap: 0; padding: 10px 0; }
 .flow-step-wrapper { position: relative; padding-left: 40px; }
 .flow-step-wrapper::before { content: ""; position: absolute; left: 15px; top: 0; bottom: 0; width: 2px; background: #e5e7eb; }
 .flow-step-wrapper:first-child::before { top: 24px; }
@@ -396,32 +396,30 @@
 .flow-step-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; margin-bottom: 4px; cursor: pointer; }
 .flow-step-card:hover { border-color: #6366F1; box-shadow: 0 2px 8px rgba(99,102,241,0.1); }
 .flow-step-card .step-header { display: flex; align-items: center; gap: 8px; padding: 12px 14px; border-bottom: 1px solid #f9fafb; }
-.flow-step-card .step-num { width: 22px; height: 22px; border-radius: 50%; background: #f3f4f6; color: #6b7280; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 600; flex-shrink: 0; }
-.flow-step-card .step-icon { font-size: 1rem; flex-shrink: 0; }
-.flow-step-card .step-type { font-size: 0.65rem; font-weight: 500; color: #6b7280; background: #f3f4f6; padding: 2px 8px; border-radius: 4px; }
+.flow-step-card .step-num { width: 22px; height: 22px; border-radius: 50%; background: #f3f4f6; color: #6b7280; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 600; }
+.flow-step-card .step-icon { font-size: 1rem; }
+.flow-step-card .step-type { font-size: 0.65rem; background: #f3f4f6; padding: 2px 8px; border-radius: 4px; color: #6b7280; }
 .flow-step-card .step-text { flex: 1; font-size: 0.85rem; font-weight: 500; color: #374151; }
 .flow-step-card .step-body { padding: 10px 14px; }
-.flow-step-card .step-detail { font-size: 0.78rem; color: #6b7280; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
-.flow-step-card .step-detail strong { color: #374151; min-width: 80px; }
+.flow-step-card .step-detail { font-size: 0.78rem; color: #6b7280; margin-bottom: 4px; }
+.flow-step-card .step-detail strong { color: #374151; margin-right: 6px; }
 .flow-step-card .step-actions { display: flex; gap: 4px; padding: 8px 14px; border-top: 1px solid #f3f4f6; }
 .flow-step-card .step-actions button { padding: 3px 10px; border: 1px solid #e5e7eb; background: #fff; border-radius: 6px; font-size: 0.7rem; cursor: pointer; color: #6b7280; }
 .flow-step-card .step-actions button:hover { border-color: #6366F1; color: #6366F1; }
-.flow-step-card.step-call_flow { border-left: 3px solid #a21caf; }
 .flow-step-card.step-message { border-left: 3px solid #0284c7; }
 .flow-step-card.step-question { border-left: 3px solid #d97706; }
 .flow-step-card.step-choice { border-left: 3px solid #7c3aed; }
 .flow-step-card.step-condition { border-left: 3px solid #db2777; }
-.flow-step-card.step-action_webhook { border-left: 3px solid #059669; }
+.flow-step-card.step-call_flow { border-left: 3px solid #a21caf; }
 .flow-step-card.step-goto { border-left: 3px solid #4338ca; }
 .flow-step-card.step-end { border-left: 3px solid #6b7280; }
+.flow-step-card.step-action_webhook { border-left: 3px solid #059669; }
 .flow-step-add { display: flex; justify-content: center; padding: 2px 0; }
 .flow-step-add button { width: 26px; height: 26px; border-radius: 50%; border: 2px dashed #d1d5db; background: #fff; color: #9ca3af; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; }
 .flow-step-add button:hover { border-color: #6366F1; color: #6366F1; background: #eef2ff; }
-.flow-step-options { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+.flow-step-options { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
 .flow-step-option { font-size: 0.7rem; background: #f3f4f6; padding: 2px 8px; border-radius: 4px; color: #6b7280; }
-.flow-step-option.opt-true { background: #dcfce7; color: #16a34a; }
-.flow-step-option.opt-false { background: #fef2f2; color: #dc2626; }
-.flow-view-tab { transition: all 0.15s; display: inline-flex; align-items: center; gap: 4px; }
+
 
 </style>
 
@@ -486,74 +484,56 @@ function getNodeSummary(n) {
     }
 }
 
+
 function renderSteps() {
-    var container = document.getElementById('stepsContainer');
+    var el = document.getElementById('stepsContainer');
     var empty = document.getElementById('stepEmptyState');
-    var count = document.getElementById('nodeCount');
-    if (!nodes.length) { container.innerHTML = ''; empty.style.display = 'block'; count.textContent = '0 nodes'; return; }
+    var cnt = document.getElementById('nodeCount');
+    if (!nodes.length) { el.innerHTML = ''; empty.style.display = 'block'; cnt.textContent = '0 nodes'; return; }
     empty.style.display = 'none';
-    count.textContent = nodes.length + ' steps';
-    var ordered = [];
-    var visited = {};
-    var start = nodes.find(function(n) { return n.node_key === 'start'; });
-    var cur = start ? start.node_key : (nodes[0] ? nodes[0].node_key : null);
-    for (var s = 0; s < 50; s++) {
-        if (!cur || visited[cur]) break;
-        var n = nodes.find(function(nn) { return nn.node_key === cur; });
-        if (!n) break;
-        visited[cur] = true;
-        ordered.push(n);
-        if (n.type === 'end' || n.type === 'goto') break;
-        var edge = edges.find(function(e) { return e.from === cur; });
-        if (edge) { cur = edge.to; } else { break; }
-    }
-    var html = '';
-    ordered.forEach(function(n, i) {
+    cnt.textContent = nodes.length + ' steps';
+    var h = '';
+    nodes.forEach(function(n, i) {
         var p = n.payload || {};
-        var isStart = n.node_key === 'start';
-        html += '<div class="flow-step-wrapper">';
-        html += '<div class="flow-step-dot' + (isStart ? ' start' : '') + (n.type === 'end' ? ' end' : '') + '"></div>';
-        html += '<div class="flow-step-card step-' + n.type + '" onclick="editNode(' + nodes.indexOf(n) + ')">';
-        html += '<div class="step-header">';
-        html += '<span class="step-num">' + (i+1) + '</span>';
-        html += '<span class="step-icon">' + getIcon(n.type) + '</span>';
-        html += '<span class="step-type">' + getTypeLabel(n.type) + '</span>';
-        html += '<span class="step-text">' + escapeHtml(p.text || '(no text)') + '</span>';
-        html += '</div>';
-        html += '<div class="step-body">';
-        if (isStart) html += '<div class="step-detail" style="color:#22C55E;">Flow starts here</div>';
-        if (n.type === 'end') html += '<div class="step-detail" style="color:#6b7280;">Flow ends</div>';
-        if ((n.type === 'question' || n.type === 'choice') && p.save_to) html += '<div class="step-detail"><strong>Save:</strong> ' + p.save_to + '</div>';
-        if (n.type === 'question' && p.retry_text) html += '<div class="step-detail"><strong>Retry:</strong> ' + p.retry_text + '</div>';
-        if (n.type === 'choice' && p.options && p.options.length) {
-            html += '<div class="step-detail"><strong>Options:</strong></div><div class="flow-step-options">';
-            p.options.forEach(function(o) { html += '<span class="flow-step-option">' + o.value + '. ' + escapeHtml(o.label) + '</span>'; });
-            html += '</div>';
+        var t = p.text || '(no text)';
+        h += '<div class=flow-step-wrapper>';
+        h += '<div class=flow-step-dot' + (n.node_key==='start'?' start':'') + (n.type==='end'?' end':'') + '></div>';
+        h += '<div class="flow-step-card step-' + n.type + '" onclick=editNode(' + i + ')>';
+        h += '<div class=step-header><span class=step-num>' + (i+1) + '</span>';
+        h += '<span class=step-icon>' + getIcon(n.type) + '</span>';
+        h += '<span class=step-type>' + getTypeLabel(n.type) + '</span>';
+        h += '<span class=step-text>' + escapeHtml(t) + '</span></div>';
+        h += '<div class=step-body>';
+        if (n.node_key==='start') h += '<div class=step-detail style=color:#22C55E;>Flow starts here</div>';
+        if (n.type==='end') h += '<div class=step-detail style=color:#6b7280;>Flow ends</div>';
+        if ((n.type==='question'||n.type==='choice')&&p.save_to) h += '<div class=step-detail><strong>Save:</strong> ' + p.save_to + '</div>';
+        if (n.type==='question'&&p.retry_text) h += '<div class=step-detail><strong>Retry:</strong> ' + p.retry_text + '</div>';
+        if (n.type==='choice'&&p.options&&p.options.length) {
+            h += '<div class=step-detail><strong>Options:</strong></div><div class=flow-step-options>';
+            p.options.forEach(function(o) { h += '<span class=flow-step-option>' + o.value + '. ' + escapeHtml(o.label) + '</span>'; });
+            h += '</div>';
         }
-        if (n.type === 'condition' && p.if) {
-            html += '<div class="step-detail"><strong>If:</strong> ' + p.if.var + ' ' + p.if.op + ' ' + p.if.value + '</div>';
-            if (p.true_to) html += '<div class="step-detail"><span class="flow-step-option opt-true">true: ' + p.true_to + '</span></div>';
-            if (p.false_to) html += '<div class="step-detail"><span class="flow-step-option opt-false">false: ' + p.false_to + '</span></div>';
-        }
-        if (n.type === 'action_webhook' && p.url) html += '<div class="step-detail"><strong>URL:</strong> ' + p.url.substring(0,50) + '</div>';
-        if (n.type === 'goto' && p.to) html += '<div class="step-detail"><strong>Go to:</strong> ' + p.to + '</div>';
-        html += '</div>';
-        html += '<div class="step-actions" onclick="event.stopPropagation();">';
-        html += '<button onclick="editNode(' + nodes.indexOf(n) + ')">Edit</button>';
-        html += '<button onclick="nodes.splice(' + nodes.indexOf(n) + ',1); renderSteps(); showToast(\'Deleted\',\'success\');">Delete</button>';
-        html += '</div></div></div>';
-        if (i < ordered.length - 1) html += '<div class="flow-step-add"><button onclick="openNewNodeModal()" title="Add step">+</button></div>';
+        if (n.type==='condition'&&p.if) h += '<div class=step-detail><strong>If:</strong> ' + p.if.var + ' ' + p.if.op + ' ' + p.if.value + '</div>';
+        if (n.type==='action_webhook'&&p.url) h += '<div class=step-detail><strong>URL:</strong> ' + p.url.substring(0,50) + '</div>';
+        if (n.type==='goto'&&p.to) h += '<div class=step-detail><strong>To:</strong> ' + p.to + '</div>';
+        if (n.type==='call_flow'&&p.target_flow_id) h += '<div class=step-detail><strong>Subflow:</strong> ' + (p.target_flow_name||'ID '+p.target_flow_id) + '</div>';
+        h += '</div>';
+        h += '<div class=step-actions onclick=event.stopPropagation();>';
+        h += '<button onclick=editNode(' + i + ')>Edit</button>';
+        h += '<button onclick=nodes.splice(' + i + ',1);renderSteps();showToast("Deleted","success");>Delete</button>';
+        h += '</div></div></div>';
+        h += '<div class=flow-step-add><button onclick=openNewNodeModal() title="Add step">+</button></div>';
     });
-    container.innerHTML = html;
+    el.innerHTML = h;
 }
 
 function setFlowView(view) {
-    document.querySelectorAll('.flow-view-tab').forEach(function(t) {
-        var isActive = t.dataset.view === view;
-        t.classList.toggle('active', isActive);
-        t.style.background = isActive ? '#fff' : 'transparent';
-        t.style.color = isActive ? '#6366F1' : '#6b7280';
-        t.style.boxShadow = isActive ? '0 1px 2px rgba(0,0,0,0.06)' : 'none';
+    var tabs = document.querySelectorAll('.flow-view-tab');
+    tabs.forEach(function(t) {
+        var a = t.dataset.view === view;
+        t.style.background = a ? '#fff' : 'transparent';
+        t.style.color = a ? '#6366F1' : '#6b7280';
+        t.style.boxShadow = a ? '0 1px 2px rgba(0,0,0,0.06)' : 'none';
     });
     document.getElementById('stepsView').style.display = view === 'steps' ? '' : 'none';
     document.getElementById('canvasView').style.display = view === 'canvas' ? '' : 'none';
@@ -561,7 +541,6 @@ function setFlowView(view) {
     if (view === 'steps') renderSteps();
     if (view === 'canvas') renderVisualCanvas();
 }
-
 
 function renderVisualCanvas() {
     var container = document.getElementById('nodesContainer');
@@ -771,7 +750,7 @@ function loadFlowsForSelector() {
                     sel.appendChild(opt);
                 }
             });
-        });
+        }).catch(function() {});
 }
 
 // Add call_flow to visual node border
@@ -864,60 +843,27 @@ function saveTrigger(fid) {
         method: 'POST',
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
         body: 'trigger_value=' + encodeURIComponent(val)
-    }).then(function(r) { return r.json(); }).then(function(d) { showToast(d.message, d.status ? "success" : "error"); });
+    }).then(function(r) { return r.json(); }).then(function(d) { showToast(d.message, d.status ? 'success' : 'error'); }).catch(function(e) { showToast('Error: ' + e.message, 'error'); });
 }
 
 function saveNodes(vid) {
-    // Auto-build edges from step order
-    var autoEdges = [];
-    if (nodes.length > 1) {
-        // Build linear order: start with 'start' node or first node
-        var ordered = [];
-        var visited = {};
-        var start = nodes.find(function(x) { return x.node_key === 'start'; }) || nodes[0];
-        var cur = start ? start.node_key : null;
-        for (var i = 0; i < 50; i++) {
-            if (!cur || visited[cur]) break;
-            var n = nodes.find(function(x) { return x.node_key === cur; });
-            if (!n) break;
-            visited[cur] = true;
-            ordered.push(n);
-            if (n.type === 'end') { ordered.push({_end: true}); break; }
-            if (n.type === 'goto' || n.type === 'call_flow') break;
-            var edge = edges.find(function(e) { return e.from === cur; });
-            if (edge) { cur = edge.to; } else {
-                // Find next node in the list
-                var idx = nodes.indexOf(n);
-                if (idx >= 0 && idx < nodes.length - 1) {
-                    cur = nodes[idx + 1].node_key;
-                } else { cur = null; }
-            }
-        }
-        // Generate edges
-        for (var i = 0; i < ordered.length - 1; i++) {
-            if (ordered[i]._end || ordered[i+1]._end) break;
-            if (ordered[i].type === 'end') break;
-            if (ordered[i].type === 'call_flow' || ordered[i].type === 'goto') break;
-            if (ordered[i].type === 'condition') {
-                // For conditions, use saved to/from if available
-                var p = ordered[i].payload || {};
-                if (p.true_to && p.false_to) {
-                    autoEdges.push({from: ordered[i].node_key, to: p.true_to, rule: {when: 'true'}});
-                    autoEdges.push({from: ordered[i].node_key, to: p.false_to, rule: {when: 'false'}});
-                } else {
-                    autoEdges.push({from: ordered[i].node_key, to: ordered[i+1].node_key, rule: null});
-                }
-            } else {
-                autoEdges.push({from: ordered[i].node_key, to: ordered[i+1].node_key, rule: null});
-            }
-        }
+    // Auto-connect nodes in array order
+    var ae = [];
+    for (var i = 0; i < nodes.length - 1; i++) {
+        var f = nodes[i];
+        var t = nodes[i+1];
+        if (f.type === 'end' || t.type === 'end') break;
+        if (f.type === 'goto' || f.type === 'call_flow') break;
+        ae.push({from: f.node_key, to: t.node_key, rule: null});
     }
-    var finalEdges = autoEdges.length > 0 ? autoEdges : edges;
     fetch('<?= base_url() ?>FlowBuilder/save_nodes/' + vid, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ nodes: nodes, edges: finalEdges })
-    }).then(function(r) { return r.json(); }).then(function(d) { showToast(d.message, d.status ? "success" : "error"); });
+        body: JSON.stringify({ nodes: nodes, edges: ae })
+    }).then(function(r) { return r.json(); }).then(function(d) {
+        showToast(d.message, d.status ? 'success' : 'error');
+        if (d.status) setTimeout(function() { location.reload(); }, 1000);
+    }).catch(function(e) { showToast('Error saving: ' + e.message, 'error'); });
 }
 
 function validateFlow(vid) {
@@ -932,8 +878,9 @@ function publishFlow(vid) {
     showToast('Publishing...', 'info');
     fetch('<?= base_url() ?>FlowBuilder/publish/' + vid)
     .then(function(r) { return r.json(); }).then(function(d) {
-        showToast(d.message, d.status ? "success" : "error"); if (d.status) { setTimeout(function() { location.reload(); }, 1500); }
-    });
+        showToast(d.message, d.status ? 'success' : 'error');
+        if (d.status) { setTimeout(function() { location.reload(); }, 1500); }
+    }).catch(function(e) { showToast('Publish error: ' + e.message, 'error'); });
 }
 
 function togglePreview() {
