@@ -15,6 +15,24 @@
 
                 <hr style="border-color: var(--saas-gray-100); margin: 1.5rem 0;">
 
+                <div class="form-saas-group">
+                    <label class="form-saas-label">Frases de inicio del bot</label>
+                    <div style="font-size:13px;color:var(--saas-gray-400);margin-bottom:12px">
+                        Estas frases se mostraran al cliente cuando inicie una conversacion. El bot elegira una al azar.
+                    </div>
+                    <div id="starters-container">
+                        <div class="input-group mb-2" style="display:none" id="starter-template">
+                            <input type="text" class="form-saas starter-input" placeholder="Ej: Hola! En que puedo ayudarte?" style="max-width:500px" />
+                            <div class="input-group-append">
+                                <button class="btn btn-sm btn-outline-danger" onclick="this.closest('.input-group').remove()" style="height:38px">X</button>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-saas btn-saas-outline mt-1" onclick="addStarter()" style="font-size:13px">+ Agregar frase</button>
+                </div>
+
+                <hr style="border-color: var(--saas-gray-100); margin: 1.5rem 0;">
+
                 <div style="display: flex; gap: 0.75rem;">
                     <button type="submit" class="btn-saas btn-saas-primary">
                         <i class="feather icon-save"></i> Guardar configuración
@@ -24,24 +42,6 @@
         </div>
     </div>
 </div>
-
-
-                <hr style="border-color: var(--saas-gray-100); margin: 1.5rem 0;">
-                <div class="form-saas-group">
-                    <label class="form-saas-label">Frases de inicio del bot</label>
-                    <div style="font-size:13px;color:var(--saas-gray-400);margin-bottom:12px">
-                        Estas frases se mostrarán al cliente cuando inicie una conversación. El bot elegirá una al azar.
-                    </div>
-                    <div id="starters-container">
-                        <div class="input-group mb-2" style="display:none" id="starter-template">
-                            <input type="text" class="form-control starter-input" placeholder="Ej: Hola! En que puedo ayudarte?" />
-                            <div class="input-group-append">
-                                <button class="btn btn-outline-danger" onclick="this.closest('.input-group').remove()">X</button>
-                            </div>
-                        </div>
-                    </div>
-                    <button type="button" class="btn btn-sm btn-outline-primary mt-1" onclick="addStarter()">+ Agregar frase</button>
-                </div>
 
 <script>
 
