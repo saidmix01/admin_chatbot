@@ -53,6 +53,11 @@ class BotConfig extends CI_Controller {
 					$this->db->where("sto_id", $store["data"][0]->sto_id);
 					$this->db->update("stores", $update);
 				}
+				if (isset($input["starters"])) {
+					$this->db->where("sto_id", $store["data"][0]->sto_id);
+					$this->db->update("stores", array("sto_starters" => json_encode($input["starters"])));
+				}
+				}
 			}
 
 			$response["status"] = true;

@@ -25,7 +25,49 @@
     </div>
 </div>
 
+
+                <hr style="border-color: var(--saas-gray-100); margin: 1.5rem 0;">
+                <div class="form-saas-group">
+                    <label class="form-saas-label">Frases de inicio del bot</label>
+                    <div style="font-size:13px;color:var(--saas-gray-400);margin-bottom:12px">
+                        Estas frases se mostrarán al cliente cuando inicie una conversación. El bot elegirá una al azar.
+                    </div>
+                    <div id="starters-container">
+                        <div class="input-group mb-2" style="display:none" id="starter-template">
+                            <input type="text" class="form-control starter-input" placeholder="Ej: Hola! En que puedo ayudarte?" />
+                            <div class="input-group-append">
+                                <button class="btn btn-outline-danger" onclick="this.closest('.input-group').remove()">X</button>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-primary mt-1" onclick="addStarter()">+ Agregar frase</button>
+                </div>
+
 <script>
+
+async function loadStarters() {
+    try {
+        const r = await fetch('<?= base_url() ?>Chat_configuration/get_starters');
+        const d = await r.json();
+        if (d.status && d.data) { d.data.forEach(s => addStarterInput(s)); }
+    } catch(e) {}
+}
+function getStarters() {
+    const inputs = document.querySelectorAll('.starter-input');
+    const starters = [];
+    inputs.forEach(i => { if (i.value.trim()) starters.push(i.value.trim()); });
+    return starters;
+}
+function addStarterInput(value) {
+    const tpl = document.getElementById('starter-template');
+    const clone = tpl.cloneNode(true);
+    clone.style.display = 'flex';
+    const inp = clone.querySelector('.starter-input');
+    if (value) inp.value = value;
+    document.getElementById('starters-container').appendChild(clone);
+}
+function addStarter() { addStarterInput(''); }
+
 document.getElementById('form_bot_config').addEventListener('submit', function(e) {
     e.preventDefault();
     var btn = this.querySelector('button[type="submit"]');
@@ -36,22 +78,25 @@ document.getElementById('form_bot_config').addEventListener('submit', function(e
     fetch(base_url + 'BotConfig/save', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ welcome_msg: document.querySelector('textarea[name="welcome_msg"]').value })
+        body: JSON.stringify({ 
+        welcome_msg: document.querySelector('textarea[name="welcome_msg"]').value,
+        starters: getStarters()
+    })
     })
     .then(function(r) { return r.json(); })
     .then(function(r) {
         btn.disabled = false;
         btn.innerHTML = orig;
         if (r.status) {
-            Swal.fire({ icon: 'success', title: 'Guardado', text: r.message, timer: 2000 });
+            Swal.fire({ icon: 'success', title: 'Guardado', text: r.message, timer: 2000 }); loadStarters();
         } else {
-            Swal.fire({ icon: 'error', title: 'Error', text: r.message });
+            Swal.fire({ icon: 'error', title: 'Error', text: r.message }); loadStarters();
         }
     })
     .catch(function() {
         btn.disabled = false;
         btn.innerHTML = orig;
-        Swal.fire({ icon: 'error', title: 'Error', text: 'Error del servidor' });
-    });
-});
+        Swal.fire({ icon: 'error', title: 'Error', text: 'Error del servidor' }); loadStarters();
+    }); loadStarters();
+}); loadStarters();
 </script>
