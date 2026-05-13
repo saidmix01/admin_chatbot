@@ -190,7 +190,10 @@ class Chat_configuration extends CI_Controller
 	public function get_starters() {
 		header("Content-Type: application/json");
 		try {
-			if (!validate_session()) throw new Exception("No autorizado", 1);
+			if (!$this->session->userdata('login')) {
+				echo json_encode(["status" => false, "message" => "No autorizado"]);
+				return;
+			}
 			$this->load->model("Store/Store_model", "Store_model");
 			$this->Store_model->data = array("s.us_id" => $this->session->userdata("us_id"));
 			$stores = $this->Store_model->get_stores();
@@ -209,7 +212,10 @@ class Chat_configuration extends CI_Controller
 	public function save_starters() {
 		header("Content-Type: application/json");
 		try {
-			if (!validate_session()) throw new Exception("No autorizado", 1);
+			if (!$this->session->userdata('login')) {
+				echo json_encode(["status" => false, "message" => "No autorizado"]);
+				return;
+			}
 			$input = json_decode(file_get_contents("php://input"), true);
 			if (json_last_error() !== JSON_ERROR_NONE) throw new Exception("JSON invalido", 1);
 
