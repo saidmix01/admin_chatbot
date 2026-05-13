@@ -178,7 +178,7 @@
             <div class="card mb-3">
                 <div class="card-header"><h6>Trigger</h6></div>
                 <div class="card-body">
-                    <input type="text" id="trigger-value" class="form-saas" placeholder="Ej: menu" value="<?= !empty($triggers) ? $triggers[0]->trigger_value : '' ?>">
+                    <input type="text" id="trigger-value" class="form-saas" placeholder="Ej: menu, comprar, info" value="<?= !empty($triggers) ? $triggers[0]->trigger_value : '' ?>">
                     <button class="btn-saas btn-saas-outline mt-2" onclick="saveTrigger(<?= $flow->id ?>)">Guardar</button>
                 </div>
             </div>
@@ -374,7 +374,7 @@ function renderPreview() {
     if (!nodes.length) { div.innerHTML = '<span class="text-muted">Agrega nodos...</span>'; return; }
     var h = '';
     var s = nodes.find(function(n) { return n.node_key === 'start'; });
-    if (!s) h += '<span class="text-danger">Falta nodo "start"</span><br>';
+    if (!s) h += '<span class="text-info">Define el primer nodo que se ejecutara cuando el cliente escriba la palabra clave</span><br>';
     var cur = s ? 'start' : (nodes[0] ? nodes[0].node_key : '');
     for (var i = 0; i < 20; i++) {
         var n = nodes.find(function(nn) { return nn.node_key === cur; });
