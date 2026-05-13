@@ -868,10 +868,55 @@ function saveTrigger(fid) {
 }
 
 function saveNodes(vid) {
+    // Auto-build edges from step order
+    var autoEdges = [];
+    if (nodes.length > 1) {
+        // Build linear order: start with 'start' node or first node
+        var ordered = [];
+        var visited = {};
+        var start = nodes.find(function(x) { return x.node_key === 'start'; }) || nodes[0];
+        var cur = start ? start.node_key : null;
+        for (var i = 0; i < 50; i++) {
+            if (!cur || visited[cur]) break;
+            var n = nodes.find(function(x) { return x.node_key === cur; });
+            if (!n) break;
+            visited[cur] = true;
+            ordered.push(n);
+            if (n.type === 'end') { ordered.push({_end: true}); break; }
+            if (n.type === 'goto' || n.type === 'call_flow') break;
+            var edge = edges.find(function(e) { return e.from === cur; });
+            if (edge) { cur = edge.to; } else {
+                // Find next node in the list
+                var idx = nodes.indexOf(n);
+                if (idx >= 0 && idx < nodes.length - 1) {
+                    cur = nodes[idx + 1].node_key;
+                } else { cur = null; }
+            }
+        }
+        // Generate edges
+        for (var i = 0; i < ordered.length - 1; i++) {
+            if (ordered[i]._end || ordered[i+1]._end) break;
+            if (ordered[i].type === 'end') break;
+            if (ordered[i].type === 'call_flow' || ordered[i].type === 'goto') break;
+            if (ordered[i].type === 'condition') {
+                // For conditions, use saved to/from if available
+                var p = ordered[i].payload || {};
+                if (p.true_to && p.false_to) {
+                    autoEdges.push({from: ordered[i].node_key, to: p.true_to, rule: {when: 'true'}});
+                    autoEdges.push({from: ordered[i].node_key, to: p.false_to, rule: {when: 'false'}});
+                } else {
+                    autoEdges.push({from: ordered[i].node_key, to: ordered[i+1].node_key, rule: null});
+                }
+            } else {
+                autoEdges.push({from: ordered[i].node_key, to: ordered[i+1].node_key, rule: null});
+            }
+        }
+    }
+    var finalEdges = autoEdges.length > 0 ? autoEdges : edges;
     fetch('<?= base_url() ?>FlowBuilder/save_nodes/' + vid, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ nodes: nodes, edges: edges })
+        body: JSON.stringify({ nodes: nodes, edges: finalEdges })
     }).then(function(r) { return r.json(); }).then(function(d) { showToast(d.message, d.status ? "success" : "error"); });
 }
 
