@@ -24,6 +24,14 @@
                                style="width: 100%; padding: 10px 14px; border: 1px solid #e5e7eb; border-radius: 10px; font-size: 0.9rem; outline: none; transition: border-color 0.15s;">
                         <small style="color: #9ca3af; font-size: 0.75rem; margin-top: 4px; display: block;">When a customer types this word, the flow will start automatically.</small>
                     </div>
+                    
+                    <div style="margin-bottom: 24px;">
+                        <label style="display: block; font-size: 0.8rem; font-weight: 600; color: #374151; margin-bottom: 6px;">Parent Flow (opcional)</label>
+                        <select name="parent_flow_id" id="parent_flow_select" style="width: 100%; padding: 10px 14px; border: 1px solid #e5e7eb; border-radius: 10px; font-size: 0.9rem; outline: none; transition: border-color 0.15s;">
+                            <option value="0">--- Ninguno (flujo raiz) ---</option>
+                        </select>
+                        <small style="color: #9ca3af; font-size: 0.75rem; margin-top: 4px; display: block;">Si es un subflujo, selecciona el flujo padre al que pertenece.</small>
+                    </div>
                     <hr style="border-color: #f3f4f6; margin: 20px 0;">
                     <div style="display: flex; gap: 10px; justify-content: flex-end;">
                         <a href="<?= base_url() ?>FlowBuilder" class="flow-btn" style="padding: 10px 20px; font-size: 0.85rem;">Cancel</a>
@@ -54,11 +62,28 @@ input:focus, textarea:focus { border-color: #6366F1 !important; box-shadow: 0 0 
 <script>
 
 function showToast(msg, type) { type = type || 'info'; var c = document.getElementById('toastContainer'); if (!c) return; var t = document.createElement('div'); t.className = 'toast-item ' + type; t.innerHTML = msg; c.appendChild(t); setTimeout(function() { t.style.opacity = '0'; t.style.transition = 'opacity 0.3s'; setTimeout(function() { t.remove(); }, 300); }, 3000); }
+
+    // Load existing flows for parent selector
+    fetch(BASE_URL + 'FlowBuilder/api_flow_list')
+        .then(function(r) { return r.json(); })
+        .then(function(res) {
+            if (!res.status || !res.data) return;
+            var sel = document.getElementById('parent_flow_select');
+            if (!sel) return;
+            res.data.forEach(function(f) {
+                var opt = document.createElement('option');
+                opt.value = f.id;
+                opt.textContent = f.name;
+                sel.appendChild(opt);
+            });
+        });
+
 document.getElementById('form_create').addEventListener('submit', function(e) {
     e.preventDefault();
     var btn = this.querySelector('button[type="submit"]');
     btn.disabled = true; btn.innerHTML = 'Creating...';
-    fetch('<?= base_url() ?>FlowBuilder/create', {
+    const BASE_URL = '<?= base_url() ?>';
+    fetch(BASE_URL + 'FlowBuilder/create', {
         method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded'},
         body: new URLSearchParams(new FormData(this))
     }).then(function(r) { return r.json(); }).then(function(d) {

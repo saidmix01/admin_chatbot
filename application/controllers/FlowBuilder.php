@@ -58,7 +58,9 @@ class FlowBuilder extends CI_Controller {
             if (!$name) { echo json_encode(['status' => false, 'message' => 'Nombre requerido']); return; }
             $this->db->insert('flows', [
                 'tenant_id' => $store->sto_id, 'name' => $name,
-                'description' => $desc, 'is_active' => 1
+                'description' => $desc, 'is_active' => 1,
+                'parent_flow_id' => $this->input->post('parent_flow_id') ?: null,
+                'display_order' => intval($this->input->post('display_order') ?: 0)
             ]);
             $flow_id = $this->db->insert_id();
             if ($trigger) {
@@ -198,6 +200,86 @@ class FlowBuilder extends CI_Controller {
                 'services' => $services
             ]
         ]);
+    }
+
+
+    /**
+     * API: Get all flows with hierarchy info
+     */
+    public function api_flow_list()
+    {
+        $this->require_auth();
+        $store = $this->get_store();
+        if (!$store) {
+            echo json_encode(["status" => false, "data" => []]);
+            return;
+        }
+
+        $flows = $this->db->query(
+            "SELECT f.id, f.name, f.description, f.parent_flow_id, f.is_active, f.display_order,
+                    (SELECT COUNT(*) FROM flow_versions fv WHERE fv.flow_id = f.id AND fv.status = 'published') as published_version
+             FROM flows f
+             WHERE f.tenant_id = ?
+             ORDER BY f.parent_flow_id NULLS FIRST, f.display_order ASC, f.name ASC",
+            [(int)$store->sto_id]
+        )->result();
+
+        $this->output->set_content_type('application/json');
+        echo json_encode(["status" => true, "data" => $flows]);
+    }
+
+    /**
+     * API: Set parent flow
+     * POST: { flow_id: X, parent_flow_id: Y }
+     */
+    public function api_set_parent()
+    {
+        $this->require_auth();
+        $store = $this->get_store();
+        if (!$store) {
+            echo json_encode(["status" => false, "message" => "No store"]);
+            return;
+        }
+
+        $input = json_decode(file_get_contents("php://input"), true);
+        $flow_id = (int)($input['flow_id'] ?? 0);
+        $parent_id = (int)($input['parent_flow_id'] ?? 0);
+
+        if (!$flow_id) {
+            echo json_encode(["status" => false, "message" => "flow_id requerido"]);
+            return;
+        }
+
+        $flow = $this->db->query(
+            "SELECT id FROM flows WHERE id = ? AND tenant_id = ?",
+            [$flow_id, (int)$store->sto_id]
+        )->row();
+        if (!$flow) {
+            echo json_encode(["status" => false, "message" => "Flujo no encontrado"]);
+            return;
+        }
+
+        if ($parent_id) {
+            $parent = $this->db->query(
+                "SELECT id FROM flows WHERE id = ? AND tenant_id = ?",
+                [$parent_id, (int)$store->sto_id]
+            )->row();
+            if (!$parent) {
+                echo json_encode(["status" => false, "message" => "Flujo padre no encontrado"]);
+                return;
+            }
+            if ($parent_id === $flow_id) {
+                echo json_encode(["status" => false, "message" => "Un flujo no puede ser padre de si mismo"]);
+                return;
+            }
+        }
+
+        $this->db->where("id", $flow_id)->update("flows", [
+            "parent_flow_id" => $parent_id ?: null,
+            "updated_at" => date("Y-m-d H:i:s")
+        ]);
+
+        echo json_encode(["status" => true, "message" => "Flujo actualizado"]);
     }
 
 }

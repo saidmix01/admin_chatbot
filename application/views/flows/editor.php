@@ -77,6 +77,10 @@
                         <span class="flow-type-badge" style="background: #d1fae5; color: #059669;">🔗</span>
                         <div><strong style="font-size: 0.8rem;">Webhook</strong><br><small style="font-size: 0.65rem; color: #9ca3af;">API call</small></div>
                     </div>
+                    <div class="flow-palette-item" onclick="quickAddNode('call_flow')">
+                        <span class="flow-type-badge" style="background: #fae8ff; color: #a21caf;">🔗</span>
+                        <div><strong style="font-size: 0.8rem;">Call Flow</strong><br><small style="font-size: 0.65rem; color: #9ca3af;">Jump to subflow</small></div>
+                    </div>
                     <div class="flow-palette-item" onclick="quickAddNode('goto')">
                         <span class="flow-type-badge" style="background: #e0e7ff; color: #4338ca;">➡️</span>
                         <div><strong style="font-size: 0.8rem;">Go To</strong><br><small style="font-size: 0.65rem; color: #9ca3af;">Jump to node</small></div>
@@ -137,6 +141,7 @@
                             <option value="choice">📋 Choice</option>
                             <option value="condition">🔀 Condition</option>
                             <option value="action_webhook">🔗 Webhook</option>
+                            <option value="call_flow">🔗 Call Flow</option>
                             <option value="goto">➡️ Go To</option>
                             <option value="end">⏹️ End</option>
                         </select>
@@ -253,6 +258,22 @@
                     </div>
                 </div>
 
+                <!-- Call Flow fields -->
+                <div id="modal-fields-call_flow" class="modal-fields" style="display:none">
+                    <div class="flow-field">
+                        <label class="flow-label">Target Flow</label>
+                        <select id="cf-target" class="flow-input" style="font-size:0.85rem;">
+                            <option value="">--- Select flow ---</option>
+                        </select>
+                        <small style="color: #9ca3af; font-size: 0.7rem;">When this flow ends, execution returns to the parent flow.</small>
+                    </div>
+                    <div class="flow-field">
+                        <label class="flow-label">Return node (optional)</label>
+                        <input type="text" id="cf-return" class="flow-input" placeholder="node_key to return to in parent" list="parent-nodes-list">
+                        <small style="color: #9ca3af; font-size: 0.7rem;">Leave empty to continue from where call was made.</small>
+                    </div>
+                </div>
+
                 <datalist id="nodes-list"></datalist>
             </div>
             <div class="modal-footer" style="border: none; padding: 0 24px 20px; justify-content: space-between;">
@@ -334,6 +355,7 @@
 .flow-visual-node.node-condition { border-left: 4px solid #db2777; }
 .flow-visual-node.node-action_webhook { border-left: 4px solid #059669; }
 .flow-visual-node.node-goto { border-left: 4px solid #4338ca; }
+.flow-visual-node.node-call_flow { border-left: 4px solid #a21caf; }
 .flow-visual-node .node-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 .flow-visual-node .node-key { font-family: monospace; font-size: 0.8rem; font-weight: 600; color: #374151; }
 .flow-visual-node .node-type-badge { font-size: 0.65rem; padding: 2px 8px; border-radius: 10px; font-weight: 500; }
@@ -387,18 +409,19 @@ function toggleModalFields() {
     var f = document.getElementById('modal-fields-' + type);
     if (f) f.style.display = 'block';
     if (type === 'end') document.getElementById('modal-fields-message').style.display = 'block';
+        if (type === 'call_flow') loadFlowsForSelector();
     // Update node list for condition/goto
     var list = document.getElementById('nodes-list');
     list.innerHTML = nodes.map(function(n) { return '<option value="' + n.node_key + '">'; }).join('');
 }
 
 function getIcon(type) {
-    var icons = { 'start': '⚡', 'message': '💬', 'question': '❓', 'choice': '📋', 'condition': '🔀', 'action_webhook': '🔗', 'goto': '➡️', 'end': '⏹️' };
+    var icons = { 'start': '⚡', 'message': '💬', 'question': '❓', 'choice': '📋', 'condition': '🔀', 'action_webhook': '🔗', 'call_flow': '🔗', 'goto': '➡️', 'end': '⏹️' };
     return icons[type] || '⚡';
 }
 
 function getTypeLabel(type) {
-    var labels = { 'start': 'Start', 'message': 'Message', 'question': 'Question', 'choice': 'Choice', 'condition': 'Condition', 'action_webhook': 'Webhook', 'goto': 'Go To', 'end': 'End' };
+    var labels = { 'start': 'Start', 'message': 'Message', 'question': 'Question', 'choice': 'Choice', 'condition': 'Condition', 'action_webhook': 'Webhook', 'call_flow': 'Call Flow', 'goto': 'Go To', 'end': 'End' };
     return labels[type] || type;
 }
 
@@ -411,6 +434,7 @@ function getNodeSummary(n) {
         case 'condition': return '🔀 if ' + (p.if ? (p.if.var||'?') + ' ' + (p.if.op||'==') + ' ' + (p.if.value||'') : '?');
         case 'action_webhook': return '🔗 ' + ((p.url||'').substring(0, 40)||'');
         case 'goto': return '➡️ → ' + (p.to||'?');
+        case 'call_flow': return '🔗 → ' + ((p.target_flow_name || p.target_flow_id || '?') + (p.return_node ? ' (return: ' + p.return_node + ')' : ''));
         case 'end': return '⏹️ End flow';
         default: return '';
     }
@@ -534,6 +558,8 @@ function editNode(idx) {
     document.getElementById('wh-method').value = p.method || 'POST';
     document.getElementById('wh-save').value = p.save_to || '';
     document.getElementById('goto-to').value = p.to || '';
+    document.getElementById('cf-target').value = p.target_flow_id || '';
+    document.getElementById('cf-return').value = p.return_node || '';
     toggleModalFields();
     $('#nodeModal').modal('show');
 }
@@ -565,6 +591,14 @@ function saveNodeModal() {
             payload = { text: document.getElementById('c-text').value, options: opts, save_to: document.getElementById('c-save').value, catalog_source: catalogSrc }; break;
         case 'condition': payload = { if: { var: document.getElementById('cond-var').value, op: document.getElementById('cond-op').value, value: document.getElementById('cond-val').value }, true_to: document.getElementById('cond-true').value, false_to: document.getElementById('cond-false').value }; break;
         case 'action_webhook': payload = { url: document.getElementById('wh-url').value, method: document.getElementById('wh-method').value, save_to: document.getElementById('wh-save').value }; break;
+        case 'call_flow':
+            var cfTarget = document.getElementById('cf-target');
+            payload = {
+                target_flow_id: cfTarget.value,
+                target_flow_name: cfTarget.options[cfTarget.selectedIndex] ? cfTarget.options[cfTarget.selectedIndex].text : '',
+                return_node: document.getElementById('cf-return').value || ''
+            };
+            break;
         case 'goto': payload = { to: document.getElementById('goto-to').value }; break;
         default: payload = {};
     }
@@ -588,13 +622,39 @@ function saveNodeModal() {
 }
 
 function quickAddNode(type) {
-    var base = { 'message': 'msg', 'question': 'ask', 'choice': 'menu', 'condition': 'if', 'action_webhook': 'api', 'goto': 'go', 'end': 'end' };
+    var base = { 'message': 'msg', 'question': 'ask', 'choice': 'menu', 'condition': 'if', 'action_webhook': 'api', 'call_flow': 'sub', 'goto': 'go', 'end': 'end' };
     var key = base[type] || 'node';
     var i = 1;
     while (nodes.some(function(n) { return n.node_key === key + i; })) i++;
     nodes.push({ node_key: key + i, type: type, payload: {} });
     renderVisualCanvas();
 }
+
+function loadFlowsForSelector() {
+    var sel = document.getElementById('cf-target');
+    if (!sel) return;
+    if (sel.options.length > 1) return; // Already loaded
+    fetch(BASE_URL + 'FlowBuilder/api_flow_list')
+        .then(function(r) { return r.json(); })
+        .then(function(res) {
+            if (!res.status || !res.data) return;
+            // Get current flow ID from URL
+            var flowId = window.location.pathname.split('/').pop();
+            res.data.forEach(function(f) {
+                if (f.id != flowId) {
+                    var opt = document.createElement('option');
+                    opt.value = f.id;
+                    opt.textContent = (f.parent_flow_id ? '  ' : '') + f.name;
+                    sel.appendChild(opt);
+                }
+            });
+        });
+}
+
+// Add call_flow to visual node border
+var origRender = renderVisualCanvas;
+// Call flow border is handled by the node-type class in CSS
+
 
 // --- Edge management ---
 function addEdgeFrom(idx) {
@@ -682,9 +742,10 @@ function renderPreview() {
         if (!n) { h += '<span class="text-danger">⛔ Node "' + cur + '" not found</span><br>'; break; }
         var icon = getIcon(n.type);
         h += '<div style="padding: 4px 8px; margin: 2px 0; background: #f9fafb; border-radius: 6px; font-size: 0.78rem;">' + icon + ' <strong>' + n.node_key + '</strong> <span class="text-muted">(' + getTypeLabel(n.type) + ')</span></div>';
-        if (n.type === 'end' || n.type === 'goto') {
+        if (n.type === 'end' || n.type === 'goto' || n.type === 'call_flow') {
             if (n.type === 'end') h += '<div style="padding-left: 12px; color: #6b7280;">✓ End</div>';
             if (n.type === 'goto') { cur = n.payload.to; if (!cur) break; continue; }
+            if (n.type === 'call_flow') { h += '<div style="padding-left: 12px; color: #a21caf;">🔗 Calls: ' + (n.payload.target_flow_name || n.payload.target_flow_id || '?') + '</div>'; break; }
             break;
         }
         if (n.type === 'condition') {
