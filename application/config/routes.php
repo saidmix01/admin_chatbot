@@ -69,3 +69,4 @@ $route['products'] = 'Products';
 $route['clients'] = 'Clients';
 $route['preview/(:num)'] = 'Preview/index/$1';
 $route['orders'] = 'Orders';
+$route['flow'] = 'Flow';

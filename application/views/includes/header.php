@@ -30,6 +30,7 @@
     <!-- WAPI SaaS Custom CSS -->
     <link rel="stylesheet" href="<?=base_url()?>css/saas.css?v=1">
     <link rel="stylesheet" href="<?=base_url()?>css/general.css">
+    <link rel="stylesheet" href="<?=base_url()?>assets/css/flow.css?v=1">
 
     <style>
         /* Mobile nav dropdown */
