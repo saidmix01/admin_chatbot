@@ -242,6 +242,21 @@
         {
           "name": "Listar perfiles",
           "request": {"method": "GET", "url": {"raw": "{{base_url}}/Profiles", "path": ["Profiles"]}}
+        },
+        {
+          "name": "Obtener frases de inicio",
+          "request": {"method": "GET", "url": {"raw": "{{base_url}}/Chat_configuration/get_starters", "path": ["Chat_configuration", "get_starters"]}},
+          "response": [{"name": "Frases obtenidas", "code": 200, "body": "{\"status\":true,\"data\":[\"¡Hola! ¿En qué puedo ayudarte?\",\"Bienvenido a mi tienda\",\"¿Buscas algo en especial?\"]}"}]
+        },
+        {
+          "name": "Guardar frases de inicio",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\"starters\":[\"¡Hola! ¿En qué puedo ayudarte?\",\"Bienvenido a mi tienda\",\"¿Buscas algo en especial?\"]}"},
+            "url": {"raw": "{{base_url}}/Chat_configuration/save_starters", "path": ["Chat_configuration", "save_starters"]}
+          },
+          "response": [{"name": "Frases guardadas", "code": 200, "body": "{\"status\":true,\"message\":\"Frases guardadas\"}"}]
         }
       ]
     }
