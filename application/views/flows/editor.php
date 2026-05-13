@@ -445,6 +445,7 @@ function getNodeSummary(n) {
         case 'end': return '⏹️ End flow';
         default: return '';
     }
+}
 
 function renderVisualCanvas() {
     var container = document.getElementById('nodesContainer');
@@ -702,7 +703,7 @@ function loadCatalog(type) {
         .catch(function(err) { showToast('Error: ' + err.message, 'error'); });
 }
 
-function escapeHtml(t) { if (!t) return ''; var d = document.createElement('div'); d.appendChild(document.createTextNode(t)); return d.innerHTML; }(t) { if (!t) return ''; var d = document.createElement('div'); d.appendChild(document.createTextNode(t)); return d.innerHTML; }
+function escapeHtml(t) { if (!t) return ''; var d = document.createElement('div'); d.appendChild(document.createTextNode(t)); return d.innerHTML; }
 
 var origRender = renderVisualCanvas;
 // Call flow border is handled by the node-type class in CSS
