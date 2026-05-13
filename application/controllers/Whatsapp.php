@@ -13,17 +13,30 @@ class Whatsapp extends CI_Controller {
 			$this->Menus_profile_model->data = array("us_id" => $this->session->userdata('us_id'));
 			$menus = $this->Menus_profile_model->get_menu_user();
 
+			$us_id = $this->session->userdata('us_id');
+
+			// Load from bot_sessions
+			$q = $this->db->query("SELECT * FROM bot_sessions WHERE us_id = " . intval($us_id));
+			$session = $q->num_rows() > 0 ? $q->row() : null;
+
+			$qr_status = $session ? $session->bs_status : 'waiting';
+			$qr_base64 = $session ? $session->bs_qr_base64 : '';
+			$whatsapp_number = $session ? ($session->bs_whatsapp_number ?? '') : '';
+
 			$data = array(
 				"title" => "WhatsApp QR",
 				"active_menu" => "whatsapp",
 				"user_data" => $user_data["data"],
 				"menus" => $menus["data"] ?? array(),
-				"qr_status" => "waiting", // waiting | connected | expired
-				"whatsapp_number" => ""
+				"qr_status" => $qr_status,
+				"qr_base64" => $qr_base64,
+				"whatsapp_number" => $whatsapp_number,
+				"scripts" => ["js/general.js"]
 			);
 			$this->load->view('includes/header', $data);
 			$this->load->view('whatsapp/qr_view');
-			$this->load->view('includes/footer');
+			$data_footer = array("scripts" => ["js/general.js"]);
+			$this->load->view('includes/footer', $data_footer);
 		} catch (\Throwable $th) {
 			$this->load->view('error_pages/500');
 		}

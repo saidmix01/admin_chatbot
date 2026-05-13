@@ -1,10 +1,9 @@
 <?php
-class BotConfig extends CI_Controller {
+class Orders extends CI_Controller {
 	public function __construct() {
 		parent::__construct();
 		$this->load->helper('general_helper');
 		$this->load->model('Menus_profile/Menus_profile_model', 'Menus_profile_model');
-		$this->load->model('Store/Store_model', 'Store_model');
 	}
 
 	public function index() {
@@ -14,19 +13,24 @@ class BotConfig extends CI_Controller {
 			$this->Menus_profile_model->data = array("us_id" => $this->session->userdata('us_id'));
 			$menus = $this->Menus_profile_model->get_menu_user();
 
-			$this->Store_model->data = array("s.us_id" => $this->session->userdata('us_id'));
-			$store = $this->Store_model->get_stores();
+			$us_id = $this->session->userdata('us_id');
+
+			$q = $this->db->query("SELECT bo.*, u.us_name as business_name 
+				FROM bot_orders bo 
+				JOIN users u ON u.us_id = bo.us_id 
+				WHERE bo.us_id = " . intval($us_id) . " 
+				ORDER BY bo.created_at DESC LIMIT 50");
 
 			$data = array(
-				"title" => "Bot Mensajes",
-				"active_menu" => "bot",
+				"title" => "Pedidos",
+				"active_menu" => "pedidos",
 				"user_data" => $user_data["data"],
 				"menus" => $menus["data"] ?? array(),
-				"store" => !empty($store["data"]) ? $store["data"][0] : null,
+				"orders" => $q->result(),
 				"scripts" => ["js/general.js"]
 			);
 			$this->load->view('includes/header', $data);
-			$this->load->view('bot_config/config_view');
+			$this->load->view('orders/orders_view');
 			$data_footer = array("scripts" => ["js/general.js"]);
 			$this->load->view('includes/footer', $data_footer);
 		} catch (\Throwable $th) {
@@ -34,29 +38,21 @@ class BotConfig extends CI_Controller {
 		}
 	}
 
-	public function save() {
+	public function update_status() {
 		$response = array("status" => false, "message" => "");
 		try {
 			if (!validate_session()) throw new Exception("Unauthorized", 1);
 			$input = json_decode(file_get_contents("php://input"), true);
-			if (empty($input)) throw new Exception("Datos vacíos", 1);
+			$bo_id = $input["bo_id"] ?? null;
+			$status = $input["status"] ?? '';
 
-			$us_id = $this->session->userdata('us_id');
+			if (!$bo_id || !$status) throw new Exception("Datos incompletos", 1);
 
-			$this->Store_model->data = array("s.us_id" => $us_id);
-			$store = $this->Store_model->get_stores();
-
-			if (!empty($store["data"])) {
-				$update = array();
-				if (!empty($input["welcome_msg"])) $update["sto_wellcome_message"] = $input["welcome_msg"];
-				if (!empty($update)) {
-					$this->db->where("sto_id", $store["data"][0]->sto_id);
-					$this->db->update("stores", $update);
-				}
-			}
+			$this->db->where("bo_id", $bo_id);
+			$this->db->update("bot_orders", ["bo_status" => $status]);
 
 			$response["status"] = true;
-			$response["message"] = "Configuración guardada correctamente";
+			$response["message"] = "Estado actualizado";
 		} catch (\Throwable $th) {
 			$response["message"] = $th->getMessage();
 		}

@@ -35,17 +35,21 @@
         /* Mobile nav dropdown */
         .mobile-nav-dropdown {
             display: none;
-            position: absolute;
-            top: 100%;
+            position: fixed;
+            top: 56px;
             left: 0;
             right: 0;
+            bottom: 0;
             background: #fff;
             border-bottom: 1px solid var(--saas-gray-200);
             box-shadow: var(--saas-shadow-lg);
-            z-index: 999;
-            max-height: 70vh;
+            z-index: 1000;
             overflow-y: auto;
-            padding: 0.5rem 0;
+            -webkit-overflow-scrolling: touch;
+            padding: 0.5rem 0 4rem;
+        }
+        .mobile-nav-dropdown.open {
+            display: block;
         }
         .mobile-nav-dropdown.open {
             display: block;
@@ -74,32 +78,33 @@
             text-align: center;
             font-size: 1.1rem;
         }
-        .mobile-nav-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.3);
-            z-index: 998;
-        }
-        .mobile-nav-overlay.open {
-            display: block;
-        }
+
         @media (min-width: 992px) {
             .mobile-nav-dropdown,
             .mobile-nav-overlay {
-                display: none !important;
+                display: none;
             }
         }
     </style>
 </head>
 
 <body>
-    <div class="overlay loading" style="display: none;">
-        <div class="icon"><img class="rotate-img" src="<?=base_url()?>assets/img/logo_128.png" alt=""></div>
+    <div class="overlay loading" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.85); z-index: 9999; align-items: center; justify-content: center;">
+        <div style="text-align: center;">
+            <img src="<?=base_url()?>assets/img/loader-wapi.svg" alt="" style="width: 48px; height: 48px; animation: wapiSpin 1s linear infinite;">
+            <p style="margin-top: 0.75rem; font-size: 0.8125rem; color: #6b7280;">Cargando...</p>
+        </div>
     </div>
 
+<style>
+@keyframes wapiSpin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+</style>
+
     <div class="page-loader">
-        <div class="bg-primary"></div>
+        <div style="height: 3px; background: linear-gradient(90deg, #6366f1, #4f46e5);"></div>
     </div>
 
     <div class="layout-wrapper layout-2">
@@ -132,8 +137,7 @@
             </div>
             <!-- / Desktop Sidebar -->
 
-            <!-- MOBILE MENU OVERLAY -->
-            <div class="mobile-nav-overlay" id="mobileNavOverlay"></div>
+
 
             <!-- MOBILE DROPDOWN NAV -->
             <div class="mobile-nav-dropdown" id="mobileNavDropdown">
@@ -209,29 +213,35 @@
 document.addEventListener('DOMContentLoaded', function() {
     var toggle = document.getElementById('mobileMenuToggle');
     var dropdown = document.getElementById('mobileNavDropdown');
-    var overlay = document.getElementById('mobileNavOverlay');
-    
-    function closeMenu() {
-        dropdown.classList.remove('open');
-        overlay.classList.remove('open');
-    }
-    
     if (toggle && dropdown) {
+        dropdown.style.display = 'none';
+        
         toggle.addEventListener('click', function(e) {
             e.stopPropagation();
-            dropdown.classList.toggle('open');
-            overlay.classList.toggle('open');
+            if (dropdown.style.display === 'block') {
+                dropdown.style.display = 'none';
+            } else {
+                dropdown.style.display = 'block';
+            }
         });
     }
     
-    if (overlay) {
-        overlay.addEventListener('click', closeMenu);
-    }
+    // Close on outside click
+    document.addEventListener('click', function(e) {
+        if (dropdown.style.display === 'block' && 
+            !dropdown.contains(e.target) && 
+            e.target !== toggle && 
+            !toggle.contains(e.target)) {
+            dropdown.style.display = 'none';
+        }
+    });
     
     // Close on link click
     if (dropdown) {
         dropdown.querySelectorAll('a').forEach(function(link) {
-            link.addEventListener('click', closeMenu);
+            link.addEventListener('click', function() {
+                dropdown.style.display = 'none';
+            });
         });
     }
 });

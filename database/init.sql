@@ -61,6 +61,7 @@ CREATE TABLE stores (
     sto_direction VARCHAR(255),
     sto_phone VARCHAR(20),
     sto_wellcome_message TEXT,
+    sto_starters TEXT DEFAULT '[]',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

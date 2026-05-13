@@ -505,8 +505,12 @@ textarea.form-saas {
     align-items: center;
     padding: 0.5rem 0;
     border-bottom: 1px solid var(--saas-gray-100);
-    border-bottom: none;
     text-align: right;
+    font-size: 0.875rem;
+  }
+  
+  .table-saas-card-mode tbody td:last-child {
+    border-bottom: none;
   }
   
   .table-saas-card-mode tbody td::before {
@@ -516,10 +520,8 @@ textarea.form-saas {
     text-transform: uppercase;
     color: var(--saas-gray-500);
     text-align: left;
-  }
-  
-  .table-saas-card-mode tbody td:last-child {
-    border-bottom: none;
+    flex-shrink: 0;
+    margin-right: 1rem;
   }
 }
 
@@ -755,13 +757,8 @@ textarea.form-saas {
   }
 }
 
-/* Mobile sidebar overlay */
-.layout-overlay {
-  display: none;
-}
 
 @media (max-width: 992px) {
-  .layout-overlay {
     display: block;
     position: fixed;
     top: 0;
@@ -775,7 +772,6 @@ textarea.form-saas {
     transition: all 0.2s;
   }
   
-  .layout-overlay.active {
     opacity: 1;
     visibility: visible;
   }
@@ -845,29 +841,49 @@ textarea.form-saas {
 }
 
 /* ============================================
-   MOBILE: navbar + dropdown menu
-   ============================================ */
 
+/* Forzar visibilidad del boton hamburguesa en mobile */
 @media (max-width: 991px) {
-  /* Navbar fijo arriba */
-  .layout-navbar {
-    position: sticky !important;
-    top: 0;
-    z-index: 100;
+  .navbar-expand-lg .navbar-toggler {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/* Mobile dropdown - scroll fix */
+@media (max-width: 991px) {
+  .mobile-nav-dropdown.open + *,
+  .mobile-nav-dropdown.open ~ * {
+    /* Don't block page scroll */
+    pointer-events: auto;
   }
   
-  /* Sidebar invisible en mobile */
-  .layout-sidenav.d-none {
-    display: none !important;
-  }
-  
-  /* El layout-container toma todo el ancho */
-  .layout-container {
-    margin-left: 0 !important;
-  }
-  
-  /* Ajustar padding del contenido */
-  .container-p-y {
-    padding: 1rem !important;
+
+/* Fix scroll bloqueado por el template en mobile */
+.layout-wrapper {
+  overflow: visible !important;
+}
+
+html, body {
+  overflow-x: hidden;
+  overflow-y: auto !important;
+  height: auto !important;
+}
+
+/* Wapi Loading Overlay */
+.overlay.loading {
+  display: none !important;
+}
+.overlay.loading[style*="flex"],
+.overlay.loading[style*="block"] {
+  display: flex !important;
+}
+
+/* Mobile table scroll fallback */
+@media (max-width: 640px) {
+  .table-responsive-wrap {
+    margin: 0 -1rem;
+    padding: 0 1rem;
   }
 }

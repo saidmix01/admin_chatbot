@@ -168,7 +168,8 @@ class BotApi extends CI_Controller
             'offhours_msg' => 'Estamos fuera de horario. Escríbenos y te atenderemos en la mañana.',
             'goodbye_msg' => '¡Gracias por contactarnos!',
             'whatsapp_number' => $session->bs_whatsapp_number ?? '',
-            'bot_status' => $session->bs_status ?? 'disconnected'
+            'bot_status' => $session->bs_status ?? 'disconnected',
+            'starters' => json_decode($store->sto_starters ?? '[]', true) ?: []
         ]]);
     }
 

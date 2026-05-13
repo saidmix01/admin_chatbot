@@ -40,15 +40,24 @@ class Home extends CI_Controller
 	}
 
 	private function get_whatsapp_status() {
+		$q = $this->db->query("SELECT bs_status FROM bot_sessions WHERE us_id = " . intval($this->session->userdata('us_id')));
+		if ($q->num_rows() > 0) {
+			return $q->row()->bs_status;
+		}
 		return 'disconnected';
 	}
 
 	private function get_whatsapp_number() {
+		$q = $this->db->query("SELECT bs_whatsapp_number FROM bot_sessions WHERE us_id = " . intval($this->session->userdata('us_id')));
+		if ($q->num_rows() > 0 && $q->row()->bs_whatsapp_number) {
+			return $q->row()->bs_whatsapp_number;
+		}
 		return '';
 	}
 
 	private function get_bot_status() {
-		return 'inactive';
+		$status = $this->get_whatsapp_status();
+		return $status === 'connected' ? 'active' : 'inactive';
 	}
 
 	private function get_products_count() {
@@ -59,6 +68,10 @@ class Home extends CI_Controller
 	}
 
 	private function get_last_activity() {
+		$q = $this->db->query("SELECT bs_last_activity FROM bot_sessions WHERE us_id = " . intval($this->session->userdata('us_id')));
+		if ($q->num_rows() > 0 && $q->row()->bs_last_activity) {
+			return $q->row()->bs_last_activity;
+		}
 		return '';
 	}
 }

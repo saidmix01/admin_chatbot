@@ -186,7 +186,47 @@ class Chat_configuration extends CI_Controller
 		echo json_encode($response);
 	}
 	
+
+	public function get_starters() {
+		header("Content-Type: application/json");
+		try {
+			if (!validate_session()) throw new Exception("No autorizado", 1);
+			$this->load->model("Store/Store_model", "Store_model");
+			$stores = $this->Store_model->get_stores();
+			if ($stores["status"] && !empty($stores["data"])) {
+				$store = $stores["data"][0];
+				$starters = json_decode($store->sto_starters ?? "[]", true) ?: [];
+				echo json_encode(["status" => true, "data" => $starters]);
+			} else {
+				echo json_encode(["status" => true, "data" => []]);
+			}
+		} catch (\Throwable $th) {
+			echo json_encode(["status" => false, "data" => [], "message" => $th->getMessage()]);
+		}
+	}
+
+	public function save_starters() {
+		header("Content-Type: application/json");
+		try {
+			if (!validate_session()) throw new Exception("No autorizado", 1);
+			$input = json_decode(file_get_contents("php://input"), true);
+			if (json_last_error() !== JSON_ERROR_NONE) throw new Exception("JSON invalido", 1);
+
+			$starters = $input["starters"] ?? [];
+			$this->load->model("Store/Store_model", "Store_model");
+			$stores = $this->Store_model->get_stores();
+			if ($stores["status"] && !empty($stores["data"])) {
+				$store = $stores["data"][0];
+				$this->db->where("sto_id", $store->sto_id)->update("stores", [
+					"sto_starters" => json_encode($starters)
+				]);
+				echo json_encode(["status" => true, "message" => "Frases guardadas"]);
+			} else {
+				echo json_encode(["status" => false, "message" => "Tienda no encontrada"]);
+			}
+		} catch (\Throwable $th) {
+			echo json_encode(["status" => false, "message" => $th->getMessage()]);
+		}
+	}
+
 }
-
-
-?>
