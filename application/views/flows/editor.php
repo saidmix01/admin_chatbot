@@ -11,15 +11,15 @@
             </h4>
         </div>
         <div class="d-flex" style="gap: 6px;">
-            <input type="text" id="trigger-value" value="<?= !empty($triggers) ? htmlspecialchars($triggers[0]->trigger_value) : '' ?>" placeholder="Keyword trigger" style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 6px 12px; font-size: 0.8rem; outline: none; width: 150px;">
+            <input type="text" id="trigger-value" value="<?= !empty($triggers) ? htmlspecialchars($triggers[0]->trigger_value) : '' ?>" placeholder="Palabra clave" style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 6px 12px; font-size: 0.8rem; outline: none; width: 150px;">
             <button onclick="saveTrigger(<?= $flow->id ?>)" class="flow-btn flow-btn-outline" style="font-size: 0.75rem;">Trigger</button>
-            <button onclick="saveNodes(<?= $version->id ?>)" class="flow-btn flow-btn-primary" style="font-size: 0.75rem;">💾 Save</button>
-            <button onclick="validateFlow(<?= $version->id ?>)" class="flow-btn flow-btn-outline" style="font-size: 0.75rem;">✅ Validate</button>
-            <button onclick="publishFlow(<?= $version->id ?>)" class="flow-btn" style="font-size: 0.75rem; background: #22C55E; border-color: #22C55E; color: #fff;">🚀 Publish</button>
+            <button onclick="saveNodes(<?= $version->id ?>)" class="flow-btn flow-btn-primary" style="font-size: 0.75rem;">💾 Guardar</button>
+            <button onclick="validateFlow(<?= $version->id ?>)" class="flow-btn flow-btn-outline" style="font-size: 0.75rem;">✅ Validar</button>
+            <button onclick="publishFlow(<?= $version->id ?>)" class="flow-btn" style="font-size: 0.75rem; background: #22C55E; border-color: #22C55E; color: #fff;">🚀 Publicar</button>
             <div class="dropdown" style="position: relative;">
                 <button class="flow-btn flow-btn-outline" style="font-size: 0.75rem;" onclick="document.getElementById('flowActionsDropdown').classList.toggle('show')">⋮</button>
                 <div id="flowActionsDropdown" class="flow-dropdown-menu" style="position: absolute; right: 0; top: 100%; z-index: 100; background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.12); padding: 6px; min-width: 160px; display: none;">
-                    <a href="<?= base_url() ?>FlowBuilder" style="display: block; padding: 8px 12px; font-size: 0.8rem; color: #374151; border-radius: 6px; text-decoration: none;">← Back to flows</a>
+                    <a href="<?= base_url() ?>FlowBuilder" style="display: block; padding: 8px 12px; font-size: 0.8rem; color: #374151; border-radius: 6px; text-decoration: none;">← Volver a flujos</a>
                 </div>
             </div>
         </div>
@@ -32,19 +32,19 @@
                 <div class="flow-canvas-header">
                     <div class="d-flex align-items-center" style="gap: 8px;">
                         <span style="font-size: 0.8rem; font-weight: 600; color: #374151;">Steps</span>
-                        <span class="text-muted" style="font-size: 0.7rem;" id="nodeCount">0 nodes</span>
+                        <span class="text-muted" style="font-size: 0.7rem;" id="nodeCount">0 pasos</span>
                     </div>
                     <div class="d-flex" style="gap: 6px;">
-                        <button class="flow-btn flow-btn-outline" style="font-size: 0.7rem; padding: 3px 10px;" onclick="alert()">👁 Preview</button>
-                        <button class="flow-btn flow-btn-primary" style="font-size: 0.7rem; padding: 3px 10px;" onclick="openNewNodeModal()">+ Add Node</button>
+                        <button class="flow-btn flow-btn-outline" style="font-size: 0.7rem; padding: 3px 10px;" onclick="alert()">👁 Vista Previa</button>
+                        <button class="flow-btn flow-btn-primary" style="font-size: 0.7rem; padding: 3px 10px;" onclick="openNewNodeModal()">+ Agregar paso</button>
                     </div>
                 </div>
                 <div class="flow-canvas-body" id="canvasBody">
                     <div id="flowEmptyState" class="flow-empty-state">
                         <div class="flow-empty-icon">⚡</div>
-                        <h5>Start building your flow</h5>
-                        <p class="text-muted">Add nodes and connect them to create a conversation path.</p>
-                        <button class="flow-btn flow-btn-primary" onclick="openNewNodeModal()">+ Add First Node</button>
+                        <h5>Comienza a construir tu flujo</h5>
+                        <p class="text-muted">Agrega pasos y conectalos para crear tu conversacion.</p>
+                        <button class="flow-btn flow-btn-primary" onclick="openNewNodeModal()">+ Agregar primer paso</button>
                     </div>
                     <div id="stepsContainer" class="flow-steps-container"></div>
                 </div>
@@ -55,46 +55,46 @@
         <div class="col-md-3" style="padding: 0 0 0 8px;">
             <!-- Node palette -->
             <div class="flow-panel">
-                <div class="flow-panel-header">Node Types</div>
+                <div class="flow-panel-header">Tipos de nodo</div>
                 <div class="flow-panel-body">
                     <div class="flow-palette-item" onclick="quickAddNode('message')">
                         <span class="flow-type-badge" style="background: #e0f2fe; color: #0284c7;">💬</span>
-                        <div><strong style="font-size: 0.8rem;">Message</strong><br><small style="font-size: 0.65rem; color: #9ca3af;">Send a text</small></div>
+                        <div><strong style="font-size: 0.8rem;">Mensaje</strong><br><small style="font-size: 0.65rem; color: #9ca3af;">Enviar un mensaje</small></div>
                     </div>
                     <div class="flow-palette-item" onclick="quickAddNode('question')">
                         <span class="flow-type-badge" style="background: #fef3c7; color: #d97706;">❓</span>
-                        <div><strong style="font-size: 0.8rem;">Question</strong><br><small style="font-size: 0.65rem; color: #9ca3af;">Ask & save input</small></div>
+                        <div><strong style="font-size: 0.8rem;">Pregunta</strong><br><small style="font-size: 0.65rem; color: #9ca3af;">Preguntar y guardar respuesta</small></div>
                     </div>
                     <div class="flow-palette-item" onclick="quickAddNode('choice')">
                         <span class="flow-type-badge" style="background: #ede9fe; color: #7c3aed;">📋</span>
-                        <div><strong style="font-size: 0.8rem;">Choice</strong><br><small style="font-size: 0.65rem; color: #9ca3af;">Show options</small></div>
+                        <div><strong style="font-size: 0.8rem;">Opcion</strong><br><small style="font-size: 0.65rem; color: #9ca3af;">Mostrar opciones</small></div>
                     </div>
                     <div class="flow-palette-item" onclick="quickAddNode('condition')">
                         <span class="flow-type-badge" style="background: #fce7f3; color: #db2777;">🔀</span>
-                        <div><strong style="font-size: 0.8rem;">Condition</strong><br><small style="font-size: 0.65rem; color: #9ca3af;">Branch logic</small></div>
+                        <div><strong style="font-size: 0.8rem;">Condicion</strong><br><small style="font-size: 0.65rem; color: #9ca3af;">Condicion (si/entonces)</small></div>
                     </div>
                     <div class="flow-palette-item" onclick="quickAddNode('action_webhook')">
                         <span class="flow-type-badge" style="background: #d1fae5; color: #059669;">🔗</span>
-                        <div><strong style="font-size: 0.8rem;">Webhook</strong><br><small style="font-size: 0.65rem; color: #9ca3af;">API call</small></div>
+                        <div><strong style="font-size: 0.8rem;">Webhook</strong><br><small style="font-size: 0.65rem; color: #9ca3af;">Llamar API externa</small></div>
                     </div>
                     <div class="flow-palette-item" onclick="quickAddNode('call_flow')">
                         <span class="flow-type-badge" style="background: #fae8ff; color: #a21caf;">🔗</span>
-                        <div><strong style="font-size: 0.8rem;">Call Flow</strong><br><small style="font-size: 0.65rem; color: #9ca3af;">Jump to subflow</small></div>
+                        <div><strong style="font-size: 0.8rem;">Llamar flujo</strong><br><small style="font-size: 0.65rem; color: #9ca3af;">Llamar a otro flujo</small></div>
                     </div>
                     <div class="flow-palette-item" onclick="quickAddNode('goto')">
                         <span class="flow-type-badge" style="background: #e0e7ff; color: #4338ca;">➡️</span>
-                        <div><strong style="font-size: 0.8rem;">Go To</strong><br><small style="font-size: 0.65rem; color: #9ca3af;">Jump to node</small></div>
+                        <div><strong style="font-size: 0.8rem;">Ir a</strong><br><small style="font-size: 0.65rem; color: #9ca3af;">Ir a otro nodo</small></div>
                     </div>
                     <div class="flow-palette-item" onclick="quickAddNode('end')">
                         <span class="flow-type-badge" style="background: #f3f4f6; color: #6b7280;">⏹️</span>
-                        <div><strong style="font-size: 0.8rem;">End</strong><br><small style="font-size: 0.65rem; color: #9ca3af;">Finish flow</small></div>
+                        <div><strong style="font-size: 0.8rem;">Fin</strong><br><small style="font-size: 0.65rem; color: #9ca3af;">Finalizar el flujo</small></div>
                     </div>
                 </div>
             </div>
 
             <!-- Preview panel -->
             <div class="flow-panel" id="previewPanel" style="display: none;">
-                <div class="flow-panel-header">Flow Preview</div>
+                <div class="flow-panel-header">Vista previa</div>
                 <div class="flow-panel-body">
                     <div id="flowPreview" style="font-size: 0.8rem; line-height: 1.6;">
                         <span class="text-muted">Add nodes to see preview...</span>
@@ -151,7 +151,7 @@
                 <!-- Message fields -->
                 <div id="modal-fields-message" class="modal-fields">
                     <div class="flow-field">
-                        <label class="flow-label">Message Text</label>
+                        <label class="flow-label">Texto del mensaje</label>
                         <textarea id="msg-text" class="flow-input" rows="3" placeholder="Hello {{name}}, welcome! How can I help you?"></textarea>
                     </div>
                 </div>
@@ -164,11 +164,11 @@
                     </div>
                     <div class="form-row" style="display: flex; gap: 12px;">
                         <div style="flex: 1;">
-                            <label class="flow-label">Save to variable</label>
+                            <label class="flow-label">Guardar en variable</label>
                             <input type="text" id="q-save" class="flow-input" placeholder="name">
                         </div>
                         <div style="flex: 1;">
-                            <label class="flow-label">Retry text</label>
+                            <label class="flow-label">Texto de reintento</label>
                             <input type="text" id="q-retry" class="flow-input" placeholder="Invalid answer, try again">
                         </div>
                     </div>
@@ -181,10 +181,10 @@
                         <textarea id="c-text" class="flow-input" rows="2" placeholder="Choose an option:"></textarea>
                     </div>
                     <div class="flow-field">
-                        <label class="flow-label">Load from catalog</label>
+                        <label class="flow-label">Cargar del catalogo</label>
                         <div style="display:flex;gap:6px;flex-wrap:wrap;">
-                            <button type="button" class="flow-btn flow-btn-outline" style="font-size:0.75rem;padding:4px 12px;" onclick="loadCatalog('producto')">📦 Load Products</button>
-                            <button type="button" class="flow-btn flow-btn-outline" style="font-size:0.75rem;padding:4px 12px;" onclick="loadCatalog('servicio')">🔧 Load Services</button>
+                            <button type="button" class="flow-btn flow-btn-outline" style="font-size:0.75rem;padding:4px 12px;" onclick="loadCatalog('producto')">📦 Cargar productos</button>
+                            <button type="button" class="flow-btn flow-btn-outline" style="font-size:0.75rem;padding:4px 12px;" onclick="loadCatalog('servicio')">🔧 Cargar servicios</button>
                             <span id="catalogSource" style="font-size:0.7rem;color:#6b7280;align-self:center;"></span>
                         </div>
                     </div>
@@ -194,7 +194,7 @@
                         <textarea id="c-options" class="flow-input" rows="4" placeholder="1|Sales&#10;2|Support&#10;3|Info"></textarea>
                     </div>
                     <div class="flow-field">
-                        <label class="flow-label">Save to variable</label>
+                        <label class="flow-label">Guardar en variable</label>
                         <input type="text" id="c-save" class="flow-input" placeholder="selection">
                     </div>
                 </div>
@@ -244,7 +244,7 @@
                             <select id="wh-method" class="flow-input"><option value="POST">POST</option><option value="GET">GET</option></select>
                         </div>
                         <div style="flex: 1;">
-                            <label class="flow-label">Save to variable</label>
+                            <label class="flow-label">Guardar en variable</label>
                             <input type="text" id="wh-save" class="flow-input" placeholder="api_result">
                         </div>
                     </div>
@@ -253,7 +253,7 @@
                 <!-- GoTo fields -->
                 <div id="modal-fields-goto" class="modal-fields" style="display:none">
                     <div class="flow-field">
-                        <label class="flow-label">Go to node</label>
+                        <label class="flow-label">Ir al nodo</label>
                         <input type="text" id="goto-to" class="flow-input" placeholder="node_key" list="nodes-list">
                     </div>
                 </div>
@@ -261,14 +261,14 @@
                 <!-- Call Flow fields -->
                 <div id="modal-fields-call_flow" class="modal-fields" style="display:none">
                     <div class="flow-field">
-                        <label class="flow-label">Target Flow</label>
+                        <label class="flow-label">Flujo destino</label>
                         <select id="cf-target" class="flow-input" style="font-size:0.85rem;">
                             <option value="">--- Select flow ---</option>
                         </select>
                         <small style="color: #9ca3af; font-size: 0.7rem;">When this flow ends, execution returns to the parent flow.</small>
                     </div>
                     <div class="flow-field">
-                        <label class="flow-label">Return node (optional)</label>
+                        <label class="flow-label">Nodo de retorno (optional)</label>
                         <input type="text" id="cf-return" class="flow-input" placeholder="node_key to return to in parent" list="parent-nodes-list">
                         <small style="color: #9ca3af; font-size: 0.7rem;">Leave empty to continue from where call was made.</small>
                     </div>
@@ -280,7 +280,7 @@
                 <button class="flow-btn flow-btn-danger" id="deleteNodeBtn" style="display: none; font-size: 0.75rem;" onclick="deleteCurrentNode()">🗑 Delete</button>
                 <div>
                     <button class="flow-btn flow-btn-outline" data-dismiss="modal" style="font-size: 0.8rem; margin-right: 6px;">Cancel</button>
-                    <button class="flow-btn flow-btn-primary" onclick="saveNodeModal()" style="font-size: 0.8rem;">💾 Save Node</button>
+                    <button class="flow-btn flow-btn-primary" onclick="saveNodeModal()" style="font-size: 0.8rem;">💾 Guardar Node</button>
                 </div>
             </div>
         </div>

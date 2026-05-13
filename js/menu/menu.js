@@ -16,13 +16,12 @@ const save_menu = async () => {
 		if (men_icon == "") throw new Error("Icon is required");
 		if (men_url == "") throw new Error("Url is required");
 		let now = new Date();
-		let men_create_date = now.toISOString();
 		const men_id_input = document.querySelector(`#men_id`).value;
 		let url_menu = `${base_url}Menu/save`
-		let data_send = { men_status, men_description, men_icon, men_create_date,men_url }
+		let data_send = { men_status, men_description, men_icon, men_url }
 		if(men_id_input != ""){
 			url_menu = `${base_url}Menu/update`
-			data_send = { men_status, men_description, men_icon, men_create_date,men_id,men_url  }
+			data_send = { men_status, men_description, men_icon, men_id,men_url  }
 		}
 		send_data(url_menu, data_send)
 			.then(response => {

@@ -4,8 +4,8 @@
             <div style="background: #fff; border-radius: 16px; border: 1px solid #e5e7eb; padding: 32px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
                 <div style="text-align: center; margin-bottom: 24px;">
                     <div style="font-size: 2.5rem; margin-bottom: 8px;">🧩</div>
-                    <h5 style="margin: 0; font-size: 1.1rem;">Create a New Flow</h5>
-                    <p class="text-muted" style="font-size: 0.85rem; margin-top: 4px;">Define a conversation path for your bot</p>
+                    <h5 style="margin: 0; font-size: 1.1rem;">Crear nuevo flujo</h5>
+                    <p class="text-muted" style="font-size: 0.85rem; margin-top: 4px;">Define la conversacion de tu bot</p>
                 </div>
                 <form id="form_create">
                     <div style="margin-bottom: 16px;">

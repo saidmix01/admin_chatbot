@@ -3,7 +3,7 @@
         <div>
             <h4 style="margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
                 <i class="feather icon-git-branch" style="color: #6366F1;"></i>
-                Conversation Flows
+                Flujos conversacionales
             </h4>
             <small class="text-muted">Create and manage your bot's conversation flows</small>
         </div>
