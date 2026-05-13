@@ -11,6 +11,25 @@
       "description": "Endpoints que el bot service llama para operar. No requieren sesión.",
       "item": [
         {
+          "name": "Login del bot",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"admin@ejemplo.com\",\n    \"password\": \"mi-clave\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/BotApi/login",
+              "host": ["{{base_url}}"],
+              "path": ["BotApi", "login"]
+            }
+          },
+          "response": [
+            {"name": "Login exitoso", "body": "{\"status\":true,\"data\":{\"us_id\":2,\"us_name\":\"Juan Pérez\",\"us_email\":\"admin@ejemplo.com\",\"store\":{\"sto_id\":1,\"sto_name\":\"Mi Tienda\",\"sto_phone\":\"573001234567\",\"sto_wellcome_message\":\"¡Bienvenido!\"}}}", "code": 200}
+          ]
+        },
+        {
           "name": "Obtener info de tienda",
           "request": {
             "method": "POST",

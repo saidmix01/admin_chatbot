@@ -7,6 +7,7 @@ class BotApi extends CI_Controller
     {
         parent::__construct();
         $this->load->database();
+        $this->load->library('session');
         header('Content-Type: application/json; charset=UTF-8');
     }
 
@@ -26,9 +27,38 @@ class BotApi extends CI_Controller
         return [];
     }
 
-    // ──────────────────────────────────────────
-    //  BOT → ADMIN (públicos)
-    // ──────────────────────────────────────────
+    public function login()
+    {
+        $data = $this->input();
+        $email = $data['email'] ?? '';
+        $password = $data['password'] ?? '';
+        if (!$email || !$password) {
+            $this->json(['status' => false, 'message' => 'email y password requeridos'], 400);
+        }
+
+        $user = $this->db->where('us_email', $email)->get('users')->row();
+        if (!$user) {
+            $this->json(['status' => false, 'message' => 'Credenciales inválidas'], 401);
+        }
+
+        if (!password_verify($password, $user->us_password)) {
+            $this->json(['status' => false, 'message' => 'Credenciales inválidas'], 401);
+        }
+
+        $store = $this->db->where('us_id', $user->us_id)->get('stores')->row();
+
+        $this->json(['status' => true, 'data' => [
+            'us_id' => $user->us_id,
+            'us_name' => $user->us_name,
+            'us_email' => $user->us_email,
+            'store' => $store ? [
+                'sto_id' => $store->sto_id,
+                'sto_name' => $store->sto_name,
+                'sto_phone' => $store->sto_phone,
+                'sto_wellcome_message' => $store->sto_wellcome_message
+            ] : null
+        ]]);
+    }
 
     public function update_qr()
     {
@@ -124,10 +154,6 @@ class BotApi extends CI_Controller
         $this->json(['status' => true, 'message' => 'Estado del pedido actualizado']);
     }
 
-    // ──────────────────────────────────────────
-    //  BOT → ADMIN (GET - lectura)
-    // ──────────────────────────────────────────
-
     public function get_bot_config($us_id = 0)
     {
         if (!$us_id) $this->json(['status' => false, 'message' => 'us_id requerido'], 400);
@@ -168,10 +194,6 @@ class BotApi extends CI_Controller
         $store = $this->db->where('us_id', $us_id)->get('stores')->row();
         $this->json(['status' => true, 'data' => $store ?: (object)[]]);
     }
-
-    // ──────────────────────────────────────────
-    //  ADMIN → Bot (protegidos por sesión)
-    // ──────────────────────────────────────────
 
     private function check_session()
     {
