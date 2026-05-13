@@ -108,8 +108,8 @@
       ]
     },
     {
-      "name": "🔌 Bot Service (Nuevos - pendientes de implementar)",
-      "description": "Endpoints planificados para la nueva versión del bot. Pendientes de implementar en el controlador BotApi.",
+      "name": "🔌 Bot Service (BotApi)",
+      "description": "Endpoints del controlador BotApi. El bot service los usa para QR, estado, pedidos y mensajes.",
       "item": [
         {
           "name": "Enviar QR",
