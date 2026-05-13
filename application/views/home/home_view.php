@@ -105,8 +105,4 @@
         </div>
     </div>
 
-    <!-- Content stores (existing) -->
-    <div class="row" id="content_stores" style="margin-top: 2rem;"></div>
-
-</div>
 <!-- [ content ] End -->

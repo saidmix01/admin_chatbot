@@ -23,7 +23,7 @@ class Home extends CI_Controller
 				"active_menu" => "dashboard",
 				"user_data" => $user_data["data"],
 				"menus" => $menus_result["data"] ?? array(),
-				"scripts" => ["js/dashboard/dashboard.js"],
+				"scripts" => ["js/dashboard/dashboard.js?v=" . time()],
 				"whatsapp_status" => $this->get_whatsapp_status(),
 				"whatsapp_number" => $this->get_whatsapp_number(),
 				"bot_status" => $this->get_bot_status(),

@@ -27,7 +27,7 @@ class Menu extends CI_Controller
 			$data_header["user_data"] = $user_data["data"];
 			$data_header["menus"] = get_user_menus(array("us_id" => $this->session->userdata('us_id')))["data"];
 			$data_footer["scripts"] = [
-				"js/menu/menu.js"
+				"js/menu/menu.js?cv=" . time()
 			];
 			$this->load->view('includes/header', $data_header);
 			$this->load->view('menu/menu_view');
