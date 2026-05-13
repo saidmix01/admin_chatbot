@@ -13,61 +13,186 @@
           "name": "Login del bot",
           "request": {
             "method": "POST",
-            "header": [{"key": "Content-Type", "value": "application/json"}],
-            "body": {"mode": "raw", "raw": "{\n    \"email\": \"admin@ejemplo.com\",\n    \"password\": \"mi-clave\"\n}"},
-            "url": {"raw": "{{base_url}}/BotApi/login", "path": ["BotApi", "login"]}
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"admin@ejemplo.com\",\n    \"password\": \"mi-clave\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/BotApi/login",
+              "path": [
+                "BotApi",
+                "login"
+              ]
+            }
           },
-          "response": [{"name": "Login exitoso", "code": 200, "body": "{\"status\":true,\"data\":{\"us_id\":2,\"us_name\":\"Juan Pérez\",\"us_email\":\"admin@ejemplo.com\",\"store\":{\"sto_id\":1,\"sto_name\":\"Mi Tienda\",\"sto_phone\":\"573001234567\",\"sto_wellcome_message\":\"¡Bienvenido!\"}}}"}, {"name": "Credenciales inválidas", "code": 401, "body": "{\"status\":false,\"message\":\"Credenciales inválidas\"}"}]
+          "response": [
+            {
+              "name": "Login exitoso",
+              "code": 200,
+              "body": "{\"status\":true,\"data\":{\"us_id\":2,\"us_name\":\"Juan Pérez\",\"us_email\":\"admin@ejemplo.com\",\"store\":{\"sto_id\":1,\"sto_name\":\"Mi Tienda\",\"sto_phone\":\"573001234567\",\"sto_wellcome_message\":\"¡Bienvenido!\"}}}"
+            },
+            {
+              "name": "Credenciales inválidas",
+              "code": 401,
+              "body": "{\"status\":false,\"message\":\"Credenciales inválidas\"}"
+            }
+          ]
         },
         {
           "name": "Obtener info de tienda",
           "request": {
             "method": "POST",
-            "header": [{"key": "Content-Type", "value": "application/json"}],
-            "body": {"mode": "raw", "raw": "{\n    \"us_id\": 2,\n    \"sto_id\": 1\n}"},
-            "url": {"raw": "{{base_url}}/Api/get_store_information", "path": ["Api", "get_store_information"]}
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"us_id\": 2,\n    \"sto_id\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/Api/get_store_information",
+              "path": [
+                "Api",
+                "get_store_information"
+              ]
+            }
           },
-          "response": [{"name": "Tienda encontrada", "code": 200, "body": "{\"status\":true,\"data\":[{\"sto_id\":1,\"sto_name\":\"Café Colombia\",\"sto_email\":\"cafe@ejemplo.com\",\"sto_direction\":\"Calle 10 #20-30\",\"sto_phone\":\"573001112233\",\"sto_wellcome_message\":\"¡Bienvenido!\"}]}"}]
+          "response": [
+            {
+              "name": "Tienda encontrada",
+              "code": 200,
+              "body": "{\"status\":true,\"data\":[{\"sto_id\":1,\"sto_name\":\"Café Colombia\",\"sto_email\":\"cafe@ejemplo.com\",\"sto_direction\":\"Calle 10 #20-30\",\"sto_phone\":\"573001112233\",\"sto_wellcome_message\":\"¡Bienvenido!\"}]}"
+            }
+          ]
         },
         {
           "name": "Obtener preguntas del bot",
           "request": {
             "method": "POST",
-            "header": [{"key": "Content-Type", "value": "application/json"}],
-            "body": {"mode": "raw", "raw": "{\n    \"us_id\": 2,\n    \"chq_parent\": null\n}"},
-            "url": {"raw": "{{base_url}}/Api/get_questions", "path": ["Api", "get_questions"]}
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"us_id\": 2,\n    \"chq_parent\": null\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/Api/get_questions",
+              "path": [
+                "Api",
+                "get_questions"
+              ]
+            }
           },
-          "response": [{"name": "Preguntas encontradas", "code": 200, "body": "{\"status\":true,\"data\":[{\"chq_id\":1,\"chq_text\":\"¿Qué deseas hoy?\",\"chq_type\":2,\"chq_order\":1,\"chq_lists\":null,\"chq_parent\":null,\"options\":[{\"opt_id\":1,\"opt_description\":\"Ver menú\",\"opt_price\":null}]}]}"}]
+          "response": [
+            {
+              "name": "Preguntas encontradas",
+              "code": 200,
+              "body": "{\"status\":true,\"data\":[{\"chq_id\":1,\"chq_text\":\"¿Qué deseas hoy?\",\"chq_type\":2,\"chq_order\":1,\"chq_lists\":null,\"chq_parent\":null,\"options\":[{\"opt_id\":1,\"opt_description\":\"Ver menú\",\"opt_price\":null}]}]}"
+            }
+          ]
         },
         {
           "name": "Obtener opciones de una lista",
           "request": {
             "method": "POST",
-            "header": [{"key": "Content-Type", "value": "application/json"}],
-            "body": {"mode": "raw", "raw": "{\n    \"us_id\": 2,\n    \"lis_id\": 1\n}"},
-            "url": {"raw": "{{base_url}}/Api/get_options_by_list", "path": ["Api", "get_options_by_list"]}
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"us_id\": 2,\n    \"lis_id\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/Api/get_options_by_list",
+              "path": [
+                "Api",
+                "get_options_by_list"
+              ]
+            }
           },
-          "response": [{"name": "Opciones encontradas", "code": 200, "body": "{\"status\":true,\"data\":[{\"opt_id\":1,\"opt_description\":\"Café Colombiano\",\"opt_price\":15000,\"opt_qty\":10,\"opt_more_information\":\"Café de origen 250g\"}]}"}]
+          "response": [
+            {
+              "name": "Opciones encontradas",
+              "code": 200,
+              "body": "{\"status\":true,\"data\":[{\"opt_id\":1,\"opt_description\":\"Café Colombiano\",\"opt_price\":15000,\"opt_qty\":10,\"opt_more_information\":\"Café de origen 250g\"}]}"
+            }
+          ]
         },
         {
           "name": "Guardar estadística",
           "request": {
             "method": "POST",
-            "header": [{"key": "Content-Type", "value": "application/json"}],
-            "body": {"mode": "raw", "raw": "{\n    \"us_id\": 2,\n    \"st_information\": {\"type\":\"interaction\",\"question_id\":1,\"answer\":\"ver_menu\"},\n    \"st_status\": 1,\n    \"st_log\": [\"2026-05-12 22:30:01 - usuario eligió ver menú\"],\n    \"st_create_date\": \"2026-05-12\"\n}"},
-            "url": {"raw": "{{base_url}}/Api/save_statistics", "path": ["Api", "save_statistics"]}
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"us_id\": 2,\n    \"st_information\": {\"type\":\"interaction\",\"question_id\":1,\"answer\":\"ver_menu\"},\n    \"st_status\": 1,\n    \"st_log\": [\"2026-05-12 22:30:01 - usuario eligió ver menú\"],\n    \"st_create_date\": \"2026-05-12\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/Api/save_statistics",
+              "path": [
+                "Api",
+                "save_statistics"
+              ]
+            }
           },
-          "response": [{"name": "Estadística guardada", "code": 200, "body": "{\"status\":true,\"data\":[]}"}]
+          "response": [
+            {
+              "name": "Estadística guardada",
+              "code": 200,
+              "body": "{\"status\":true,\"data\":[]}"
+            }
+          ]
         },
         {
           "name": "Actualizar estadística",
           "request": {
             "method": "POST",
-            "header": [{"key": "Content-Type", "value": "application/json"}],
-            "body": {"mode": "raw", "raw": "{\n    \"st_id\": 1,\n    \"st_information\": {\"type\":\"completed_order\"},\n    \"st_status\": 2\n}"},
-            "url": {"raw": "{{base_url}}/Api/update_statistics", "path": ["Api", "update_statistics"]}
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"st_id\": 1,\n    \"st_information\": {\"type\":\"completed_order\"},\n    \"st_status\": 2\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/Api/update_statistics",
+              "path": [
+                "Api",
+                "update_statistics"
+              ]
+            }
           },
-          "response": [{"name": "Estadística actualizada", "code": 200, "body": "{\"status\":true}"}]
+          "response": [
+            {
+              "name": "Estadística actualizada",
+              "code": 200,
+              "body": "{\"status\":true}"
+            }
+          ]
         }
       ]
     },
@@ -79,66 +204,236 @@
           "name": "Enviar QR",
           "request": {
             "method": "POST",
-            "header": [{"key": "Content-Type", "value": "application/json"}],
-            "body": {"mode": "raw", "raw": "{\n    \"us_id\": 2,\n    \"qr_base64\": \"iVBORw0KGgoAAAANSUhEUgA...\"\n}"},
-            "url": {"raw": "{{base_url}}/BotApi/update_qr", "path": ["BotApi", "update_qr"]}
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"us_id\": 2,\n    \"qr_base64\": \"iVBORw0KGgoAAAANSUhEUgA...\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/BotApi/update_qr",
+              "path": [
+                "BotApi",
+                "update_qr"
+              ]
+            }
           },
-          "response": [{"name": "QR actualizado", "code": 200, "body": "{\"status\":true,\"message\":\"QR actualizado\"}"}]
+          "response": [
+            {
+              "name": "QR actualizado",
+              "code": 200,
+              "body": "{\"status\":true,\"message\":\"QR actualizado\"}"
+            }
+          ]
         },
         {
           "name": "Reportar estado conexión",
           "request": {
             "method": "POST",
-            "header": [{"key": "Content-Type", "value": "application/json"}],
-            "body": {"mode": "raw", "raw": "{\n    \"us_id\": 2,\n    \"status\": \"connected\",\n    \"whatsapp_number\": \"573001234567\"\n}"},
-            "url": {"raw": "{{base_url}}/BotApi/update_status", "path": ["BotApi", "update_status"]}
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"us_id\": 2,\n    \"status\": \"connected\",\n    \"whatsapp_number\": \"573001234567\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/BotApi/update_status",
+              "path": [
+                "BotApi",
+                "update_status"
+              ]
+            }
           },
-          "response": [{"name": "Estado actualizado", "code": 200, "body": "{\"status\":true,\"message\":\"Estado actualizado\"}"}]
+          "response": [
+            {
+              "name": "Estado actualizado",
+              "code": 200,
+              "body": "{\"status\":true,\"message\":\"Estado actualizado\"}"
+            }
+          ]
         },
         {
           "name": "Registrar pedido",
           "request": {
             "method": "POST",
-            "header": [{"key": "Content-Type", "value": "application/json"}],
-            "body": {"mode": "raw", "raw": "{\n    \"us_id\": 2,\n    \"customer_name\": \"María Pérez\",\n    \"customer_phone\": \"573001234567\",\n    \"product_name\": \"Café Colombiano\",\n    \"quantity\": 2,\n    \"message\": \"Quiero 2 libras de café\"\n}"},
-            "url": {"raw": "{{base_url}}/BotApi/new_order", "path": ["BotApi", "new_order"]}
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"us_id\": 2,\n    \"customer_name\": \"María Pérez\",\n    \"customer_phone\": \"573001234567\",\n    \"product_name\": \"Café Colombiano\",\n    \"quantity\": 2,\n    \"message\": \"Quiero 2 libras de café\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/BotApi/new_order",
+              "path": [
+                "BotApi",
+                "new_order"
+              ]
+            }
           },
-          "response": [{"name": "Pedido registrado", "code": 200, "body": "{\"status\":true,\"message\":\"Pedido registrado\"}"}]
+          "response": [
+            {
+              "name": "Pedido registrado",
+              "code": 200,
+              "body": "{\"status\":true,\"message\":\"Pedido registrado\"}"
+            }
+          ]
         },
         {
           "name": "Registrar mensaje de chat",
           "request": {
             "method": "POST",
-            "header": [{"key": "Content-Type", "value": "application/json"}],
-            "body": {"mode": "raw", "raw": "{\n    \"us_id\": 2,\n    \"from\": \"customer\",\n    \"customer_phone\": \"573001234567\",\n    \"customer_name\": \"María Pérez\",\n    \"message\": \"Hola, ¿tienen café molido?\"\n}"},
-            "url": {"raw": "{{base_url}}/BotApi/log_message", "path": ["BotApi", "log_message"]}
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"us_id\": 2,\n    \"from\": \"customer\",\n    \"customer_phone\": \"573001234567\",\n    \"customer_name\": \"María Pérez\",\n    \"message\": \"Hola, ¿tienen café molido?\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/BotApi/log_message",
+              "path": [
+                "BotApi",
+                "log_message"
+              ]
+            }
           },
-          "response": [{"name": "Mensaje registrado", "code": 200, "body": "{\"status\":true,\"message\":\"Mensaje registrado\"}"}]
+          "response": [
+            {
+              "name": "Mensaje registrado",
+              "code": 200,
+              "body": "{\"status\":true,\"message\":\"Mensaje registrado\"}"
+            }
+          ]
         },
         {
           "name": "Actualizar estado del pedido",
           "request": {
             "method": "POST",
-            "header": [{"key": "Content-Type", "value": "application/json"}],
-            "body": {"mode": "raw", "raw": "{\n    \"bo_id\": 1,\n    \"status\": \"completado\"\n}"},
-            "url": {"raw": "{{base_url}}/BotApi/update_order_status", "path": ["BotApi", "update_order_status"]}
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"bo_id\": 1,\n    \"status\": \"completado\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/BotApi/update_order_status",
+              "path": [
+                "BotApi",
+                "update_order_status"
+              ]
+            }
           },
-          "response": [{"name": "Estado actualizado", "code": 200, "body": "{\"status\":true,\"message\":\"Estado del pedido actualizado\"}"}]
+          "response": [
+            {
+              "name": "Estado actualizado",
+              "code": 200,
+              "body": "{\"status\":true,\"message\":\"Estado del pedido actualizado\"}"
+            }
+          ]
         },
         {
           "name": "Obtener config del bot",
-          "request": {"method": "GET", "url": {"raw": "{{base_url}}/BotApi/get_bot_config/{{us_id}}", "path": ["BotApi", "get_bot_config", "{{us_id}}"]}},
-          "response": [{"name": "Config obtenida", "code": 200, "body": "{\"status\":true,\"data\":{\"business_name\":\"Café Colombia\",\"welcome_msg\":\"¡Bienvenido!\",\"menu_msg\":\"Elige una opción:\",\"offhours_msg\":\"Fuera de horario...\",\"goodbye_msg\":\"¡Gracias!\",\"whatsapp_number\":\"573001234567\",\"bot_status\":\"connected\"}}"}]
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/BotApi/get_bot_config/{{us_id}}",
+              "path": [
+                "BotApi",
+                "get_bot_config",
+                "{{us_id}}"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Config obtenida",
+              "code": 200,
+              "body": "{\"status\":true,\"data\":{\"business_name\":\"Café Colombia\",\"welcome_msg\":\"¡Bienvenido!\",\"menu_msg\":\"Elige una opción:\",\"offhours_msg\":\"Fuera de horario...\",\"goodbye_msg\":\"¡Gracias!\",\"whatsapp_number\":\"573001234567\",\"bot_status\":\"connected\"}}"
+            }
+          ]
         },
         {
           "name": "Obtener productos",
-          "request": {"method": "GET", "url": {"raw": "{{base_url}}/BotApi/get_products/{{us_id}}", "path": ["BotApi", "get_products", "{{us_id}}"]}},
-          "response": [{"name": "Productos encontrados", "code": 200, "body": "{\"status\":true,\"data\":[{\"ser_id\":1,\"ser_name\":\"Café Colombiano\",\"ser_price\":15000,\"ser_description\":\"Café de origen\",\"ser_type\":\"producto\"}]}"}]
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/BotApi/get_products/{{us_id}}",
+              "path": [
+                "BotApi",
+                "get_products",
+                "{{us_id}}"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Productos encontrados",
+              "code": 200,
+              "body": "{\"status\":true,\"data\":[{\"ser_id\":1,\"ser_name\":\"Café Colombiano\",\"ser_price\":15000,\"ser_description\":\"Café de origen\",\"ser_type\":\"producto\"}]}"
+            }
+          ]
         },
         {
           "name": "Obtener info del negocio",
-          "request": {"method": "GET", "url": {"raw": "{{base_url}}/BotApi/get_business/{{us_id}}", "path": ["BotApi", "get_business", "{{us_id}}"]}},
-          "response": [{"name": "Negocio encontrado", "code": 200, "body": "{\"status\":true,\"data\":{\"sto_id\":1,\"sto_name\":\"Café Colombia\",\"sto_phone\":\"573001112233\",\"sto_direction\":\"Calle 10 #20-30\"}}"}]
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/BotApi/get_business/{{us_id}}",
+              "path": [
+                "BotApi",
+                "get_business",
+                "{{us_id}}"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Negocio encontrado",
+              "code": 200,
+              "body": "{\"status\":true,\"data\":{\"sto_id\":1,\"sto_name\":\"Café Colombia\",\"sto_phone\":\"573001112233\",\"sto_direction\":\"Calle 10 #20-30\"}}"
+            }
+          ]
+        },
+        {
+          "name": "Obtener flujo publicado (get_flow)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/BotApi/get_flow/{{us_id}}",
+              "path": [
+                "BotApi",
+                "get_flow",
+                "{{us_id}}"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Flujo encontrado",
+              "code": 200,
+              "body": "{\n  \"status\": true,\n  \"store\": \"Mi Tienda\",\n  \"data\": [\n    {\n      \"id\": 1,\n      \"name\": \"Ventas\",\n      \"description\": \"Flujo principal de ventas\",\n      \"version\": 2,\n      \"published_at\": \"2026-05-13 12:00:00\",\n      \"triggers\": [{\"type\": \"keyword\", \"value\": \"menu\"}],\n      \"nodes\": [\n        {\"key\": \"start\", \"type\": \"message\", \"payload\": {\"text\": \"¡Hola! Bienvenido\"}},\n        {\"key\": \"ask\", \"type\": \"question\", \"payload\": {\"text\": \"¿Cómo te llamas?\", \"save_to\": \"name\"}}\n      ],\n      \"edges\": [\n        {\"from\": \"start\", \"to\": \"ask\", \"rule\": null}\n      ]\n    }\n  ]\n}"
+            }
+          ]
         }
       ]
     },
@@ -148,28 +443,113 @@
       "item": [
         {
           "name": "Obtener QR del bot",
-          "request": {"method": "GET", "url": {"raw": "{{base_url}}/BotApi/get_qr/{{us_id}}", "path": ["BotApi", "get_qr", "{{us_id}}"]}},
-          "response": [{"name": "QR disponible", "code": 200, "body": "{\"status\":true,\"qr\":\"iVBORw0KGgo...\",\"status_text\":\"waiting_scan\"}"}, {"name": "Sin sesión", "code": 200, "body": "{\"status\":false,\"qr\":null,\"status_text\":\"no_session\"}"}]
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/BotApi/get_qr/{{us_id}}",
+              "path": [
+                "BotApi",
+                "get_qr",
+                "{{us_id}}"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "QR disponible",
+              "code": 200,
+              "body": "{\"status\":true,\"qr\":\"iVBORw0KGgo...\",\"status_text\":\"waiting_scan\"}"
+            },
+            {
+              "name": "Sin sesión",
+              "code": 200,
+              "body": "{\"status\":false,\"qr\":null,\"status_text\":\"no_session\"}"
+            }
+          ]
         },
         {
           "name": "Obtener estado completo",
-          "request": {"method": "GET", "url": {"raw": "{{base_url}}/BotApi/get_status/{{us_id}}", "path": ["BotApi", "get_status", "{{us_id}}"]}},
-          "response": [{"name": "Estado completo", "code": 200, "body": "{\"status\":true,\"data\":{\"bs_id\":1,\"us_id\":2,\"bs_status\":\"connected\",\"bs_whatsapp_number\":\"573001234567\",\"bs_last_activity\":\"2026-05-12 22:30:00\"}}"}]
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/BotApi/get_status/{{us_id}}",
+              "path": [
+                "BotApi",
+                "get_status",
+                "{{us_id}}"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Estado completo",
+              "code": 200,
+              "body": "{\"status\":true,\"data\":{\"bs_id\":1,\"us_id\":2,\"bs_status\":\"connected\",\"bs_whatsapp_number\":\"573001234567\",\"bs_last_activity\":\"2026-05-12 22:30:00\"}}"
+            }
+          ]
         },
         {
           "name": "Refrescar QR",
-          "request": {"method": "POST", "url": {"raw": "{{base_url}}/BotApi/refresh_qr/{{us_id}}", "path": ["BotApi", "refresh_qr", "{{us_id}}"]}},
-          "response": [{"name": "QR reseteado", "code": 200, "body": "{\"status\":true,\"message\":\"QR reset. El bot generará uno nuevo.\"}"}]
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/BotApi/refresh_qr/{{us_id}}",
+              "path": [
+                "BotApi",
+                "refresh_qr",
+                "{{us_id}}"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "QR reseteado",
+              "code": 200,
+              "body": "{\"status\":true,\"message\":\"QR reset. El bot generará uno nuevo.\"}"
+            }
+          ]
         },
         {
           "name": "Obtener pedidos",
-          "request": {"method": "GET", "url": {"raw": "{{base_url}}/BotApi/get_orders/{{us_id}}", "path": ["BotApi", "get_orders", "{{us_id}}"]}},
-          "response": [{"name": "Lista de pedidos", "code": 200, "body": "{\"status\":true,\"data\":[{\"bo_id\":1,\"us_id\":2,\"bo_customer_name\":\"María Pérez\",\"bo_customer_phone\":\"573001234567\",\"bo_product_name\":\"Café Colombiano\",\"bo_quantity\":2,\"bo_status\":\"nuevo\",\"created_at\":\"2026-05-12 22:35:00\"}]}"}]
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/BotApi/get_orders/{{us_id}}",
+              "path": [
+                "BotApi",
+                "get_orders",
+                "{{us_id}}"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Lista de pedidos",
+              "code": 200,
+              "body": "{\"status\":true,\"data\":[{\"bo_id\":1,\"us_id\":2,\"bo_customer_name\":\"María Pérez\",\"bo_customer_phone\":\"573001234567\",\"bo_product_name\":\"Café Colombiano\",\"bo_quantity\":2,\"bo_status\":\"nuevo\",\"created_at\":\"2026-05-12 22:35:00\"}]}"
+            }
+          ]
         },
         {
           "name": "Obtener mensajes",
-          "request": {"method": "GET", "url": {"raw": "{{base_url}}/BotApi/get_messages/{{us_id}}", "path": ["BotApi", "get_messages", "{{us_id}}"]}},
-          "response": [{"name": "Lista de mensajes", "code": 200, "body": "{\"status\":true,\"data\":[{\"bm_id\":1,\"us_id\":2,\"bm_from\":\"customer\",\"bm_customer_phone\":\"573001234567\",\"bm_customer_name\":\"María Pérez\",\"bm_message\":\"Hola ¿tienen café molido?\",\"created_at\":\"2026-05-12 22:34:00\"}]}"}]
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/BotApi/get_messages/{{us_id}}",
+              "path": [
+                "BotApi",
+                "get_messages",
+                "{{us_id}}"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Lista de mensajes",
+              "code": 200,
+              "body": "{\"status\":true,\"data\":[{\"bm_id\":1,\"us_id\":2,\"bm_from\":\"customer\",\"bm_customer_phone\":\"573001234567\",\"bm_customer_name\":\"María Pérez\",\"bm_message\":\"Hola ¿tienen café molido?\",\"created_at\":\"2026-05-12 22:34:00\"}]}"
+            }
+          ]
         }
       ]
     },
@@ -181,88 +561,463 @@
           "name": "Login (panel)",
           "request": {
             "method": "POST",
-            "header": [{"key": "Content-Type", "value": "application/x-www-form-urlencoded"}],
-            "body": {"mode": "urlencoded", "urlencoded": [{"key": "us_email", "value": "admin@ejemplo.com"}, {"key": "us_password", "value": "mi-clave"}]},
-            "url": {"raw": "{{base_url}}/Login", "path": ["Login"]}
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "us_email",
+                  "value": "admin@ejemplo.com"
+                },
+                {
+                  "key": "us_password",
+                  "value": "mi-clave"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/Login",
+              "path": [
+                "Login"
+              ]
+            }
           }
         },
         {
           "name": "Crear tienda",
           "request": {
             "method": "POST",
-            "header": [{"key": "Content-Type", "value": "application/x-www-form-urlencoded"}],
-            "body": {"mode": "urlencoded", "urlencoded": [{"key": "sto_name", "value": "Mi Tienda"}, {"key": "sto_email", "value": "tienda@ejemplo.com"}, {"key": "sto_direction", "value": "Calle 10 #20-30"}, {"key": "sto_phone", "value": "573001234567"}]},
-            "url": {"raw": "{{base_url}}/Stores/save", "path": ["Stores", "save"]}
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "sto_name",
+                  "value": "Mi Tienda"
+                },
+                {
+                  "key": "sto_email",
+                  "value": "tienda@ejemplo.com"
+                },
+                {
+                  "key": "sto_direction",
+                  "value": "Calle 10 #20-30"
+                },
+                {
+                  "key": "sto_phone",
+                  "value": "573001234567"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/Stores/save",
+              "path": [
+                "Stores",
+                "save"
+              ]
+            }
           }
         },
         {
           "name": "Guardar preguntas",
           "request": {
             "method": "POST",
-            "header": [{"key": "Content-Type", "value": "application/json"}],
-            "body": {"mode": "raw", "raw": "{\"chq_text\":\"¿Qué deseas ordenar?\",\"chq_type\":1,\"chq_order\":1,\"chq_lists\":1,\"chq_parent\":null}"},
-            "url": {"raw": "{{base_url}}/Chat_configuration/save", "path": ["Chat_configuration", "save"]}
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"chq_text\":\"¿Qué deseas ordenar?\",\"chq_type\":1,\"chq_order\":1,\"chq_lists\":1,\"chq_parent\":null}"
+            },
+            "url": {
+              "raw": "{{base_url}}/Chat_configuration/save",
+              "path": [
+                "Chat_configuration",
+                "save"
+              ]
+            }
           }
         },
         {
           "name": "Listar listas",
-          "request": {"method": "GET", "url": {"raw": "{{base_url}}/List_manage", "path": ["List_manage"]}}
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/List_manage",
+              "path": [
+                "List_manage"
+              ]
+            }
+          }
         },
         {
           "name": "Crear lista",
           "request": {
             "method": "POST",
-            "header": [{"key": "Content-Type", "value": "application/x-www-form-urlencoded"}],
-            "body": {"mode": "urlencoded", "urlencoded": [{"key": "lis_name", "value": "Productos"}]},
-            "url": {"raw": "{{base_url}}/List_manage/save", "path": ["List_manage", "save"]}
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "lis_name",
+                  "value": "Productos"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/List_manage/save",
+              "path": [
+                "List_manage",
+                "save"
+              ]
+            }
           }
         },
         {
           "name": "Agregar opción",
           "request": {
             "method": "POST",
-            "header": [{"key": "Content-Type", "value": "application/json"}],
-            "body": {"mode": "raw", "raw": "{\"lis_id\":1,\"opt_description\":\"Café 250g\",\"opt_price\":15000,\"opt_qty\":50,\"opt_order\":1}"},
-            "url": {"raw": "{{base_url}}/List_manage/save_option", "path": ["List_manage", "save_option"]}
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"lis_id\":1,\"opt_description\":\"Café 250g\",\"opt_price\":15000,\"opt_qty\":50,\"opt_order\":1}"
+            },
+            "url": {
+              "raw": "{{base_url}}/List_manage/save_option",
+              "path": [
+                "List_manage",
+                "save_option"
+              ]
+            }
           }
         },
         {
           "name": "Listar usuarios",
-          "request": {"method": "GET", "url": {"raw": "{{base_url}}/Users", "path": ["Users"]}}
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/Users",
+              "path": [
+                "Users"
+              ]
+            }
+          }
         },
         {
           "name": "Crear usuario",
           "request": {
             "method": "POST",
-            "header": [{"key": "Content-Type", "value": "application/x-www-form-urlencoded"}],
-            "body": {"mode": "urlencoded", "urlencoded": [{"key": "us_name", "value": "Juan"}, {"key": "us_email", "value": "juan@ejemplo.com"}, {"key": "us_password", "value": "clave123"}, {"key": "pro_id", "value": "2"}]},
-            "url": {"raw": "{{base_url}}/Users/save", "path": ["Users", "save"]}
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "us_name",
+                  "value": "Juan"
+                },
+                {
+                  "key": "us_email",
+                  "value": "juan@ejemplo.com"
+                },
+                {
+                  "key": "us_password",
+                  "value": "clave123"
+                },
+                {
+                  "key": "pro_id",
+                  "value": "2"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/Users/save",
+              "path": [
+                "Users",
+                "save"
+              ]
+            }
           }
         },
         {
           "name": "Listar perfiles",
-          "request": {"method": "GET", "url": {"raw": "{{base_url}}/Profiles", "path": ["Profiles"]}}
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/Profiles",
+              "path": [
+                "Profiles"
+              ]
+            }
+          }
         },
         {
           "name": "Obtener frases de inicio",
-          "request": {"method": "GET", "url": {"raw": "{{base_url}}/Chat_configuration/get_starters", "path": ["Chat_configuration", "get_starters"]}},
-          "response": [{"name": "Frases obtenidas", "code": 200, "body": "{\"status\":true,\"data\":[\"¡Hola! ¿En qué puedo ayudarte?\",\"Bienvenido a mi tienda\",\"¿Buscas algo en especial?\"]}"}]
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/Chat_configuration/get_starters",
+              "path": [
+                "Chat_configuration",
+                "get_starters"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Frases obtenidas",
+              "code": 200,
+              "body": "{\"status\":true,\"data\":[\"¡Hola! ¿En qué puedo ayudarte?\",\"Bienvenido a mi tienda\",\"¿Buscas algo en especial?\"]}"
+            }
+          ]
         },
         {
           "name": "Guardar frases de inicio",
           "request": {
             "method": "POST",
-            "header": [{"key": "Content-Type", "value": "application/json"}],
-            "body": {"mode": "raw", "raw": "{\"starters\":[\"¡Hola! ¿En qué puedo ayudarte?\",\"Bienvenido a mi tienda\",\"¿Buscas algo en especial?\"]}"},
-            "url": {"raw": "{{base_url}}/Chat_configuration/save_starters", "path": ["Chat_configuration", "save_starters"]}
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"starters\":[\"¡Hola! ¿En qué puedo ayudarte?\",\"Bienvenido a mi tienda\",\"¿Buscas algo en especial?\"]}"
+            },
+            "url": {
+              "raw": "{{base_url}}/Chat_configuration/save_starters",
+              "path": [
+                "Chat_configuration",
+                "save_starters"
+              ]
+            }
           },
-          "response": [{"name": "Frases guardadas", "code": 200, "body": "{\"status\":true,\"message\":\"Frases guardadas\"}"}]
+          "response": [
+            {
+              "name": "Frases guardadas",
+              "code": 200,
+              "body": "{\"status\":true,\"message\":\"Frases guardadas\"}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "🧩 Flow Builder",
+      "description": "Endpoints para crear y gestionar flujos conversacionales.",
+      "item": [
+        {
+          "name": "Crear flujo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "name",
+                  "value": "Ventas"
+                },
+                {
+                  "key": "description",
+                  "value": "Flujo para ventas"
+                },
+                {
+                  "key": "trigger_value",
+                  "value": "menu"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/FlowBuilder/create",
+              "path": [
+                "FlowBuilder",
+                "create"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Guardar nodos del flujo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nodes\": [\n    {\"node_key\": \"start\", \"type\": \"message\", \"payload\": {\"text\": \"¡Bienvenido!\"}},\n    {\"node_key\": \"ask_name\", \"type\": \"question\", \"payload\": {\"text\": \"¿Cómo te llamas?\", \"save_to\": \"name\"}},\n    {\"node_key\": \"say_hello\", \"type\": \"message\", \"payload\": {\"text\": \"Hola {{name}}, en qué puedo ayudarte?\"}},\n    {\"node_key\": \"end\", \"type\": \"end\", \"payload\": {}}\n  ],\n  \"edges\": [\n    {\"from\": \"start\", \"to\": \"ask_name\", \"rule\": null},\n    {\"from\": \"ask_name\", \"to\": \"say_hello\", \"rule\": null},\n    {\"from\": \"say_hello\", \"to\": \"end\", \"rule\": null}\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/FlowBuilder/save_nodes/1",
+              "path": [
+                "FlowBuilder",
+                "save_nodes",
+                "1"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Nodos guardados",
+              "code": 200,
+              "body": "{\"status\":true,\"message\":\"Nodos guardados\"}"
+            }
+          ]
+        },
+        {
+          "name": "Validar versión del flujo",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/FlowBuilder/validate_version/1",
+              "path": [
+                "FlowBuilder",
+                "validate_version",
+                "1"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Válido",
+              "code": 200,
+              "body": "{\"status\":true,\"message\":\"Flujo válido\",\"errors\":[]}"
+            },
+            {
+              "name": "Con errores",
+              "code": 200,
+              "body": "{\"status\":false,\"message\":\"Errores encontrados\",\"errors\":[\"Falta nodo start\",\"Nodo ask no tiene salida\"]}"
+            }
+          ]
+        },
+        {
+          "name": "Publicar flujo",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/FlowBuilder/publish/1",
+              "path": [
+                "FlowBuilder",
+                "publish",
+                "1"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Publicado",
+              "code": 200,
+              "body": "{\"status\":true,\"message\":\"Flujo publicado\"}"
+            }
+          ]
+        },
+        {
+          "name": "Guardar trigger del flujo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "trigger_value",
+                  "value": "menu"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/FlowBuilder/save_trigger/1",
+              "path": [
+                "FlowBuilder",
+                "save_trigger",
+                "1"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Trigger guardado",
+              "code": 200,
+              "body": "{\"status\":true,\"message\":\"Trigger guardado\"}"
+            }
+          ]
+        },
+        {
+          "name": "Obtener catálogo (productos/servicios)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/FlowBuilder/api_catalog",
+              "path": [
+                "FlowBuilder",
+                "api_catalog"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Catálogo obtenido",
+              "code": 200,
+              "body": "{\n  \"status\": true,\n  \"data\": {\n    \"products\": [\n      {\"ser_id\": 1, \"ser_name\": \"Plan Básico\", \"ser_price\": 29.99, \"ser_type\": \"producto\"}\n    ],\n    \"services\": [\n      {\"ser_id\": 6, \"ser_name\": \"Plan Arranca\", \"ser_price\": 20000, \"ser_type\": \"servicio\"}\n    ]\n  }\n}"
+            }
+          ]
         }
       ]
     }
   ],
   "variable": [
-    {"key": "base_url", "value": "https://admin.wapiapp.cloud", "type": "string"},
-    {"key": "us_id", "value": "2", "type": "number"}
+    {
+      "key": "base_url",
+      "value": "https://admin.wapiapp.cloud",
+      "type": "string"
+    },
+    {
+      "key": "us_id",
+      "value": "2",
+      "type": "number"
+    }
   ]
 }
