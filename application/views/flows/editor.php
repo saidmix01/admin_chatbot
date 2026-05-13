@@ -31,11 +31,11 @@
             <div class="flow-canvas" id="flowCanvas">
                 <div class="flow-canvas-header">
                     <div class="d-flex align-items-center" style="gap: 8px;">
-                        <span class="flow-view-tab active" data-view="steps" onclick="setFlowView('steps')" style="padding:4px 12px;border:none;border-radius:6px;font-size:0.75rem;cursor:pointer;font-weight:500;background:#fff;color:#6366F1;box-shadow:0 1px 2px rgba(0,0,0,0.06);">Steps</button><button class="flow-view-tab" data-view="canvas" onclick="setFlowView('canvas')" style="padding:4px 12px;border:none;border-radius:6px;font-size:0.75rem;cursor:pointer;font-weight:500;background:transparent;color:#6b7280;">Canvas</button></span>
+                        <span style="font-size: 0.8rem; font-weight: 600; color: #374151;">Steps</span>
                         <span class="text-muted" style="font-size: 0.7rem;" id="nodeCount">0 nodes</span>
                     </div>
                     <div class="d-flex" style="gap: 6px;">
-                        <button class="flow-btn flow-btn-outline" style="font-size: 0.7rem; padding: 3px 10px;" onclick="togglePreview()">👁 Preview</button>
+                        <button class="flow-btn flow-btn-outline" style="font-size: 0.7rem; padding: 3px 10px;" onclick="alert()">👁 Preview</button>
                         <button class="flow-btn flow-btn-primary" style="font-size: 0.7rem; padding: 3px 10px;" onclick="openNewNodeModal()">+ Add Node</button>
                     </div>
                 </div>
@@ -46,7 +46,7 @@
                         <p class="text-muted">Add nodes and connect them to create a conversation path.</p>
                         <button class="flow-btn flow-btn-primary" onclick="openNewNodeModal()">+ Add First Node</button>
                     </div>
-                    <div id="stepsView"><div id="stepEmptyState" style="display:none;text-align:center;padding:60px 20px;"><div style="font-size:3rem;">+</div><h5>Start building your flow</h5><p class="text-muted">Add conversation steps to create your flow.</p><button class="flow-btn flow-btn-primary" onclick="openNewNodeModal()">+ Add First Step</button></div><div id="stepsContainer" class="flow-steps-container"></div></div><div id="canvasView" style="display:none;"><div id="nodesContainer" class="flow-nodes-container"></div></div>
+                    <div id="stepsContainer" class="flow-steps-container"></div>
                 </div>
             </div>
         </div>
@@ -396,7 +396,7 @@
 .flow-step-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; margin-bottom: 4px; cursor: pointer; }
 .flow-step-card:hover { border-color: #6366F1; box-shadow: 0 2px 8px rgba(99,102,241,0.1); }
 .flow-step-card .step-header { display: flex; align-items: center; gap: 8px; padding: 12px 14px; border-bottom: 1px solid #f9fafb; }
-.flow-step-card .step-num { width: 22px; height: 22px; border-radius: 50%; background: #f3f4f6; color: #6b7280; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 600; }
+.flow-step-card .step-num { width: 22px; height: 22px; border-radius: 50%; background: #f3f4f6; color: #6b7280; font-weight: 600; font-size: 0.7rem; display: flex; align-items: center; justify-content: center; }
 .flow-step-card .step-icon { font-size: 1rem; }
 .flow-step-card .step-type { font-size: 0.65rem; background: #f3f4f6; padding: 2px 8px; border-radius: 4px; color: #6b7280; }
 .flow-step-card .step-text { flex: 1; font-size: 0.85rem; font-weight: 500; color: #374151; }
@@ -420,16 +420,11 @@
 .flow-step-options { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
 .flow-step-option { font-size: 0.7rem; background: #f3f4f6; padding: 2px 8px; border-radius: 4px; color: #6b7280; }
 
-
 </style>
 
 <div id=	oastContainer class=	oast-container></div>
 <script>
-
 const BASE_URL = '<?= base_url() ?>';
-
-
-
 // Close dropdown on outside click
 document.addEventListener('click', function(e) {
     var dd = document.getElementById('flowActionsDropdown');
@@ -446,17 +441,20 @@ var edges = <?= json_encode(array_map(function($e) {
     $r = $e->rule_json ? json_decode($e->rule_json, true) : null;
     return ['from' => $e->from_node_key, 'to' => $e->to_node_key, 'rule' => $r];
 }, $edges)) ?>;
+// --- Core Functions ---
 
 function toggleModalFields() {
     var type = document.getElementById('modal-type').value;
     document.querySelectorAll('.modal-fields').forEach(function(el) { el.style.display = 'none'; });
     var f = document.getElementById('modal-fields-' + type);
     if (f) f.style.display = 'block';
-    if (type === 'end') document.getElementById('modal-fields-message').style.display = 'block';
-        if (type === 'call_flow') loadFlowsForSelector();
-    // Update node list for condition/goto
+    if (type === 'call_flow') loadFlowsForSelector();
+    updateNodeList();
+}
+
+function updateNodeList() {
     var list = document.getElementById('nodes-list');
-    list.innerHTML = nodes.map(function(n) { return '<option value="' + n.node_key + '">'; }).join('');
+    if (list) list.innerHTML = nodes.map(function(n) { return '<option value="' + n.node_key + '">'; }).join('');
 }
 
 function getIcon(type) {
@@ -473,24 +471,23 @@ function getNodeSummary(n) {
     var p = n.payload || {};
     switch (n.type) {
         case 'message': return (p.text||'').substring(0, 60);
-        case 'question': return '❓ ' + (p.save_to||'?') + ': "' + (p.text||'').substring(0, 40) + '"';
-        case 'choice': return '📋 ' + (p.options||[]).length + ' options → ' + (p.save_to||'var');
-        case 'condition': return '🔀 if ' + (p.if ? (p.if.var||'?') + ' ' + (p.if.op||'==') + ' ' + (p.if.value||'') : '?');
-        case 'action_webhook': return '🔗 ' + ((p.url||'').substring(0, 40)||'');
-        case 'goto': return '➡️ → ' + (p.to||'?');
-        case 'call_flow': return '🔗 → ' + ((p.target_flow_name || p.target_flow_id || '?') + (p.return_node ? ' (return: ' + p.return_node + ')' : ''));
-        case 'end': return '⏹️ End flow';
+        case 'question': return 'Save: ' + (p.save_to||'?') + ' - "' + (p.text||'').substring(0, 40) + '"';
+        case 'choice': return 'Save: ' + (p.save_to||'var') + ' - ' + (p.options||[]).length + ' options';
+        case 'condition': return 'if ' + (p.if ? p.if.var + ' ' + p.if.op + ' ' + p.if.value : '?');
+        case 'action_webhook': return (p.url||'').substring(0, 40);
+        case 'call_flow': return '-> ' + (p.target_flow_name || p.target_flow_id || '?');
+        case 'goto': return '-> ' + (p.to||'?');
+        case 'end': return 'End flow';
         default: return '';
     }
 }
 
+// --- Step View ---
 
 function renderSteps() {
     var el = document.getElementById('stepsContainer');
-    var empty = document.getElementById('stepEmptyState');
     var cnt = document.getElementById('nodeCount');
-    if (!nodes.length) { el.innerHTML = ''; empty.style.display = 'block'; cnt.textContent = '0 nodes'; return; }
-    empty.style.display = 'none';
+    if (!nodes.length) { el.innerHTML = '<div style=text-align:center;padding:40px;color:#9ca3af;font-size:0.85rem;>No steps yet. Click + Add Node to begin.</div>'; cnt.textContent = '0 nodes'; return; }
     cnt.textContent = nodes.length + ' steps';
     var h = '';
     nodes.forEach(function(n, i) {
@@ -527,108 +524,11 @@ function renderSteps() {
     el.innerHTML = h;
 }
 
-function setFlowView(view) {
-    var tabs = document.querySelectorAll('.flow-view-tab');
-    tabs.forEach(function(t) {
-        var a = t.dataset.view === view;
-        t.style.background = a ? '#fff' : 'transparent';
-        t.style.color = a ? '#6366F1' : '#6b7280';
-        t.style.boxShadow = a ? '0 1px 2px rgba(0,0,0,0.06)' : 'none';
-    });
-    document.getElementById('stepsView').style.display = view === 'steps' ? '' : 'none';
-    document.getElementById('canvasView').style.display = view === 'canvas' ? '' : 'none';
-    document.getElementById('flowEmptyState').style.display = view === 'canvas' ? '' : 'none';
-    if (view === 'steps') renderSteps();
-    if (view === 'canvas') renderVisualCanvas();
-}
-
-function renderVisualCanvas() {
-    var container = document.getElementById('nodesContainer');
-    var empty = document.getElementById('flowEmptyState');
-    var count = document.getElementById('nodeCount');
-
-    if (!nodes.length) {
-        container.innerHTML = '';
-        empty.style.display = 'block';
-        count.textContent = '0 nodes';
-        return;
-    }
-    
-    empty.style.display = 'none';
-    count.textContent = nodes.length + ' nodes · ' + edges.length + ' connections';
-
-    var html = '<div class="flow-visual-list">';
-    nodes.forEach(function(n, i) {
-        var outgoing = edges.filter(function(e) { return e.from === n.node_key; });
-        var incoming = edges.filter(function(e) { return e.to === n.node_key; });
-        var outStr = outgoing.map(function(e) { return '<span class="node-conn">→ ' + e.to + (e.rule ? ' <small style="color:#9ca3af">'+JSON.stringify(e.rule)+'</small>' : '') + '</span>'; }).join('');
-        var inStr = incoming.map(function(e) { return '<span class="node-conn"><i>← ' + e.from + '</i></span>'; }).join('');
-
-        var isStart = n.node_key === 'start';
-        var isEnd = n.type === 'end';
-        
-        html += '<div class="flow-visual-node node-' + n.type + (isStart ? ' node-start' : '') + (isEnd ? ' node-end' : '') + '" draggable="true" onclick="editNode(' + i + ')" data-idx="' + i + '" ondragstart="onNodeDragStart(event)" ondragover="onNodeDragOver(event)" ondrop="onNodeDrop(event)" ondragend="onNodeDragEnd(event)">';
-        html += '<div class="node-actions" onclick="event.stopPropagation();">';
-        html += '<button onclick="addEdgeFrom(' + i + ')" title="Connect">🔗</button>';
-        html += '<button onclick="event.stopPropagation(); nodes.splice(' + i + ',1); renderVisualCanvas();" title="Delete">✕</button>';
-        html += '</div>';
-        html += '<div class="node-top">';
-        html += '<div><span class="node-key">' + getIcon(n.type) + ' ' + n.node_key + '</span> <span class="node-type-badge" style="background:#f3f4f6">' + getTypeLabel(n.type) + '</span></div>';
-        html += '<div style="font-size:0.65rem;color:#9ca3af;">#' + (i+1) + '</div>';
-        html += '</div>';
-        html += '<div class="node-summary">' + getNodeSummary(n) + '</div>';
-        if (inStr || outStr) {
-            html += '<div class="node-connections">' + inStr + outStr + '</div>';
-        }
-        html += '</div>';
-    });
-    html += '</div>';
-    container.innerHTML = html;
-}
-
-// --- DRAG & DROP for reordering nodes ---
-var dragIdx = null;
-
-window.onNodeDragStart = function(e) {
-    var el = e.target.closest('.flow-visual-node');
-    if (!el) return;
-    dragIdx = parseInt(el.dataset.idx);
-    el.classList.add('dragging');
-    e.dataTransfer.effectAllowed = 'move';
-    e.dataTransfer.setData('text/plain', dragIdx);
-};
-
-window.onNodeDragOver = function(e) {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-    var el = e.target.closest('.flow-visual-node');
-    if (el && !el.classList.contains('dragging')) el.classList.add('drag-over');
-};
-
-window.onNodeDragEnd = function(e) {
-    document.querySelectorAll('.flow-visual-node').forEach(function(el) { el.classList.remove('dragging', 'drag-over'); });
-    dragIdx = null;
-};
-
-window.onNodeDrop = function(e) {
-    e.preventDefault();
-    document.querySelectorAll('.flow-visual-node').forEach(function(el) { el.classList.remove('dragging', 'drag-over'); });
-    var fromIdx = parseInt(e.dataTransfer.getData('text/plain'));
-    var target = e.target.closest('.flow-visual-node');
-    if (!target || isNaN(fromIdx)) return;
-    var toIdx = parseInt(target.dataset.idx);
-    if (fromIdx === toIdx) return;
-    // Reorder
-    var item = nodes.splice(fromIdx, 1)[0];
-    nodes.splice(toIdx, 0, item);
-    renderVisualCanvas();
-};
-
 // --- Node CRUD ---
+
 function openNewNodeModal() {
     document.getElementById('edit-idx').value = '-1';
-    document.getElementById('modalTitleText').textContent = 'New Node';
-    document.getElementById('modalTitleIcon').textContent = '⚡';
+    document.getElementById('modalTitleText').textContent = 'New Step';
     document.getElementById('modal-key').value = '';
     document.getElementById('deleteNodeBtn').style.display = 'none';
     toggleModalFields();
@@ -639,7 +539,6 @@ function editNode(idx) {
     var n = nodes[idx];
     document.getElementById('edit-idx').value = idx;
     document.getElementById('modalTitleText').textContent = 'Edit: ' + n.node_key;
-    document.getElementById('modalTitleIcon').textContent = getIcon(n.type);
     document.getElementById('modal-key').value = n.node_key;
     document.getElementById('modal-type').value = n.type;
     document.getElementById('deleteNodeBtn').style.display = 'inline-block';
@@ -669,12 +568,10 @@ function editNode(idx) {
 function deleteCurrentNode() {
     var idx = parseInt(document.getElementById('edit-idx').value);
     if (isNaN(idx) || idx < 0) return;
-    
-    var key = nodes[idx].node_key;
     nodes.splice(idx, 1);
-    edges = edges.filter(function(e) { return e.from !== key && e.to !== key; });
     $('#nodeModal').modal('hide');
-    renderVisualCanvas();
+    renderSteps();
+    showToast('Deleted', 'success');
 }
 
 function saveNodeModal() {
@@ -690,16 +587,13 @@ function saveNodeModal() {
             var lines = document.getElementById('c-options').value.split('\n').filter(Boolean);
             var opts = lines.map(function(l) { var p = l.split('|'); return { value: parseInt(p[0]) || 1, label: p[1] || p[0] }; });
             var catalogSrc = document.getElementById('catalogSource').dataset.type || '';
-            payload = { text: document.getElementById('c-text').value, options: opts, save_to: document.getElementById('c-save').value, catalog_source: catalogSrc }; break;
+            payload = { text: document.getElementById('c-text').value, options: opts, save_to: document.getElementById('c-save').value, catalog_source: catalogSrc };
+            break;
         case 'condition': payload = { if: { var: document.getElementById('cond-var').value, op: document.getElementById('cond-op').value, value: document.getElementById('cond-val').value }, true_to: document.getElementById('cond-true').value, false_to: document.getElementById('cond-false').value }; break;
         case 'action_webhook': payload = { url: document.getElementById('wh-url').value, method: document.getElementById('wh-method').value, save_to: document.getElementById('wh-save').value }; break;
         case 'call_flow':
             var cfTarget = document.getElementById('cf-target');
-            payload = {
-                target_flow_id: cfTarget.value,
-                target_flow_name: cfTarget.options[cfTarget.selectedIndex] ? cfTarget.options[cfTarget.selectedIndex].text : '',
-                return_node: document.getElementById('cf-return').value || ''
-            };
+            payload = { target_flow_id: cfTarget.value, target_flow_name: cfTarget.options[cfTarget.selectedIndex] ? cfTarget.options[cfTarget.selectedIndex].text : '', return_node: document.getElementById('cf-return').value || '' };
             break;
         case 'goto': payload = { to: document.getElementById('goto-to').value }; break;
         default: payload = {};
@@ -707,20 +601,16 @@ function saveNodeModal() {
     if (isNaN(idx) || idx === -1) {
         nodes.push({ node_key: key, type: type, payload: payload });
     } else {
-        // Update edges if key changed
         var oldKey = nodes[idx].node_key;
         if (oldKey !== key) {
-            edges.forEach(function(e) {
-                if (e.from === oldKey) e.from = key;
-                if (e.to === oldKey) e.to = key;
-            });
+            // Update edges referencing this node (but we auto-build edges, so this is optional)
         }
         nodes[idx].node_key = key;
         nodes[idx].type = type;
         nodes[idx].payload = payload;
     }
     $('#nodeModal').modal('hide');
-    renderVisualCanvas();
+    renderSteps();
 }
 
 function quickAddNode(type) {
@@ -729,18 +619,16 @@ function quickAddNode(type) {
     var i = 1;
     while (nodes.some(function(n) { return n.node_key === key + i; })) i++;
     nodes.push({ node_key: key + i, type: type, payload: {} });
-    renderVisualCanvas();
+    renderSteps();
 }
 
 function loadFlowsForSelector() {
     var sel = document.getElementById('cf-target');
-    if (!sel) return;
-    if (sel.options.length > 1) return; // Already loaded
+    if (!sel || sel.options.length > 1) return;
     fetch(BASE_URL + 'FlowBuilder/api_flow_list')
         .then(function(r) { return r.json(); })
         .then(function(res) {
             if (!res.status || !res.data) return;
-            // Get current flow ID from URL
             var flowId = window.location.pathname.split('/').pop();
             res.data.forEach(function(f) {
                 if (f.id != flowId) {
@@ -753,18 +641,19 @@ function loadFlowsForSelector() {
         }).catch(function() {});
 }
 
-// Add call_flow to visual node border
+// --- Helpers ---
+
 function showToast(msg, type) {
-    type = type || "info";
-    var c = document.getElementById("toastContainer");
+    type = type || 'info';
+    var c = document.getElementById('toastContainer');
     if (!c) return;
-    var t = document.createElement("div");
-    t.className = "toast-item " + type;
+    var t = document.createElement('div');
+    t.className = 'toast-item ' + type;
     t.innerHTML = msg;
     c.appendChild(t);
     setTimeout(function() {
-        t.style.opacity = "0";
-        t.style.transition = "opacity 0.3s";
+        t.style.opacity = '0';
+        t.style.transition = 'opacity 0.3s';
         setTimeout(function() { t.remove(); }, 300);
     }, 3000);
 }
@@ -786,7 +675,7 @@ function loadCatalog(type) {
                 var priceNum = parseFloat(item.ser_price || 0);
                 var priceStr = '$' + priceNum.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
                 html += '<div style="padding:2px 4px;border-bottom:1px solid #e5e7eb;">' + (idx+1) + '. ' + escapeHtml(item.ser_name) + ' - ' + priceStr + '</div>';
-                opts += (idx+1) + '|' + item.ser_name + '\n';
+                opts += (idx+1) + '|' + item.ser_name + '\\n';
             });
             preview.innerHTML = html;
             preview.style.display = '';
@@ -794,52 +683,16 @@ function loadCatalog(type) {
             var src = document.getElementById('catalogSource');
             if (src) { src.textContent = 'Loaded from: ' + (type === 'producto' ? 'Products' : 'Services'); src.dataset.type = type; }
             showToast('Loaded ' + items.length + ' ' + type, 'success');
-        })
-        .catch(function(err) { showToast('Error: ' + err.message, 'error'); });
+        }).catch(function(err) { showToast('Error: ' + err.message, 'error'); });
 }
 
 function escapeHtml(t) { if (!t) return ''; var d = document.createElement('div'); d.appendChild(document.createTextNode(t)); return d.innerHTML; }
 
-var origRender = renderVisualCanvas;
-// Call flow border is handled by the node-type class in CSS
-
-
-// --- Edge management ---
-function addEdgeFrom(idx) {
-    var n = nodes[idx];
-    updateEdgeSelects();
-    document.getElementById('edge-edit-idx').value = '-1';
-    document.getElementById('edge-from').value = n.node_key;
-    document.getElementById('edge-to').value = '';
-    document.getElementById('edge-rule').value = '';
-    $('#edgeModal').modal('show');
-}
-
-function updateEdgeSelects() {
-    var from = document.getElementById('edge-from');
-    var to = document.getElementById('edge-to');
-    var opts = '<option value="">— select —</option>' + nodes.map(function(n) { return '<option value="' + n.node_key + '">' + getIcon(n.type) + ' ' + n.node_key + '</option>'; }).join('');
-    from.innerHTML = opts;
-    to.innerHTML = opts;
-}
-
-function saveEdgeModal() {
-    var from = document.getElementById('edge-from').value;
-    var to = document.getElementById('edge-to').value;
-    if (!from || !to) { showToast('Select From and To nodes', 'error'); return; }
-    if (from === to) { showToast('Cannot connect a node to itself', 'error'); return; }
-    if (edges.some(function(e) { return e.from === from && e.to === to; })) { showToast('Connection already exists', 'error'); return; }
-    var rule = document.getElementById('edge-rule').value.trim();
-    var ruleObj = rule ? (function(){ try { return JSON.parse(rule); } catch(e) { return rule; } })() : null;
-    edges.push({ from: from, to: to, rule: ruleObj });
-    $('#edgeModal').modal('hide');
-    renderVisualCanvas();
-}
-
 // --- Actions ---
+
 function saveTrigger(fid) {
     var val = document.getElementById('trigger-value').value.trim();
-    fetch('<?= base_url() ?>FlowBuilder/save_trigger/' + fid, {
+    fetch(BASE_URL + 'FlowBuilder/save_trigger/' + fid, {
         method: 'POST',
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
         body: 'trigger_value=' + encodeURIComponent(val)
@@ -847,81 +700,37 @@ function saveTrigger(fid) {
 }
 
 function saveNodes(vid) {
-    // Auto-connect nodes in array order
     var ae = [];
     for (var i = 0; i < nodes.length - 1; i++) {
         var f = nodes[i];
         var t = nodes[i+1];
-        if (f.type === 'end' || t.type === 'end') break;
-        if (f.type === 'goto' || f.type === 'call_flow') break;
+        if (f.type === 'end') break;
         ae.push({from: f.node_key, to: t.node_key, rule: null});
     }
-    fetch('<?= base_url() ?>FlowBuilder/save_nodes/' + vid, {
+    fetch(BASE_URL + 'FlowBuilder/save_nodes/' + vid, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({ nodes: nodes, edges: ae })
     }).then(function(r) { return r.json(); }).then(function(d) {
         showToast(d.message, d.status ? 'success' : 'error');
         if (d.status) setTimeout(function() { location.reload(); }, 1000);
-    }).catch(function(e) { showToast('Error saving: ' + e.message, 'error'); });
+    }).catch(function(e) { showToast('Error: ' + e.message, 'error'); });
 }
 
 function validateFlow(vid) {
-    fetch('<?= base_url() ?>FlowBuilder/validate_version/' + vid)
+    fetch(BASE_URL + 'FlowBuilder/validate_version/' + vid)
     .then(function(r) { return r.json(); }).then(function(d) {
-        var msg = d.status ? '✅ ' + d.message : '❌ Errors:\n' + d.errors.join('\n');
-        showToast(msg, d.status ? "success" : "error");
-    });
+        showToast(d.status ? 'Valid flow!' : 'Errors: ' + (d.errors || []).join(', '), d.status ? 'success' : 'error');
+    }).catch(function(e) { showToast('Error: ' + e.message, 'error'); });
 }
 
 function publishFlow(vid) {
     showToast('Publishing...', 'info');
-    fetch('<?= base_url() ?>FlowBuilder/publish/' + vid)
+    fetch(BASE_URL + 'FlowBuilder/publish/' + vid)
     .then(function(r) { return r.json(); }).then(function(d) {
         showToast(d.message, d.status ? 'success' : 'error');
         if (d.status) { setTimeout(function() { location.reload(); }, 1500); }
-    }).catch(function(e) { showToast('Publish error: ' + e.message, 'error'); });
+    }).catch(function(e) { showToast('Error: ' + e.message, 'error'); });
 }
 
-function togglePreview() {
-    var panel = document.getElementById('previewPanel');
-    panel.style.display = panel.style.display === 'none' ? '' : 'none';
-    renderPreview();
-}
-
-function renderPreview() {
-    var div = document.getElementById('flowPreview');
-    if (!nodes.length) { div.innerHTML = '<span class="text-muted">Add nodes first...</span>'; return; }
-    var start = nodes.find(function(n) { return n.node_key === 'start'; }) || nodes[0];
-    var h = '';
-    var visited = {};
-    var cur = start.node_key;
-    for (var i = 0; i < 50; i++) {
-        if (visited[cur]) { h += '<span class="text-warning">⚠️ Loop detected at ' + cur + '</span><br>'; break; }
-        visited[cur] = true;
-        var n = nodes.find(function(nn) { return nn.node_key === cur; });
-        if (!n) { h += '<span class="text-danger">⛔ Node "' + cur + '" not found</span><br>'; break; }
-        var icon = getIcon(n.type);
-        h += '<div style="padding: 4px 8px; margin: 2px 0; background: #f9fafb; border-radius: 6px; font-size: 0.78rem;">' + icon + ' <strong>' + n.node_key + '</strong> <span class="text-muted">(' + getTypeLabel(n.type) + ')</span></div>';
-        if (n.type === 'end' || n.type === 'goto' || n.type === 'call_flow') {
-            if (n.type === 'end') h += '<div style="padding-left: 12px; color: #6b7280;">✓ End</div>';
-            if (n.type === 'goto') { cur = n.payload.to; if (!cur) break; continue; }
-            if (n.type === 'call_flow') { h += '<div style="padding-left: 12px; color: #a21caf;">🔗 Calls: ' + (n.payload.target_flow_name || n.payload.target_flow_id || '?') + '</div>'; break; }
-            break;
-        }
-        if (n.type === 'condition') {
-            var t = n.payload.true_to, f = n.payload.false_to;
-            h += '<div style="padding-left: 16px; font-size: 0.7rem; color: #059669;">✓ true → ' + (t || '?') + '</div>';
-            h += '<div style="padding-left: 16px; font-size: 0.7rem; color: #dc2626;">✗ false → ' + (f || '?') + '</div>';
-            cur = t;
-            if (!cur) break;
-            continue;
-        }
-        var edge = edges.find(function(e) { return e.from === cur; });
-        if (edge) { cur = edge.to; } else { h += '<div style="padding-left: 12px; color: #9ca3af;">⏹ No connection → ends here</div>'; break; }
-    }
-    div.innerHTML = h;
-}
-
-renderSteps();
 </script>
