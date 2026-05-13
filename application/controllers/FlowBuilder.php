@@ -53,6 +53,7 @@ class FlowBuilder extends CI_Controller {
         if ($this->input->method() === 'post') {
             $name = $this->input->post('name');
             $desc = $this->input->post('description');
+            $order = intval($this->input->post('display_order') ?: 0);
             $trigger = $this->input->post('trigger_value');
             if (!$name) { echo json_encode(['status' => false, 'message' => 'Nombre requerido']); return; }
             $this->db->insert('flows', [

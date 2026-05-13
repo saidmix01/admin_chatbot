@@ -265,4 +265,23 @@ class BotApi extends CI_Controller
 
         $this->json(['status' => true, 'data' => $messages]);
     }
+
+    public function get_initial_menu($us_id = 0) {
+        if (!$us_id) $this->json(["status" => false, "message" => "us_id requerido"], 400);
+        $store = $this->db->where("us_id", $us_id)->get("stores")->row();
+        if (!$store) $this->json(["status" => false, "data" => []]);
+        $flows = $this->db->where("tenant_id", $store->sto_id)->where("is_active", 1)->order_by("display_order", "ASC")->get("flows")->result();
+        $result = [];
+        foreach ($flows as $f) {
+            $triggers = $this->db->where("flow_id", $f->id)->get("flow_triggers")->result();
+            $result[] = [
+                "id" => $f->id,
+                "name" => $f->name,
+                "description" => $f->description,
+                "trigger" => !empty($triggers) ? $triggers[0]->trigger_value : "",
+                "display_order" => $f->display_order
+            ];
+        }
+        $this->json(["status" => true, "data" => $result]);
+    }
 }
