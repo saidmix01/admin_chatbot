@@ -103,7 +103,7 @@
                         </div>
                     </div>
 
-                    <div id="modal-fields-webhook" class="modal-fields" style="display:none">
+                    <div id="modal-fields-action_webhook" class="modal-fields" style="display:none">
                         <div class="form-saas-group">
                             <label class="form-saas-label">URL del webhook</label>
                             <input type="text" id="wh-url" class="form-saas" placeholder="https://ejemplo.com/api">
@@ -227,6 +227,7 @@
 </div>
 
 <script>
+var flowVersionId = <?= (int) $version->id ?>;
 var nodes = <?= json_encode(array_map(function($n) {
     $p = json_decode($n->payload_json, true) ?: [];
     return ['node_key' => $n->node_key, 'type' => $n->type, 'payload' => $p];
@@ -235,6 +236,19 @@ var edges = <?= json_encode(array_map(function($e) {
     $r = $e->rule_json ? json_decode($e->rule_json, true) : null;
     return ['from' => $e->from_node_key, 'to' => $e->to_node_key, 'rule' => $r];
 }, $edges)) ?>;
+
+var autoSaveTimer = null;
+var autoSaveInFlight = false;
+var autoSaveQueued = false;
+var autoSaveAlerted = false;
+
+function queueAutoSave() {
+    if (autoSaveTimer) clearTimeout(autoSaveTimer);
+    autoSaveTimer = setTimeout(function() {
+        autoSaveTimer = null;
+        doSaveNodes(flowVersionId, false, true);
+    }, 600);
+}
 
 function toggleModalFields() {
     var type = document.getElementById('modal-type').value;
@@ -290,7 +304,10 @@ function saveNodeModal() {
         case 'question': payload = { text: document.getElementById('q-text').value, save_to: document.getElementById('q-save').value, retry_text: document.getElementById('q-retry').value }; break;
         case 'choice':
             var lines = document.getElementById('c-options').value.split('\n').filter(Boolean);
-            var opts = lines.map(function(l) { var p = l.split('|'); return { value: parseInt(p[0]) || (opts.length+1), label: p[1] || p[0] }; });
+            var opts = lines.map(function(l, optIdx) {
+                var p = l.split('|');
+                return { value: parseInt(p[0]) || (optIdx + 1), label: p[1] || p[0] };
+            });
             payload = { text: document.getElementById('c-text').value, options: opts, save_to: document.getElementById('c-save').value }; break;
         case 'condition': payload = { if: { var: document.getElementById('cond-var').value, op: document.getElementById('cond-op').value, value: document.getElementById('cond-val').value }, true_to: document.getElementById('cond-true').value, false_to: document.getElementById('cond-false').value }; break;
         case 'action_webhook': payload = { url: document.getElementById('wh-url').value, method: document.getElementById('wh-method').value, save_to: document.getElementById('wh-save').value }; break;
@@ -306,6 +323,7 @@ function saveNodeModal() {
     }
     $('#nodeModal').modal('hide');
     renderAll();
+    queueAutoSave();
 }
 
 function addEdge() {
@@ -332,6 +350,7 @@ function saveEdgeModal() {
     }
     $('#edgeModal').modal('hide');
     renderAll();
+    queueAutoSave();
 }
 
 function renderAll() {
@@ -353,8 +372,8 @@ function renderNodes() {
             default: s = '-';
         }
         var badge = n.node_key === 'start' ? 'badge-success' : (n.type === 'end' ? 'badge-secondary' : 'badge-info');
-        tr = document.createElement('tr');
-        tr.innerHTML = '<td><strong>' + n.node_key + '</strong></td><td><span class="badge ' + badge + '">' + n.type + '</span></td><td><small>' + s + '</small></td><td><button class="btn btn-sm btn-outline-info" onclick="editNode(' + i + ')">Editar</button> <button class="btn btn-sm btn-outline-danger" onclick="nodes.splice(' + i + ',1);renderAll()">X</button></td>';
+        var tr = document.createElement('tr');
+        tr.innerHTML = '<td><strong>' + n.node_key + '</strong></td><td><span class="badge ' + badge + '">' + n.type + '</span></td><td><small>' + s + '</small></td><td><button class="btn btn-sm btn-outline-info" onclick="editNode(' + i + ')">Editar</button> <button class="btn btn-sm btn-outline-danger" onclick="nodes.splice(' + i + ',1);renderAll();queueAutoSave()">X</button></td>';
         tbody.appendChild(tr);
     });
 }
@@ -364,7 +383,11 @@ function renderEdges() {
     tbody.innerHTML = '';
     edges.forEach(function(e, i) {
         var tr = document.createElement('tr');
-        tr.innerHTML = '<td>' + e.from + ' <i class="feather icon-arrow-right"></i> ' + e.to + '</td><td><small>' + (e.rule ? JSON.stringify(e.rule) : '-') + '</small></td><td><button class="btn btn-sm btn-outline-danger" onclick="edges.splice(' + i + ',1);renderEdges()">X</button></td>';
+        tr.innerHTML =
+            '<td>' + e.from + '</td>' +
+            '<td><i class="feather icon-arrow-right"></i> ' + e.to + '</td>' +
+            '<td><small>' + (e.rule ? JSON.stringify(e.rule) : '-') + '</small></td>' +
+            '<td><button class="btn btn-sm btn-outline-danger" onclick="edges.splice(' + i + ',1);renderAll();queueAutoSave()">X</button></td>';
         tbody.appendChild(tr);
     });
 }
@@ -390,29 +413,78 @@ function renderPreview() {
 
 function saveTrigger(fid) {
     fetch('<?= base_url() ?>FlowBuilder/save_trigger/' + fid, {
-        method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
         body: 'trigger_value=' + encodeURIComponent(document.getElementById('trigger-value').value)
-    }).then(function(r) { return r.json(); }).then(function(d) { alert(d.message); });
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(d) { alert(d.message); })
+    .catch(function() { alert('No se pudo guardar el trigger. Verifica tu sesión e intenta de nuevo.'); });
 }
 
 function saveNodes(vid) {
+    doSaveNodes(vid, true, false);
+}
+
+function doSaveNodes(vid, showAlert, isAutoSave) {
+    if (autoSaveInFlight) {
+        autoSaveQueued = true;
+        return;
+    }
+    autoSaveInFlight = true;
     fetch('<?= base_url() ?>FlowBuilder/save_nodes/' + vid, {
-        method: 'POST', headers: {'Content-Type': 'application/json'},
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
         body: JSON.stringify({ nodes: nodes, edges: edges })
-    }).then(function(r) { return r.json(); }).then(function(d) { alert(d.message); });
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+        autoSaveInFlight = false;
+        if (autoSaveQueued) {
+            autoSaveQueued = false;
+            doSaveNodes(vid, false, true);
+            return;
+        }
+        if (showAlert) alert(d.message);
+        if (!d.status && isAutoSave && !autoSaveAlerted) {
+            autoSaveAlerted = true;
+            alert(d.message || 'No se pudo guardar. Verifica tu sesión e intenta de nuevo.');
+        }
+    })
+    .catch(function() {
+        autoSaveInFlight = false;
+        if (autoSaveQueued) autoSaveQueued = false;
+        if (showAlert) alert('No se pudo guardar. Verifica tu sesión e intenta de nuevo.');
+        if (isAutoSave && !autoSaveAlerted) {
+            autoSaveAlerted = true;
+            alert('No se pudo guardar. Verifica tu sesión e intenta de nuevo.');
+        }
+    });
 }
 
 function validateFlow(vid) {
-    fetch('<?= base_url() ?>FlowBuilder/validate_version/' + vid)
+    fetch('<?= base_url() ?>FlowBuilder/validate_version/' + vid, {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
     .then(function(r) { return r.json(); }).then(function(d) {
         alert(d.status ? 'OK: ' + d.message : 'ERROR:\n' + d.errors.join('\n'));
-    });
+    }).catch(function() { alert('No se pudo validar. Verifica tu sesión e intenta de nuevo.'); });
 }
 
 function publishFlow(vid) {
     if (!confirm('Publicar? Sesiones activas seguiran con la version anterior.')) return;
-    fetch('<?= base_url() ?>FlowBuilder/publish/' + vid)
-    .then(function(r) { return r.json(); }).then(function(d) { alert(d.message); if (d.status) location.reload(); });
+    fetch('<?= base_url() ?>FlowBuilder/publish/' + vid, {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(d) { alert(d.message); if (d.status) location.reload(); })
+    .catch(function() { alert('No se pudo publicar. Verifica tu sesión e intenta de nuevo.'); });
 }
 
 renderAll();

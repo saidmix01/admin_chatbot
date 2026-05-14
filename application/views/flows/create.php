@@ -31,12 +31,19 @@ document.getElementById('form_create').addEventListener('submit', function(e) {
     var btn = this.querySelector('button[type="submit"]');
     btn.disabled = true; btn.innerHTML = 'Creando...';
     fetch('<?= base_url() ?>FlowBuilder/create', {
-        method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
         body: new URLSearchParams(new FormData(this))
     }).then(r => r.json()).then(d => {
         if (d.status) window.location = '<?= base_url() ?>FlowBuilder/edit/' + d.id;
         else alert(d.message);
         btn.disabled = false; btn.innerHTML = 'Crear flujo';
-    }).catch(() => { btn.disabled = false; btn.innerHTML = 'Crear flujo'; });
+    }).catch(() => {
+        alert('No se pudo crear el flujo. Verifica tu sesión e intenta de nuevo.');
+        btn.disabled = false; btn.innerHTML = 'Crear flujo';
+    });
 });
 </script>
