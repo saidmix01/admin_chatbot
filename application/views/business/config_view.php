@@ -7,6 +7,46 @@
     <div class="card">
         <div class="card-body">
             <form id="form_business">
+
+                <div class="form-saas-group">
+                    <label class="form-saas-label">Foto de perfil (logo)</label>
+                    <input type="hidden" name="logo" id="logo_input" value=<?= $store->sto_logo ?? "" ?>>
+                    <div style="display: flex; gap: 1rem; align-items: center;">
+                        <div id="logo_preview_area" style="
+                            width: 80px;
+                            height: 80px;
+                            border-radius: 50%;
+                            border: 2px dashed var(--saas-gray-200);
+                            overflow: hidden;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            cursor: pointer;
+                            background: var(--saas-gray-50);
+                            flex-shrink: 0;
+                            transition: border-color 0.2s;
+                        ">
+                            <?php if(!empty($store->sto_logo)): ?>
+                            <img src="<?= base_url($store->sto_logo) ?>" id="logo_preview" style="width:100%;height:100%;object-fit:cover;">
+                            <?php else: ?>
+                            <i class="feather icon-user" style="font-size: 1.5rem; color: var(--saas-gray-300);" id="logo_placeholder"></i>
+                            <?php endif; ?>
+                        </div>
+                        <div style="flex: 1;">
+                            <button type="button" class="btn-saas btn-saas-outline" onclick="document.getElementById(logo_file_input).click();" style="padding: 0.5rem 1rem; font-size: 0.8125rem;">
+                                <i class="feather icon-upload"></i> Subir logo
+                            </button>
+                            <?php if(!empty($store->sto_logo)): ?>
+                            <button type="button" class="btn-saas btn-saas-outline" onclick="removeLogo()" style="padding: 0.5rem 1rem; font-size: 0.8125rem; margin-left: 0.5rem; color: #ef4444; border-color: #fecaca;">
+                                <i class="feather icon-trash-2"></i>
+                            </button>
+                            <?php endif; ?>
+                            <div style="color: var(--saas-gray-300); font-size: 0.75rem; margin-top: 0.25rem;">JPG, PNG, WebP · Max 2MB</div>
+                        </div>
+                    </div>
+                    <input type="file" id="logo_file_input" accept="image/jpeg,image/png,image/webp" style="display: none;">
+                </div>
+
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-saas-group">
@@ -215,7 +255,66 @@
 
     // Initial attach for remove button if exists
     attachRemoveHandler();
+
+    // --- Logo upload ---
+    var logoInput = document.getElementById('logo_file_input');
+    var logoHidden = document.getElementById('logo_input');
+
+    logoInput.addEventListener('change', function() {
+        if (this.files.length) {
+            uploadLogo(this.files[0]);
+        }
+    });
+
+    function uploadLogo(file) {
+        if (file.size > 2 * 1024 * 1024) {
+            Swal.fire({ icon: 'error', title: 'Muy grande', text: 'El logo no debe superar 2MB' });
+            return;
+        }
+
+        var fd = new FormData();
+        fd.append('logo_image', file);
+
+        var preview = document.getElementById('logo_preview_area');
+        preview.innerHTML = '<i class="feather icon-loader" style="font-size: 1.5rem; animation: spin 1s linear infinite; color: var(--saas-primary);"></i>';
+
+        fetch(base_url + 'Business/upload_logo', { method: 'POST', body: fd })
+        .then(function(r) { return r.json(); })
+        .then(function(r) {
+            if (r.status && r.url) {
+                logoHidden.value = r.url;
+                preview.innerHTML = '<img src="' + base_url + r.url + '" style="width:100%;height:100%;object-fit:cover;">';
+                var rmBtn = document.querySelector('button#remove_logo_btn');
+                if (!rmBtn) {
+                    var uploadBtn = document.querySelector('button[onclick*="logo_file_input"]');
+                    if (uploadBtn) {
+                        rmBtn = document.createElement('button');
+                        rmBtn.id = 'remove_logo_btn';
+                        rmBtn.type = 'button';
+                        rmBtn.className = 'btn-saas btn-saas-outline';
+                        rmBtn.style.cssText = 'padding: 0.5rem 1rem; font-size: 0.8125rem; margin-left: 0.5rem; color: #ef4444; border-color: #fecaca;';
+                        rmBtn.innerHTML = '<i class="feather icon-trash-2"></i>';
+                        rmBtn.onclick = removeLogo;
+                        uploadBtn.parentNode.insertBefore(rmBtn, uploadBtn.nextSibling);
+                    }
+                }
+            } else {
+                preview.innerHTML = '<i class="feather icon-user" style="font-size: 1.5rem; color: var(--saas-gray-300);"></i>';
+            }
+        })
+        .catch(function() {
+            preview.innerHTML = '<i class="feather icon-user" style="font-size: 1.5rem; color: var(--saas-gray-300);"></i>';
+        });
+    }
 })();
+
+function removeLogo() {
+    document.getElementById('logo_input').value = '';
+    document.getElementById('logo_preview_area').innerHTML = '<i class="feather icon-user" style="font-size: 1.5rem; color: var(--saas-gray-300);"></i>';
+    var rmBtn = document.getElementById('remove_logo_btn');
+    if (rmBtn) rmBtn.remove();
+}
+
 
 // ——— Form submit ———
 document.getElementById('form_business').addEventListener('submit', function(e) {
@@ -231,7 +330,8 @@ document.getElementById('form_business').addEventListener('submit', function(e) 
         description: document.querySelector('textarea[name="description"]').value,
         address: document.querySelector('input[name="address"]').value,
         slug: document.querySelector('input[name="slug"]').value,
-        cover: document.getElementById('cover_input').value
+        cover: document.getElementById('cover_input').value,
+        logo: document.getElementById('logo_input').value
     };
 
     fetch(base_url + 'Business/save', {

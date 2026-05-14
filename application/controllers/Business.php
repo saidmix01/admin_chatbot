@@ -19,7 +19,6 @@ class Business extends CI_Controller {
 			$store = $this->Store_model->get_stores();
 			$store_data = !empty($store["data"]) ? $store["data"][0] : null;
 
-			// Auto-generate slug if missing
 			if ($store_data && empty($store_data->sto_slug)) {
 				$slug = unique_slug(slugify($store_data->sto_name));
 				$this->db->where("sto_id", $store_data->sto_id);
@@ -62,8 +61,8 @@ class Business extends CI_Controller {
 			if (isset($input["address"])) $update["sto_direction"] = $input["address"];
 			if (isset($input["whatsapp"])) $update["sto_phone"] = $input["whatsapp"];
 			if (isset($input["cover"])) $update["sto_cover"] = $input["cover"];
+			if (isset($input["logo"])) $update["sto_logo"] = $input["logo"];
 
-			// Handle slug
 			if (!empty($input["slug"])) {
 				$slug = slugify($input["slug"]);
 				$existing_id = !empty($store["data"]) ? $store["data"][0]->sto_id : null;
@@ -105,7 +104,7 @@ class Business extends CI_Controller {
 
 			$config['upload_path'] = $upload_path;
 			$config['allowed_types'] = 'jpg|jpeg|png|gif|webp';
-			$config['max_size'] = 5120; // 5MB
+			$config['max_size'] = 5120;
 			$config['encrypt_name'] = true;
 
 			$this->load->library('upload', $config);
@@ -114,6 +113,34 @@ class Business extends CI_Controller {
 				$response["status"] = true;
 				$response["url"] = $url;
 				$response["message"] = "Imagen subida correctamente";
+			} else {
+				throw new Exception($this->upload->display_errors('', ''), 1);
+			}
+		} catch (\Throwable $th) {
+			$response["message"] = $th->getMessage();
+		}
+		echo json_encode($response);
+	}
+
+	public function upload_logo() {
+		$response = array("status" => false, "message" => "", "url" => "");
+		try {
+			if (!validate_session()) throw new Exception("Unauthorized", 1);
+
+			$upload_path = './uploads/logos/';
+			if (!is_dir($upload_path)) mkdir($upload_path, 0755, true);
+
+			$config['upload_path'] = $upload_path;
+			$config['allowed_types'] = 'jpg|jpeg|png|gif|webp';
+			$config['max_size'] = 2048;
+			$config['encrypt_name'] = true;
+
+			$this->load->library('upload', $config);
+			if ($this->upload->do_upload('logo_image')) {
+				$url = 'uploads/logos/' . $this->upload->data('file_name');
+				$response["status"] = true;
+				$response["url"] = $url;
+				$response["message"] = "Logo subido correctamente";
 			} else {
 				throw new Exception($this->upload->display_errors('', ''), 1);
 			}

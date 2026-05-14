@@ -43,7 +43,8 @@ class Preview extends CI_Controller {
 			"whatsapp_number" => $store_data->sto_phone ?? "+57 300 000 0000",
 			"products" => $products,
 			"store_id" => $sto_id,
-			"cover" => $store_data->sto_cover ?? ""
+			"cover" => $store_data->sto_cover ?? "",
+			"logo" => $store_data->sto_logo ?? ""
 		);
 		$this->load->view('preview/public_view', $data);
 	}

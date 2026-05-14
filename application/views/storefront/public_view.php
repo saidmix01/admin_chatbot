@@ -326,14 +326,14 @@
     <?php if(!empty($cover)): ?>
     <!-- Con portada -->
     <div class="header has-cover" style="background-image: url('<?= base_url($cover) ?>');">
-        <div class="header-logo-cover"><i class="fas fa-store"></i></div>
+        <div class="header-logo-cover"><?php if(!empty($logo)): ?><img src="<?= base_url($logo) ?>" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50;"><?php else: ?><i class="fas fa-store"></i><?php endif; ?></div>
         <h1><?= htmlspecialchars($business_name) ?></h1>
         <p><?= htmlspecialchars($description) ?></p>
     </div>
     <?php else: ?>
     <!-- Sin portada: gradiente -->
     <div class="header no-cover">
-        <div class="header-logo-no-cover"><i class="fas fa-store"></i></div>
+        <div class="header-logo-no-cover"><?php if(!empty($logo)): ?><img src="<?= base_url($logo) ?>" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50;"><?php else: ?><i class="fas fa-store"></i><?php endif; ?></div>
         <h1><?= htmlspecialchars($business_name) ?></h1>
         <p><?= htmlspecialchars($description) ?></p>
     </div>

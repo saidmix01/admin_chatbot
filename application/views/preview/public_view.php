@@ -70,17 +70,7 @@
             margin: 0 auto 0.75rem;
             font-size: 2rem;
         }
-        .header-logo {
-            width: 80px;
-            height: 80px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 1rem;
-            font-size: 2rem;
-        }
+
         .header h1 { font-size: 1.5rem; margin-bottom: 0.25rem; }
         .header p { font-size: 0.875rem; opacity: 0.9; }
         .section { padding: 1.5rem; }
@@ -243,10 +233,10 @@
 <body>
     <?php if(!empty($cover)): ?>
     <div class="header has-cover" style="background-image: url('<?php echo base_url($cover); ?>');">
-        <div class="header-logo-cover"><i class="fas fa-store"></i></div>
+        <div class="header-logo-cover"><?php if(!empty($logo)): ?><img src="<?php echo base_url($logo); ?>" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"><?php else: ?><i class="fas fa-store"></i><?php endif; ?></div>
     <?php else: ?>
     <div class="header no-cover">
-        <div class="header-logo-no-cover"><i class="fas fa-store"></i></div>
+        <div class="header-logo-no-cover"><?php if(!empty($logo)): ?><img src="<?php echo base_url($logo); ?>" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"><?php else: ?><i class="fas fa-store"></i><?php endif; ?></div>
     <?php endif; ?>
         <h1><?= $business_name ?></h1>
         <p><?= $description ?></p>

@@ -41,7 +41,8 @@ class Storefront extends CI_Controller {
             "products" => $products,
             "slug" => $store->sto_slug,
             "store_id" => $store->sto_id,
-            "cover" => $store->sto_cover ?? ""
+            "cover" => $store->sto_cover ?? "",
+			"logo" => $store->sto_logo ?? ""
         );
 
         $this->load->view('storefront/public_view', $data);
