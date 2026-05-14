@@ -1,4 +1,12 @@
 RewriteEngine on
+
+# Subdomain: store.wapiapp.cloud/{slug} -> index.php/storefront/{slug}
+RewriteCond %{HTTP_HOST} ^store\.wapiapp\.cloud$ [NC]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php/storefront/$1 [L,QSA]
+
+# Default routing
 RewriteCond $1 !^(index\.php|resources|robots\.txt|media|assets|js|css|landing_page)
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d

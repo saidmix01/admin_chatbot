@@ -58,7 +58,8 @@ class Clients extends CI_Controller {
 				"us_status" => 1
 			));
 			$user_id = $this->db->insert_id();
-			$this->db->insert("stores", array("sto_name" => $input["name"], "sto_status" => 1, "us_id" => $user_id));
+			$slug = unique_slug(slugify($input["name"]));
+			$this->db->insert("stores", array("sto_name" => $input["name"], "sto_slug" => $slug, "sto_status" => 1, "us_id" => $user_id));
 
 			$response["status"] = true;
 			$response["message"] = "Cliente creado exitosamente";

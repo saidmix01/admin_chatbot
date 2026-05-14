@@ -43,3 +43,32 @@ if (! function_exists('check_pass')) {
     }
 }
 
+if (!function_exists('slugify')) {
+    function slugify($text) {
+        $text = iconv('utf-8', 'us-ascii//TRANSLIT', $text);
+        $text = preg_replace('~[^\pL\d]+~u', '-', $text);
+        $text = preg_replace('~[^-\w]+~', '', $text);
+        $text = trim($text, '-');
+        $text = preg_replace('~-+~', '-', $text);
+        return strtolower($text ?: 'tienda');
+    }
+}
+
+if (!function_exists('unique_slug')) {
+    function unique_slug($slug, $exclude_id = null) {
+        $CI =& get_instance();
+        $original = $slug;
+        $i = 1;
+        while (true) {
+            $CI->db->where('sto_slug', $slug);
+            if ($exclude_id) {
+                $CI->db->where('sto_id !=', $exclude_id);
+            }
+            $q = $CI->db->get('stores');
+            if ($q->num_rows() == 0) break;
+            $slug = $original . '-' . $i;
+            $i++;
+        }
+        return $slug;
+    }
+}

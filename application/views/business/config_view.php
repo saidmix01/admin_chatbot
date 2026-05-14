@@ -36,9 +36,19 @@
                     </div>
                     <div class="col-md-6">
                         <div class="form-saas-group">
-                            <label class="form-saas-label">URL pública</label>
-                            <input type="text" class="form-saas" name="public_url" value="<?= base_url() ?>preview/<?= (isset($store) && $store) ? $store->sto_id : '' ?>" readonly>
-                            <small style="color: var(--saas-gray-400);">Compartí este link con tus clientes</small>
+                            <label class="form-saas-label">URL pública de tu tienda</label>
+                            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                <input type="text" class="form-saas" name="slug" id="slug_input" value="<?= $store->sto_slug ?? '' ?>" placeholder="mi-tienda" style="flex: 1;">
+                                <button type="button" class="btn-saas btn-saas-outline" onclick="copyPublicUrl()" title="Copiar link" style="padding: 0.5rem 0.75rem;">
+                                    <i class="feather icon-copy"></i>
+                                </button>
+                            </div>
+                            <small style="color: var(--saas-gray-400);">
+                                Tus clientes te encuentran en: 
+                                <a href="https://wapiapp.cloud/t/<?= $store->sto_slug ?? 'slug' ?>" target="_blank" id="public_url_label">
+                                    wapiapp.cloud/t/<strong><?= $store->sto_slug ?? 'slug' ?></strong>
+                                </a>
+                            </small>
                         </div>
                     </div>
                 </div>
@@ -63,21 +73,29 @@ document.getElementById('form_business').addEventListener('submit', function(e) 
     btn.disabled = true;
     btn.innerHTML = '<i class="feather icon-loader" style="animation: spin 1s linear infinite;"></i> Guardando...';
 
+    var payload = {
+        business_name: document.querySelector('input[name="business_name"]').value,
+        whatsapp: document.querySelector('input[name="whatsapp"]').value,
+        description: document.querySelector('textarea[name="description"]').value,
+        address: document.querySelector('input[name="address"]').value,
+        slug: document.querySelector('input[name="slug"]').value
+    };
+
     fetch(base_url + 'Business/save', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            business_name: document.querySelector('input[name="business_name"]').value,
-            whatsapp: document.querySelector('input[name="whatsapp"]').value,
-            description: document.querySelector('textarea[name="description"]').value,
-            address: document.querySelector('input[name="address"]').value
-        })
+        body: JSON.stringify(payload)
     })
     .then(function(r) { return r.json(); })
     .then(function(r) {
         btn.disabled = false;
         btn.innerHTML = orig;
         if (r.status) {
+            // Update slug in case it was adjusted for uniqueness
+            if (r.slug) {
+                document.querySelector('input[name="slug"]').value = r.slug;
+                updatePublicUrl(r.slug);
+            }
             Swal.fire({ icon: 'success', title: 'Guardado', text: r.message, timer: 2000 });
         } else {
             Swal.fire({ icon: 'error', title: 'Error', text: r.message });
@@ -89,4 +107,35 @@ document.getElementById('form_business').addEventListener('submit', function(e) 
         Swal.fire({ icon: 'error', title: 'Error', text: 'Error del servidor' });
     });
 });
+
+function updatePublicUrl(slug) {
+    var label = document.getElementById('public_url_label');
+    if (label) {
+        label.innerHTML = 'wapiapp.cloud/t/<strong>' + slug + '</strong>';
+        label.href = 'https://wapiapp.cloud/t/' + slug;
+    }
+}
+
+function copyPublicUrl() {
+    var slug = document.querySelector('input[name="slug"]').value;
+    if (!slug) {
+        Swal.fire({ icon: 'warning', title: 'Sin URL', text: 'Guardá el formulario primero para generar la URL' });
+        return;
+    }
+    var url = 'https://wapiapp.cloud/t/' + slug;
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(url).then(function() {
+            Swal.fire({ icon: 'success', title: 'Copiado', text: 'URL copiada: ' + url, timer: 2000 });
+        });
+    } else {
+        // Fallback
+        var input = document.createElement('input');
+        input.value = url;
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand('copy');
+        document.body.removeChild(input);
+        Swal.fire({ icon: 'success', title: 'Copiado', text: 'URL copiada: ' + url, timer: 2000 });
+    }
+}
 </script>

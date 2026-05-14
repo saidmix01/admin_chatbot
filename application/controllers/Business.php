@@ -3,6 +3,7 @@ class Business extends CI_Controller {
 	public function __construct() {
 		parent::__construct();
 		$this->load->helper('general_helper');
+		$this->load->helper('website_helper');
 		$this->load->model('Menus_profile/Menus_profile_model', 'Menus_profile_model');
 		$this->load->model('Store/Store_model', 'Store_model');
 	}
@@ -14,10 +15,17 @@ class Business extends CI_Controller {
 			$this->Menus_profile_model->data = array("us_id" => $this->session->userdata('us_id'));
 			$menus = $this->Menus_profile_model->get_menu_user();
 
-			// Load store data
 			$this->Store_model->data = array("s.us_id" => $this->session->userdata('us_id'));
 			$store = $this->Store_model->get_stores();
 			$store_data = !empty($store["data"]) ? $store["data"][0] : null;
+
+			// Auto-generate slug if missing
+			if ($store_data && empty($store_data->sto_slug)) {
+				$slug = unique_slug(slugify($store_data->sto_name));
+				$this->db->where("sto_id", $store_data->sto_id);
+				$this->db->update("stores", array("sto_slug" => $slug));
+				$store_data->sto_slug = $slug;
+			}
 
 			$data = array(
 				"title" => "Mi Negocio",
@@ -50,9 +58,18 @@ class Business extends CI_Controller {
 
 			$update = array();
 			if (!empty($input["business_name"])) $update["sto_name"] = $input["business_name"];
-			if (!empty($input["description"])) $update["sto_wellcome_message"] = $input["description"];
-			if (!empty($input["address"])) $update["sto_direction"] = $input["address"];
-			if (!empty($input["whatsapp"])) $update["sto_phone"] = $input["whatsapp"];
+			if (isset($input["description"])) $update["sto_wellcome_message"] = $input["description"];
+			if (isset($input["address"])) $update["sto_direction"] = $input["address"];
+			if (isset($input["whatsapp"])) $update["sto_phone"] = $input["whatsapp"];
+
+			// Handle slug
+			if (!empty($input["slug"])) {
+				$slug = slugify($input["slug"]);
+				$existing_id = !empty($store["data"]) ? $store["data"][0]->sto_id : null;
+				$slug = unique_slug($slug, $existing_id);
+				$update["sto_slug"] = $slug;
+				$response["slug"] = $slug;
+			}
 
 			if (!empty($store["data"])) {
 				if (!empty($update)) {
@@ -60,6 +77,9 @@ class Business extends CI_Controller {
 					$this->db->update("stores", $update);
 				}
 			} else {
+				if (empty($update["sto_slug"]) && !empty($update["sto_name"])) {
+					$update["sto_slug"] = unique_slug(slugify($update["sto_name"]));
+				}
 				$this->db->insert("stores", array_merge($update, array(
 					"us_id" => $us_id,
 					"sto_status" => 1

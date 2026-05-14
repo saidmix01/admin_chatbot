@@ -69,3 +69,7 @@ $route['products'] = 'Products';
 $route['clients'] = 'Clients';
 $route['preview/(:num)'] = 'Preview/index/$1';
 $route['orders'] = 'Orders';
+
+// Public storefront routes
+$route['t/(:any)'] = 'Storefront/index/$1';
+$route['t/(:any)/p/(:num)'] = 'Storefront/product/$1/$2';
