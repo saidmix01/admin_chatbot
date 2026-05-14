@@ -2,6 +2,7 @@ version: '3.8'
 
 services:
   app:
+    restart: unless-stopped
     build:
       context: .
       dockerfile: Dockerfile
@@ -25,6 +26,7 @@ services:
       - wapi-network
 
   db:
+    restart: unless-stopped
     image: postgres:16-alpine
     container_name: admin_chatbot_db
     environment:
