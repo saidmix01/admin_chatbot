@@ -17,12 +17,58 @@
             min-height: 100vh;
         }
         .header {
-        .cover-container { width: 100%; margin-bottom: 1rem; border-radius: 12px; overflow: hidden; max-height: 200px; }
-        .cover-img { width: 100%; height: 180px; object-fit: cover; display: block; border-radius: 12px; }
-            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            position: relative;
             color: #fff;
-            padding: 2rem 1.5rem;
             text-align: center;
+            padding: 3rem 1.5rem 2rem;
+            min-height: 260px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            overflow: hidden;
+        }
+        .header.no-cover {
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+        }
+        .header.has-cover {
+            background-size: cover;
+            background-position: center;
+        }
+        .header.has-cover::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.5) 60%, rgba(0,0,0,0.7) 100%);
+            z-index: 1;
+        }
+        .header > * {
+            position: relative;
+            z-index: 2;
+        }
+        .header-logo-cover {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 0.75rem;
+            font-size: 2rem;
+            background: rgba(255,255,255,0.25);
+            backdrop-filter: blur(4px);
+            border: 3px solid rgba(255,255,255,0.5);
+        }
+        .header-logo-no-cover {
+            width: 80px;
+            height: 80px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 0.75rem;
+            font-size: 2rem;
         }
         .header-logo {
             width: 80px;
@@ -195,13 +241,13 @@
     </style>
 </head>
 <body>
-    <div class="header">
-        <?php if(!empty($cover)): ?>
-        <div class="cover-container">
-            <img src="<?= base_url($cover) ?>" alt="" class="cover-img">
-        </div>
-        <?php endif; ?>
-        <div class="header-logo"><i class="fas fa-store"></i></div>
+    <?php if(!empty($cover)): ?>
+    <div class="header has-cover" style="background-image: url('<?php echo base_url($cover); ?>');">
+        <div class="header-logo-cover"><i class="fas fa-store"></i></div>
+    <?php else: ?>
+    <div class="header no-cover">
+        <div class="header-logo-no-cover"><i class="fas fa-store"></i></div>
+    <?php endif; ?>
         <h1><?= $business_name ?></h1>
         <p><?= $description ?></p>
     </div>

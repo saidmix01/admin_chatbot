@@ -16,17 +16,65 @@
             margin: 0 auto;
             min-height: 100vh;
         }
+
+        /* ===== Cover-style header como Facebook ===== */
         .header {
-        .cover-container { width: 100%; margin-bottom: 1rem; border-radius: 12px; overflow: hidden; max-height: 200px; }
-        .cover-img { width: 100%; height: 180px; object-fit: cover; display: block; border-radius: 12px; }
-        .header-logo {
-            background: linear-gradient(135deg, #6366f1, #4f46e5);
-            color: #fff;
-            padding: 2rem 1.5rem;
-            text-align: center;
             position: relative;
+            color: #fff;
+            text-align: center;
+            padding: 3rem 1.5rem 2rem;
+            min-height: 260px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            overflow: hidden;
         }
-        .header-logo {
+
+        /* Sin cover: fondo gradiente */
+        .header.no-cover {
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+        }
+
+        /* Con cover: imagen de fondo + overlay oscuro */
+        .header.has-cover {
+            background-size: cover;
+            background-position: center;
+        }
+
+        .header.has-cover::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                to bottom,
+                rgba(0,0,0,0.15) 0%,
+                rgba(0,0,0,0.5) 60%,
+                rgba(0,0,0,0.7) 100%
+            );
+            z-index: 1;
+        }
+
+        .header > * {
+            position: relative;
+            z-index: 2;
+        }
+
+        .header-logo-cover {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 0.75rem;
+            font-size: 2rem;
+            background: rgba(255,255,255,0.25);
+            backdrop-filter: blur(4px);
+            border: 3px solid rgba(255,255,255,0.5);
+        }
+
+        .header-logo-no-cover {
             width: 80px;
             height: 80px;
             background: rgba(255,255,255,0.2);
@@ -34,11 +82,24 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 1rem;
+            margin: 0 auto 0.75rem;
             font-size: 2rem;
         }
-        .header h1 { font-size: 1.5rem; margin-bottom: 0.25rem; }
-        .header p { font-size: 0.875rem; opacity: 0.9; }
+
+        .header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 0.25rem;
+            text-shadow: 0 1px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 0.875rem;
+            opacity: 0.9;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+            max-width: 320px;
+        }
+
+        /* ===== Productos ===== */
         .section { padding: 1.5rem; }
         .section-title {
             font-size: 1.125rem;
@@ -47,7 +108,6 @@
             color: #111827;
         }
 
-        /* Product card — two-action layout */
         .product-card {
             background: #fff;
             border-radius: 12px;
@@ -87,7 +147,6 @@
             margin-top: 0.375rem;
         }
 
-        /* WhatsApp button on each product card */
         .product-actions {
             display: flex;
             flex-direction: column;
@@ -128,7 +187,7 @@
         }
         .view-btn:active { opacity: 0.7; }
 
-        /* Modal */
+        /* ===== Modal ===== */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -263,16 +322,22 @@
     </style>
 </head>
 <body>
-    <div class="header">
-        <?php if(!empty($cover)): ?>
-        <div class="cover-container">
-            <img src="<?= base_url($cover) ?>" alt="" class="cover-img">
-        </div>
-        <?php endif; ?>
-        <div class="header-logo"><i class="fas fa-store"></i></div>
+
+    <?php if(!empty($cover)): ?>
+    <!-- Con portada -->
+    <div class="header has-cover" style="background-image: url('<?= base_url($cover) ?>');">
+        <div class="header-logo-cover"><i class="fas fa-store"></i></div>
         <h1><?= htmlspecialchars($business_name) ?></h1>
         <p><?= htmlspecialchars($description) ?></p>
     </div>
+    <?php else: ?>
+    <!-- Sin portada: gradiente -->
+    <div class="header no-cover">
+        <div class="header-logo-no-cover"><i class="fas fa-store"></i></div>
+        <h1><?= htmlspecialchars($business_name) ?></h1>
+        <p><?= htmlspecialchars($description) ?></p>
+    </div>
+    <?php endif; ?>
 
     <?php if(!empty($products)): ?>
     <div class="section">
@@ -353,7 +418,6 @@
 var currentProduct = null;
 
 function openModal(product) {
-    // If triggered by click event, product might be the object or event
     if (product && product.name === undefined) { return; }
     currentProduct = product;
     document.getElementById('modalOverlay').classList.add('open');
