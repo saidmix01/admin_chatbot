@@ -17,6 +17,9 @@
             min-height: 100vh;
         }
         .header {
+        .cover-container { width: 100%; margin-bottom: 1rem; border-radius: 12px; overflow: hidden; max-height: 200px; }
+        .cover-img { width: 100%; height: 180px; object-fit: cover; display: block; border-radius: 12px; }
+        .header-logo {
             background: linear-gradient(135deg, #6366f1, #4f46e5);
             color: #fff;
             padding: 2rem 1.5rem;
@@ -261,6 +264,11 @@
 </head>
 <body>
     <div class="header">
+        <?php if(!empty($cover)): ?>
+        <div class="cover-container">
+            <img src="<?= base_url($cover) ?>" alt="" class="cover-img">
+        </div>
+        <?php endif; ?>
         <div class="header-logo"><i class="fas fa-store"></i></div>
         <h1><?= htmlspecialchars($business_name) ?></h1>
         <p><?= htmlspecialchars($description) ?></p>

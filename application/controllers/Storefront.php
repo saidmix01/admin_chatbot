@@ -40,7 +40,8 @@ class Storefront extends CI_Controller {
             "whatsapp_number" => $store->sto_phone ?? "",
             "products" => $products,
             "slug" => $store->sto_slug,
-            "store_id" => $store->sto_id
+            "store_id" => $store->sto_id,
+            "cover" => $store->sto_cover ?? ""
         );
 
         $this->load->view('storefront/public_view', $data);

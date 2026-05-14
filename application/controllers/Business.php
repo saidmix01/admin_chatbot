@@ -61,6 +61,7 @@ class Business extends CI_Controller {
 			if (isset($input["description"])) $update["sto_wellcome_message"] = $input["description"];
 			if (isset($input["address"])) $update["sto_direction"] = $input["address"];
 			if (isset($input["whatsapp"])) $update["sto_phone"] = $input["whatsapp"];
+			if (isset($input["cover"])) $update["sto_cover"] = $input["cover"];
 
 			// Handle slug
 			if (!empty($input["slug"])) {
@@ -88,6 +89,34 @@ class Business extends CI_Controller {
 
 			$response["status"] = true;
 			$response["message"] = "Negocio actualizado correctamente";
+		} catch (\Throwable $th) {
+			$response["message"] = $th->getMessage();
+		}
+		echo json_encode($response);
+	}
+
+	public function upload_cover() {
+		$response = array("status" => false, "message" => "", "url" => "");
+		try {
+			if (!validate_session()) throw new Exception("Unauthorized", 1);
+
+			$upload_path = './uploads/covers/';
+			if (!is_dir($upload_path)) mkdir($upload_path, 0755, true);
+
+			$config['upload_path'] = $upload_path;
+			$config['allowed_types'] = 'jpg|jpeg|png|gif|webp';
+			$config['max_size'] = 5120; // 5MB
+			$config['encrypt_name'] = true;
+
+			$this->load->library('upload', $config);
+			if ($this->upload->do_upload('cover_image')) {
+				$url = 'uploads/covers/' . $this->upload->data('file_name');
+				$response["status"] = true;
+				$response["url"] = $url;
+				$response["message"] = "Imagen subida correctamente";
+			} else {
+				throw new Exception($this->upload->display_errors('', ''), 1);
+			}
 		} catch (\Throwable $th) {
 			$response["message"] = $th->getMessage();
 		}

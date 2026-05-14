@@ -27,6 +27,56 @@
                     <textarea class="form-saas" name="description" rows="2" placeholder="Describe tu negocio en pocas palabras"><?= $store->sto_wellcome_message ?? '' ?></textarea>
                 </div>
 
+                <div class="form-saas-group">
+                    <label class="form-saas-label">Foto de portada</label>
+                    <input type="hidden" name="cover" id="cover_input" value="<?= $store->sto_cover ?? '' ?>">
+                    <div id="cover_upload_area" style="
+                        border: 2px dashed var(--saas-gray-200);
+                        border-radius: 12px;
+                        padding: 2rem;
+                        text-align: center;
+                        cursor: pointer;
+                        transition: all 0.2s;
+                        background: <?= !empty($store->sto_cover) ? 'transparent' : 'var(--saas-gray-50)' ?>;
+                        min-height: 180px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        position: relative;
+                        overflow: hidden;
+                    ">
+                        <?php if (!empty($store->sto_cover)): ?>
+                        <img src="<?= base_url($store->sto_cover) ?>" id="cover_preview" style="
+                            max-height: 200px;
+                            border-radius: 8px;
+                            width: 100%;
+                            object-fit: cover;
+                        ">
+                        <button type="button" id="remove_cover_btn" style="
+                            position: absolute;
+                            top: 0.5rem;
+                            right: 0.5rem;
+                            background: rgba(0,0,0,0.6);
+                            color: #fff;
+                            border: none;
+                            border-radius: 50%;
+                            width: 32px;
+                            height: 32px;
+                            cursor: pointer;
+                            font-size: 1rem;
+                        "><i class="feather icon-x"></i></button>
+                        <?php else: ?>
+                        <div id="cover_placeholder">
+                            <i class="feather icon-image" style="font-size: 2.5rem; color: var(--saas-gray-300); display: block; margin-bottom: 0.5rem;"></i>
+                            <div style="color: var(--saas-gray-400); font-size: 0.875rem;">Hacé clic para subir una foto de portada</div>
+                            <div style="color: var(--saas-gray-300); font-size: 0.75rem; margin-top: 0.25rem;">JPG, PNG, WebP · Max 5MB</div>
+                        </div>
+                        <?php endif; ?>
+                    </div>
+                    <input type="file" id="cover_file_input" accept="image/jpeg,image/png,image/webp" style="display: none;">
+                    <small style="color: var(--saas-gray-400);">Se muestra en la parte superior de tu tienda pública</small>
+                </div>
+
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-saas-group">
@@ -65,7 +115,109 @@
     </div>
 </div>
 
+<style>
+#cover_upload_area:hover {
+    border-color: var(--saas-primary, #6366f1);
+    background: var(--saas-gray-50);
+}
+#cover_upload_area.dragover {
+    border-color: var(--saas-primary, #6366f1);
+    background: #eef2ff;
+}
+</style>
+
 <script>
+// ——— Cover image upload ———
+(function() {
+    var uploadArea = document.getElementById('cover_upload_area');
+    var fileInput = document.getElementById('cover_file_input');
+    var coverInput = document.getElementById('cover_input');
+
+    uploadArea.addEventListener('click', function(e) {
+        if (e.target.closest('#remove_cover_btn')) return;
+        fileInput.click();
+    });
+
+    uploadArea.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        uploadArea.classList.add('dragover');
+    });
+    uploadArea.addEventListener('dragleave', function() {
+        uploadArea.classList.remove('dragover');
+    });
+    uploadArea.addEventListener('drop', function(e) {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+        if (e.dataTransfer.files.length) {
+            fileInput.files = e.dataTransfer.files;
+            uploadCover(fileInput.files[0]);
+        }
+    });
+
+    fileInput.addEventListener('change', function() {
+        if (this.files.length) {
+            uploadCover(this.files[0]);
+        }
+    });
+
+    function uploadCover(file) {
+        if (file.size > 5 * 1024 * 1024) {
+            Swal.fire({ icon: 'error', title: 'Muy grande', text: 'La imagen no debe superar 5MB' });
+            return;
+        }
+
+        var fd = new FormData();
+        fd.append('cover_image', file);
+
+        uploadArea.innerHTML = '<i class="feather icon-loader" style="font-size: 2rem; animation: spin 1s linear infinite; color: var(--saas-primary);"></i><div style="margin-top: 0.5rem; color: var(--saas-gray-400);">Subiendo...</div>';
+
+        fetch(base_url + 'Business/upload_cover', {
+            method: 'POST',
+            body: fd
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(r) {
+            if (r.status && r.url) {
+                coverInput.value = r.url;
+                uploadArea.innerHTML =
+                    '<img src="' + base_url + r.url + '" id="cover_preview" style="max-height: 200px; border-radius: 8px; width: 100%; object-fit: cover;">' +
+                    '<button type="button" id="remove_cover_btn" style="position: absolute; top: 0.5rem; right: 0.5rem; background: rgba(0,0,0,0.6); color: #fff; border: none; border-radius: 50%; width: 32px; height: 32px; cursor: pointer; font-size: 1rem;"><i class="feather icon-x"></i></button>';
+                attachRemoveHandler();
+            } else {
+                uploadArea.innerHTML = '<div style="color: #ef4444;">Error: ' + (r.message || 'No se pudo subir') + '</div>';
+            }
+        })
+        .catch(function() {
+            uploadArea.innerHTML = '<div style="color: #ef4444;">Error de conexión</div>';
+        });
+    }
+
+    function attachRemoveHandler() {
+        var removeBtn = document.getElementById('remove_cover_btn');
+        if (removeBtn) {
+            removeBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                coverInput.value = '';
+                uploadArea.innerHTML =
+                    '<div id="cover_placeholder">' +
+                    '<i class="feather icon-image" style="font-size: 2.5rem; color: var(--saas-gray-300); display: block; margin-bottom: 0.5rem;"></i>' +
+                    '<div style="color: var(--saas-gray-400); font-size: 0.875rem;">Hacé clic para subir una foto de portada</div>' +
+                    '<div style="color: var(--saas-gray-300); font-size: 0.75rem; margin-top: 0.25rem;">JPG, PNG, WebP · Max 5MB</div>' +
+                    '</div>';
+                attachUploadClick();
+            });
+        }
+    }
+
+    function attachUploadClick() {
+        // Remove old listeners by replacing the click logic
+    }
+
+    // Initial attach for remove button if exists
+    attachRemoveHandler();
+})();
+
+// ——— Form submit ———
 document.getElementById('form_business').addEventListener('submit', function(e) {
     e.preventDefault();
     var btn = this.querySelector('button[type="submit"]');
@@ -78,7 +230,8 @@ document.getElementById('form_business').addEventListener('submit', function(e) 
         whatsapp: document.querySelector('input[name="whatsapp"]').value,
         description: document.querySelector('textarea[name="description"]').value,
         address: document.querySelector('input[name="address"]').value,
-        slug: document.querySelector('input[name="slug"]').value
+        slug: document.querySelector('input[name="slug"]').value,
+        cover: document.getElementById('cover_input').value
     };
 
     fetch(base_url + 'Business/save', {
@@ -91,7 +244,6 @@ document.getElementById('form_business').addEventListener('submit', function(e) 
         btn.disabled = false;
         btn.innerHTML = orig;
         if (r.status) {
-            // Update slug in case it was adjusted for uniqueness
             if (r.slug) {
                 document.querySelector('input[name="slug"]').value = r.slug;
                 updatePublicUrl(r.slug);
@@ -128,7 +280,6 @@ function copyPublicUrl() {
             Swal.fire({ icon: 'success', title: 'Copiado', text: 'URL copiada: ' + url, timer: 2000 });
         });
     } else {
-        // Fallback
         var input = document.createElement('input');
         input.value = url;
         document.body.appendChild(input);
