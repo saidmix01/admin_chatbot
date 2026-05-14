@@ -1,36 +1,87 @@
 <div class="container-fluid flex-grow-1 container-p-y">
-    <div class="page-header">
-        <h4>Flujos conversacionales</h4>
-        <p>Crea y gestiona los flujos de conversación de tu bot</p>
+    <div class="page-header d-flex justify-content-between align-items-center">
+        <div>
+            <h4>Flujos conversacionales</h4>
+            <p>Crea los menus y opciones que vera el cliente despues del saludo de bienvenida</p>
+        </div>
+        <a href="<?= base_url() ?>FlowBuilder/create" class="btn-saas btn-saas-primary">+ Nuevo flujo</a>
     </div>
-    <div class="card">
-        <div class="card-header with-elements">
-            <div class="card-header-elements ml-auto">
-                <a href="<?= base_url() ?>FlowBuilder/create" class="btn btn-saas btn-saas-primary">+ Nuevo flujo</a>
+
+    <!-- Flujos padre (primer nivel) -->
+    <h5 class="mb-3">Flujos principales</h5>
+    <div class="row">
+        <?php 
+        $parent_flows = array_filter($flows, fn($f) => empty($f->parent_flow_id));
+        foreach ($parent_flows as $f):
+            $tr = $this->db->where('flow_id', $f->id)->get('flow_triggers')->result();
+            $pub = $this->db->where('flow_id', $f->id)->where('status', 'published')->order_by('version', 'DESC')->get('flow_versions')->row();
+            $childs = $this->db->where('parent_flow_id', $f->id)->get('flows')->result();
+        ?>
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card flow-card h-100" style="border-left: 4px solid <?= $f->is_active ? '#6366F1' : '#ccc' ?>;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h6 class="mb-0 font-weight-bold"><?= htmlspecialchars($f->name) ?></h6>
+                        <span class="badge badge-<?= $f->is_active ? 'success' : 'secondary' ?>"><?= $f->is_active ? 'Activo' : 'Inactivo' ?></span>
+                    </div>
+                    <?php if ($f->description): ?><p class="text-muted small mb-2"><?= htmlspecialchars($f->description) ?></p><?php endif; ?>
+                    <div class="small text-muted mb-2">
+                        Trigger: <strong><?= !empty($tr) ? $tr[0]->trigger_value : '-' ?></strong>
+                        &middot; Publicado: <strong><?= $pub ? 'v'.$pub->version : '-' ?></strong>
+                        &middot; Orden: <strong><?= $f->display_order ?></strong>
+                    </div>
+                    <?php if ($childs): ?>
+                    <div class="small text-muted mb-2">
+                        Hijos: <?= implode(', ', array_map(fn($c) => $c->name, $childs)) ?>
+                    </div>
+                    <?php endif; ?>
+                    <div class="mt-2">
+                        <a href="<?= base_url() ?>FlowBuilder/edit/<?= $f->id ?>" class="btn btn-sm btn-outline-primary">Editar</a>
+                        <a href="<?= base_url() ?>FlowBuilder/create?parent=<?= $f->id ?>" class="btn btn-sm btn-outline-info">+ Subflujo</a>
+                    </div>
+                </div>
             </div>
         </div>
-        <div class="card-body">
-            <table class="table">
-                <thead><tr><th>Nombre</th><th>Triggers</th><th>Publicado</th><th>Estado</th><th>Acciones</th></tr></thead>
-                <tbody>
-                    <?php foreach ($flows as $f):
-                        $tr = $this->db->where('flow_id', $f->id)->get('flow_triggers')->result();
-                        $pub = $this->db->where('flow_id', $f->id)->where('status', 'published')->order_by('version', 'DESC')->get('flow_versions')->row();
-                        $draft = $this->db->where('flow_id', $f->id)->where('status', 'draft')->order_by('version', 'DESC')->get('flow_versions')->row();
-                    ?>
-                    <tr>
-                        <td><strong><?= htmlspecialchars($f->name) ?></strong><br><small><?= htmlspecialchars($f->description ?? '') ?></small></td>
-                        <td><?= implode(', ', array_map(fn($t) => $t->trigger_value, $tr)) ?: '<span class="text-muted">-</span>' ?></td>
-                        <td><?= $pub ? 'v' . $pub->version . ' (' . substr($pub->published_at ?? '', 0, 10) . ')' : '-' ?></td>
-                        <td><?= $f->is_active ? '<span class="badge badge-success">Activo</span>' : '<span class="badge badge-secondary">Inactivo</span>' ?></td>
-                        <td>
-                            <a href="<?= base_url() ?>FlowBuilder/edit/<?= $f->id ?>" class="btn btn-sm btn-outline-primary">Editar</a>
-                        </td>
-                    </tr>
-                    <?php endforeach; ?>
-                    <?php if (empty($flows)): ?><tr><td colspan="5" class="text-center text-muted">No hay flujos aún. Crea uno.</td></tr><?php endif; ?>
-                </tbody>
-            </table>
+        <?php endforeach; ?>
+        <?php if (empty($parent_flows)): ?>
+        <div class="col-12">
+            <div class="alert alert-info">No hay flujos aun. Crea tu primer flujo para que los clientes vean opciones al escribir "menu".</div>
         </div>
+        <?php endif; ?>
     </div>
+
+    <!-- Subflujos (segundo nivel) -->
+    <?php 
+    $child_flows = array_filter($flows, fn($f) => !empty($f->parent_flow_id));
+    if ($child_flows): 
+    ?>
+    <hr class="my-4">
+    <h5 class="mb-3">Subflujos</h5>
+    <div class="row">
+        <?php foreach ($child_flows as $f): 
+            $tr = $this->db->where('flow_id', $f->id)->get('flow_triggers')->result();
+            $pub = $this->db->where('flow_id', $f->id)->where('status', 'published')->order_by('version', 'DESC')->get('flow_versions')->row();
+            $parent = $this->db->where('id', $f->parent_flow_id)->get('flows')->row();
+        ?>
+        <div class="col-md-4 mb-3">
+            <div class="card flow-card" style="border-left: 3px solid #22C55E;">
+                <div class="card-body py-3">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="mb-1 font-weight-bold"><?= htmlspecialchars($f->name) ?></h6>
+                            <small class="text-muted">Padre: <?= $parent ? htmlspecialchars($parent->name) : '-' ?></small>
+                        </div>
+                        <a href="<?= base_url() ?>FlowBuilder/edit/<?= $f->id ?>" class="btn btn-sm btn-outline-primary">Editar</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <?php endforeach; ?>
+    </div>
+    <?php endif; ?>
 </div>
+
+<style>
+.flow-card { transition: box-shadow 0.2s, transform 0.2s; cursor: default; }
+.flow-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); transform: translateY(-2px); }
+</style>

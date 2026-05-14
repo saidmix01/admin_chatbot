@@ -105,7 +105,10 @@ class FlowBuilder extends CI_Controller {
             $this->json_response(['status' => true, 'message' => 'Flujo creado', 'id' => $flow_id]);
             return;
         }
-        $this->load_admin_view('create', ['store' => $store]);
+        $parent_flows = $this->db->where('tenant_id', $store->sto_id)->where('parent_flow_id', null)->order_by('display_order', 'ASC')->get('flows')->result();
+        $services = $this->db->query("SELECT s.* FROM services s JOIN service_user su ON s.ser_id = su.ser_id WHERE su.us_id = ? AND s.ser_status = 1 ORDER BY s.ser_name", [$this->session->userdata('us_id')])->result();
+        $parent_id = intval($this->input->get('parent') ?: 0);
+        $this->load_admin_view('create', ['store' => $store, 'parent_flows' => $parent_flows, 'services' => $services, 'parent_id' => $parent_id]);
     }
 
     public function edit($id = 0) {
