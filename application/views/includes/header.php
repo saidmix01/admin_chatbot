@@ -246,3 +246,4 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
+<div class="layout-content">

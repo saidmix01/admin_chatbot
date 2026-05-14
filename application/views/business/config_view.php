@@ -33,7 +33,7 @@
                             <?php endif; ?>
                         </div>
                         <div style="flex: 1;">
-                            <button type="button" class="btn-saas btn-saas-outline" onclick="document.getElementById(logo_file_input).click();" style="padding: 0.5rem 1rem; font-size: 0.8125rem;">
+                            <button type="button" class="btn-saas btn-saas-outline" onclick="document.getElementById('logo_file_input').click();" style="padding: 0.5rem 1rem; font-size: 0.8125rem;">
                                 <i class="feather icon-upload"></i> Subir logo
                             </button>
                             <?php if(!empty($store->sto_logo)): ?>

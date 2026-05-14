@@ -1,6 +1,6 @@
-
-            </div>
-            <!-- / Main content -->
+		</div>
+		</div>
+			<!-- / Main content -->
         </div>
     </div>
 
