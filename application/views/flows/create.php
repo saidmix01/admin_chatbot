@@ -64,7 +64,7 @@ input:focus, textarea:focus { border-color: #6366F1 !important; box-shadow: 0 0 
 function showToast(msg, type) { type = type || 'info'; var c = document.getElementById('toastContainer'); if (!c) return; var t = document.createElement('div'); t.className = 'toast-item ' + type; t.innerHTML = msg; c.appendChild(t); setTimeout(function() { t.style.opacity = '0'; t.style.transition = 'opacity 0.3s'; setTimeout(function() { t.remove(); }, 300); }, 3000); }
 
     // Load existing flows for parent selector
-    fetch(BASE_URL + 'FlowBuilder/api_flow_list')
+    fetch(BASE_URL + 'FlowBuilder/api_flow_list', { headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' } })
         .then(function(r) { return r.json(); })
         .then(function(res) {
             if (!res.status || !res.data) return;
@@ -76,7 +76,7 @@ function showToast(msg, type) { type = type || 'info'; var c = document.getEleme
                 opt.textContent = f.name;
                 sel.appendChild(opt);
             });
-        });
+        }).catch(function() {});
 
 document.getElementById('form_create').addEventListener('submit', function(e) {
     e.preventDefault();
@@ -84,12 +84,12 @@ document.getElementById('form_create').addEventListener('submit', function(e) {
     btn.disabled = true; btn.innerHTML = 'Creating...';
     const BASE_URL = '<?= base_url() ?>';
     fetch(BASE_URL + 'FlowBuilder/create', {
-        method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json'},
         body: new URLSearchParams(new FormData(this))
     }).then(function(r) { return r.json(); }).then(function(d) {
         if (d.status) window.location = '<?= base_url() ?>FlowBuilder/edit/' + d.id;
         else showToast(d.message, "error");
         btn.disabled = false; btn.innerHTML = 'Create Flow';
-    }).catch(function() { btn.disabled = false; btn.innerHTML = 'Create Flow'; });
+    }).catch(function() { showToast('Error guardando el flujo', "error"); btn.disabled = false; btn.innerHTML = 'Create Flow'; });
 });
 </script>

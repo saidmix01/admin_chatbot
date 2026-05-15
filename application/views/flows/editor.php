@@ -694,7 +694,7 @@ function saveTrigger(fid) {
     var val = document.getElementById('trigger-value').value.trim();
     fetch(BASE_URL + 'FlowBuilder/save_trigger/' + fid, {
         method: 'POST',
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        headers: {'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json'},
         body: 'trigger_value=' + encodeURIComponent(val)
     }).then(function(r) { return r.json(); }).then(function(d) { showToast(d.message, d.status ? 'success' : 'error'); }).catch(function(e) { showToast('Error: ' + e.message, 'error'); });
 }
@@ -709,7 +709,7 @@ function saveNodes(vid) {
     }
     fetch(BASE_URL + 'FlowBuilder/save_nodes/' + vid, {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
+        headers: {'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json'},
         body: JSON.stringify({ nodes: nodes, edges: ae })
     }).then(function(r) { return r.json(); }).then(function(d) {
         showToast(d.message, d.status ? 'success' : 'error');
@@ -718,7 +718,7 @@ function saveNodes(vid) {
 }
 
 function validateFlow(vid) {
-    fetch(BASE_URL + 'FlowBuilder/validate_version/' + vid)
+    fetch(BASE_URL + 'FlowBuilder/validate_version/' + vid, { headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' } })
     .then(function(r) { return r.json(); }).then(function(d) {
         showToast(d.status ? 'Valid flow!' : 'Errors: ' + (d.errors || []).join(', '), d.status ? 'success' : 'error');
     }).catch(function(e) { showToast('Error: ' + e.message, 'error'); });
@@ -726,7 +726,7 @@ function validateFlow(vid) {
 
 function publishFlow(vid) {
     showToast('Publishing...', 'info');
-    fetch(BASE_URL + 'FlowBuilder/publish/' + vid)
+    fetch(BASE_URL + 'FlowBuilder/publish/' + vid, { headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' } })
     .then(function(r) { return r.json(); }).then(function(d) {
         showToast(d.message, d.status ? 'success' : 'error');
         if (d.status) { setTimeout(function() { location.reload(); }, 1500); }

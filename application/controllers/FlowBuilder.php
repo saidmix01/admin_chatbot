@@ -7,12 +7,24 @@ class FlowBuilder extends CI_Controller {
         $this->load->model('Store/Store_model', 'Store_model');
     }
 
+    private function json_response($data, $code = 200) {
+        $this->output->set_status_header($code);
+        $this->output->set_content_type('application/json');
+        echo json_encode($data);
+        exit;
+    }
+
+    private function wants_json() {
+        $accept = (string) $this->input->get_request_header('Accept');
+        $ct = (string) $this->input->get_request_header('Content-Type');
+        return $this->input->is_ajax_request()
+            || stripos($accept, 'application/json') !== false
+            || stripos($ct, 'application/json') !== false;
+    }
+
     private function require_auth() {
         if (!$this->session->userdata('login')) {
-            if ($this->input->is_ajax_request()) {
-                echo json_encode(['status' => false, 'message' => 'No autorizado']);
-                exit;
-            }
+            if ($this->wants_json()) $this->json_response(['status' => false, 'message' => 'No autorizado'], 401);
             redirect(base_url());
         }
     }
@@ -50,25 +62,72 @@ class FlowBuilder extends CI_Controller {
     public function create() {
         $this->require_auth();
         $store = $this->get_store();
+        if (!$store) {
+            if ($this->input->method() === 'post') $this->json_response(['status' => false, 'message' => 'Sin tienda'], 400);
+            show_error('Sin tienda');
+            return;
+        }
         if ($this->input->method() === 'post') {
             $name = $this->input->post('name');
             $desc = $this->input->post('description');
             $order = intval($this->input->post('display_order') ?: 0);
             $trigger = $this->input->post('trigger_value');
-            if (!$name) { echo json_encode(['status' => false, 'message' => 'Nombre requerido']); return; }
-            $this->db->insert('flows', [
-                'tenant_id' => $store->sto_id, 'name' => $name,
-                'description' => $desc, 'is_active' => 1,
-                'parent_flow_id' => $this->input->post('parent_flow_id') ?: null,
-                'display_order' => intval($this->input->post('display_order') ?: 0)
-            ]);
-            $flow_id = $this->db->insert_id();
-            if ($trigger) {
-                $this->db->insert('flow_triggers', ['flow_id' => $flow_id, 'trigger_type' => 'keyword', 'trigger_value' => strtolower(trim($trigger))]);
+            $parent_id = (int)($this->input->post('parent_flow_id') ?: 0);
+            if (!$name) $this->json_response(['status' => false, 'message' => 'Nombre requerido'], 422);
+
+            if ($parent_id) {
+                $parent = $this->db->query(
+                    "SELECT id FROM flows WHERE id = ? AND tenant_id = ?",
+                    [$parent_id, (int)$store->sto_id]
+                )->row();
+                if (!$parent) $this->json_response(['status' => false, 'message' => 'Flujo padre no encontrado'], 422);
             }
+
+            $trigger_norm = '';
+            if ($trigger) $trigger_norm = strtolower(trim((string)$trigger));
+            if ($trigger_norm !== '') {
+                $trigger_exists = $this->db->query(
+                    "SELECT ft.id
+                     FROM flow_triggers ft
+                     INNER JOIN flows f ON f.id = ft.flow_id
+                     WHERE f.tenant_id = ? AND ft.trigger_type = 'keyword' AND ft.trigger_value = ?
+                     LIMIT 1",
+                    [(int)$store->sto_id, $trigger_norm]
+                )->row();
+                if ($trigger_exists) $this->json_response(['status' => false, 'message' => 'El trigger ya está en uso'], 422);
+            }
+
+            $this->db->trans_begin();
+
+            $this->db->insert('flows', [
+                'tenant_id' => $store->sto_id,
+                'name' => $name,
+                'description' => $desc,
+                'is_active' => 1,
+                'parent_flow_id' => $parent_id ?: null,
+                'display_order' => $order
+            ]);
+            $flow_id = (int) $this->db->insert_id();
+
+            if ($trigger_norm !== '') {
+                $this->db->insert('flow_triggers', [
+                    'flow_id' => $flow_id,
+                    'trigger_type' => 'keyword',
+                    'trigger_value' => $trigger_norm
+                ]);
+            }
+
             $this->db->insert('flow_versions', ['flow_id' => $flow_id, 'version' => 1, 'status' => 'draft']);
-            echo json_encode(['status' => true, 'message' => 'Flujo creado', 'id' => $flow_id]);
-            return;
+
+            if ($this->db->trans_status() === false) {
+                $err = $this->db->error();
+                $this->db->trans_rollback();
+                log_message('error', 'FlowBuilder create failed us_id='.(int)$this->session->userdata('us_id').' tenant_id='.(int)$store->sto_id.' db_error='.$err['message']);
+                $this->json_response(['status' => false, 'message' => 'Error creando el flujo'], 500);
+            }
+
+            $this->db->trans_commit();
+            $this->json_response(['status' => true, 'message' => 'Flujo creado', 'id' => $flow_id]);
         }
         $this->load_admin_view('create', ['store' => $store]);
     }
@@ -76,6 +135,7 @@ class FlowBuilder extends CI_Controller {
     public function edit($id = 0) {
         $this->require_auth();
         $store = $this->get_store();
+        if (!$store) { show_error('Sin tienda'); return; }
         $flow = $this->db->where('id', $id)->where('tenant_id', $store->sto_id)->get('flows')->row();
         if (!$flow) { show_error('Flujo no encontrado'); return; }
         $triggers = $this->db->where('flow_id', $id)->get('flow_triggers')->result();
@@ -94,47 +154,127 @@ class FlowBuilder extends CI_Controller {
         ]);
     }
 
-        public function save_nodes($version_id = 0) {
+    public function save_nodes($version_id = 0) {
         $this->require_auth();
-        $input = json_decode(file_get_contents('php://input'), true);
-        if (!$input) { echo json_encode(['status' => false, 'message' => 'Datos invalidos']); return; }
-        try {
-            $this->db->trans_start();
-            $this->db->where('flow_version_id', $version_id)->delete('flow_nodes');
-            $this->db->where('flow_version_id', $version_id)->delete('flow_edges');
-            if (!empty($input['nodes'])) {
-                foreach ($input['nodes'] as $n) {
-                    $this->db->insert('flow_nodes', [
-                        'flow_version_id' => $version_id,
-                        'node_key' => $n['node_key'],
-                        'type' => $n['type'],
-                        'payload_json' => json_encode($n['payload'] ?? [])
-                    ]);
-                }
-            }
-            if (!empty($input['edges'])) {
-                foreach ($input['edges'] as $e) {
-                    $this->db->insert('flow_edges', [
-                        'flow_version_id' => $version_id,
-                        'from_node_key' => $e['from'],
-                        'to_node_key' => $e['to'],
-                        'rule_json' => isset($e['rule']) ? json_encode($e['rule']) : null
-                    ]);
-                }
-            }
-            $trans_ok = $this->db->trans_complete();
-            if ($trans_ok) {
-                echo json_encode(['status' => true, 'message' => 'Nodos guardados']);
-            } else {
-                echo json_encode(['status' => false, 'message' => 'Error: transaccion fallida']);
-            }
-        } catch (Throwable $th) {
-            $this->db->trans_rollback();
-            echo json_encode(['status' => false, 'message' => 'Error: ' . $th->getMessage()]);
+        $store = $this->get_store();
+        if (!$store) $this->json_response(['status' => false, 'message' => 'Sin tienda'], 400);
+
+        $version_id = (int) $version_id;
+        if (!$version_id) $this->json_response(['status' => false, 'message' => 'version_id requerido'], 422);
+
+        $version = $this->db->query(
+            "SELECT fv.id, fv.flow_id
+             FROM flow_versions fv
+             INNER JOIN flows f ON f.id = fv.flow_id
+             WHERE fv.id = ? AND f.tenant_id = ?",
+            [$version_id, (int) $store->sto_id]
+        )->row();
+        if (!$version) $this->json_response(['status' => false, 'message' => 'Versión no encontrada'], 404);
+
+        $raw = file_get_contents('php://input');
+        if ($raw === false || trim($raw) === '') {
+            $this->json_response(['status' => false, 'message' => 'Body vacío'], 400);
         }
+
+        $input = json_decode($raw, true);
+        if ($input === null && json_last_error() !== JSON_ERROR_NONE) {
+            $this->json_response(['status' => false, 'message' => 'JSON inválido'], 400);
+        }
+
+        $nodes_in = $input['nodes'] ?? null;
+        $edges_in = $input['edges'] ?? null;
+
+        $errors = [];
+        if (!is_array($nodes_in)) $errors[] = 'nodes debe ser un arreglo';
+        if ($edges_in !== null && !is_array($edges_in)) $errors[] = 'edges debe ser un arreglo';
+
+        $node_keys = [];
+        $nodes_rows = [];
+
+        if (is_array($nodes_in)) {
+            foreach ($nodes_in as $idx => $n) {
+                if (!is_array($n)) { $errors[] = "Nodo #$idx inválido"; continue; }
+                $key = trim((string)($n['node_key'] ?? ''));
+                $type = trim((string)($n['type'] ?? ''));
+                if ($key === '') { $errors[] = "Nodo #$idx: node_key requerido"; continue; }
+                if ($type === '') { $errors[] = "Nodo #$idx: type requerido"; continue; }
+                if (isset($node_keys[$key])) { $errors[] = "node_key duplicado: $key"; continue; }
+                $node_keys[$key] = true;
+
+                $payload = $n['payload'] ?? [];
+                $payload_json = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+                if ($payload_json === false) { $errors[] = "Nodo $key: payload no serializable"; continue; }
+
+                $nodes_rows[] = [
+                    'flow_version_id' => $version_id,
+                    'node_key' => $key,
+                    'type' => $type,
+                    'payload_json' => $payload_json
+                ];
+            }
+        }
+
+        $edges_rows = [];
+        if (is_array($edges_in)) {
+            foreach ($edges_in as $idx => $e) {
+                if (!is_array($e)) { $errors[] = "Edge #$idx inválido"; continue; }
+                $from = trim((string)($e['from'] ?? ''));
+                $to = trim((string)($e['to'] ?? ''));
+                if ($from === '' || $to === '') { $errors[] = "Edge #$idx: from/to requeridos"; continue; }
+                if (!isset($node_keys[$from])) $errors[] = "Edge #$idx: from '$from' no existe";
+                if (!isset($node_keys[$to])) $errors[] = "Edge #$idx: to '$to' no existe";
+
+                $rule_json = null;
+                if (array_key_exists('rule', $e) && $e['rule'] !== null) {
+                    $rule_json = json_encode($e['rule'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+                    if ($rule_json === false) { $errors[] = "Edge #$idx: rule no serializable"; continue; }
+                }
+
+                $edges_rows[] = [
+                    'flow_version_id' => $version_id,
+                    'from_node_key' => $from,
+                    'to_node_key' => $to,
+                    'rule_json' => $rule_json
+                ];
+            }
+        }
+
+        if (!empty($errors)) {
+            $this->json_response(['status' => false, 'message' => 'Validación fallida', 'errors' => $errors], 422);
+        }
+
+        $this->db->trans_begin();
+
+        $this->db->where('flow_version_id', $version_id)->delete('flow_edges');
+        $this->db->where('flow_version_id', $version_id)->delete('flow_nodes');
+
+        if (!empty($nodes_rows)) $this->db->insert_batch('flow_nodes', $nodes_rows);
+        if (!empty($edges_rows)) $this->db->insert_batch('flow_edges', $edges_rows);
+
+        if ($this->db->trans_status() === false) {
+            $err = $this->db->error();
+            $this->db->trans_rollback();
+            log_message('error', 'FlowBuilder save_nodes failed us_id='.(int)$this->session->userdata('us_id').' tenant_id='.(int)$store->sto_id.' version_id='.(int)$version_id.' db_error='.$err['message']);
+            $this->json_response(['status' => false, 'message' => 'Error guardando nodos'], 500);
+        }
+
+        $this->db->trans_commit();
+        $this->json_response(['status' => true, 'message' => 'Nodos guardados', 'data' => ['nodes' => count($nodes_rows), 'edges' => count($edges_rows)]]);
     }
     public function validate_version($version_id = 0) {
         $this->require_auth();
+        $store = $this->get_store();
+        if (!$store) $this->json_response(['status' => false, 'message' => 'Sin tienda'], 400);
+        $version_id = (int) $version_id;
+        $ok = $this->db->query(
+            "SELECT fv.id
+             FROM flow_versions fv
+             INNER JOIN flows f ON f.id = fv.flow_id
+             WHERE fv.id = ? AND f.tenant_id = ?",
+            [$version_id, (int) $store->sto_id]
+        )->row();
+        if (!$ok) $this->json_response(['status' => false, 'message' => 'Versión no encontrada'], 404);
+
         $nodes = $this->db->where('flow_version_id', $version_id)->get('flow_nodes')->result();
         $edges = $this->db->where('flow_version_id', $version_id)->get('flow_edges')->result();
         $errors = [];
@@ -150,28 +290,73 @@ class FlowBuilder extends CI_Controller {
             foreach ($edges as $e) { if ($e->from_node_key === $n->node_key) { $has_out = true; break; } }
             if (!$has_out && $n->type !== 'end') $errors[] = "Nodo '$n->node_key' no tiene salida";
         }
-        echo json_encode(['status' => empty($errors), 'errors' => $errors, 'message' => empty($errors) ? 'Flujo válido' : 'Errores encontrados']);
+        $this->json_response(['status' => empty($errors), 'errors' => $errors, 'message' => empty($errors) ? 'Flujo válido' : 'Errores encontrados']);
     }
 
     public function publish($version_id = 0) {
         $this->require_auth();
-        $version = $this->db->where('id', $version_id)->get('flow_versions')->row();
-        if (!$version) { echo json_encode(['status' => false, 'message' => 'Versión no encontrada']); return; }
+        $store = $this->get_store();
+        if (!$store) $this->json_response(['status' => false, 'message' => 'Sin tienda'], 400);
+        $version_id = (int) $version_id;
+        $version = $this->db->query(
+            "SELECT fv.id, fv.flow_id
+             FROM flow_versions fv
+             INNER JOIN flows f ON f.id = fv.flow_id
+             WHERE fv.id = ? AND f.tenant_id = ?",
+            [$version_id, (int) $store->sto_id]
+        )->row();
+        if (!$version) $this->json_response(['status' => false, 'message' => 'Versión no encontrada'], 404);
         $nodes = $this->db->where('flow_version_id', $version_id)->get('flow_nodes')->result();
-        if (empty($nodes)) { echo json_encode(['status' => false, 'message' => 'No hay nodos que publicar']); return; }
-        $this->db->where('flow_id', $version->flow_id)->where('status', 'published')->update('flow_versions', ['status' => 'archived']);
+        if (empty($nodes)) $this->json_response(['status' => false, 'message' => 'No hay nodos que publicar'], 422);
+
+        $this->db->trans_begin();
+        $this->db->where('flow_id', (int)$version->flow_id)->where('status', 'published')->update('flow_versions', ['status' => 'archived']);
         $this->db->where('id', $version_id)->update('flow_versions', ['status' => 'published', 'published_at' => date('Y-m-d H:i:s')]);
-        echo json_encode(['status' => true, 'message' => 'Flujo publicado']);
+
+        if ($this->db->trans_status() === false) {
+            $err = $this->db->error();
+            $this->db->trans_rollback();
+            log_message('error', 'FlowBuilder publish failed us_id='.(int)$this->session->userdata('us_id').' tenant_id='.(int)$store->sto_id.' version_id='.(int)$version_id.' db_error='.$err['message']);
+            $this->json_response(['status' => false, 'message' => 'Error publicando el flujo'], 500);
+        }
+
+        $this->db->trans_commit();
+        $this->json_response(['status' => true, 'message' => 'Flujo publicado']);
     }
 
     public function save_trigger($flow_id = 0) {
         $this->require_auth();
+        $store = $this->get_store();
+        if (!$store) $this->json_response(['status' => false, 'message' => 'Sin tienda'], 400);
+        $flow_id = (int) $flow_id;
+        if (!$flow_id) $this->json_response(['status' => false, 'message' => 'flow_id requerido'], 422);
+
+        $flow = $this->db->query(
+            "SELECT id FROM flows WHERE id = ? AND tenant_id = ?",
+            [$flow_id, (int) $store->sto_id]
+        )->row();
+        if (!$flow) $this->json_response(['status' => false, 'message' => 'Flujo no encontrado'], 404);
+
         $val = $this->input->post('trigger_value');
+        $this->db->trans_begin();
         $this->db->where('flow_id', $flow_id)->delete('flow_triggers');
         if ($val) {
-            $this->db->insert('flow_triggers', ['flow_id' => $flow_id, 'trigger_type' => 'keyword', 'trigger_value' => strtolower(trim($val))]);
+            $this->db->insert('flow_triggers', [
+                'flow_id' => $flow_id,
+                'trigger_type' => 'keyword',
+                'trigger_value' => strtolower(trim($val))
+            ]);
         }
-        echo json_encode(['status' => true, 'message' => 'Trigger guardado']);
+
+        if ($this->db->trans_status() === false) {
+            $err = $this->db->error();
+            $this->db->trans_rollback();
+            log_message('error', 'FlowBuilder save_trigger failed us_id='.(int)$this->session->userdata('us_id').' tenant_id='.(int)$store->sto_id.' flow_id='.(int)$flow_id.' db_error='.$err['message']);
+            $this->json_response(['status' => false, 'message' => 'Error guardando trigger'], 500);
+        }
+
+        $this->db->trans_commit();
+        $this->json_response(['status' => true, 'message' => 'Trigger guardado']);
     }
 
     /**
@@ -219,8 +404,7 @@ class FlowBuilder extends CI_Controller {
         $this->require_auth();
         $store = $this->get_store();
         if (!$store) {
-            echo json_encode(["status" => false, "data" => []]);
-            return;
+            $this->json_response(["status" => false, "data" => []], 400);
         }
 
         $flows = $this->db->query(
@@ -228,12 +412,11 @@ class FlowBuilder extends CI_Controller {
                     (SELECT COUNT(*) FROM flow_versions fv WHERE fv.flow_id = f.id AND fv.status = 'published') as published_version
              FROM flows f
              WHERE f.tenant_id = ?
-             ORDER BY f.parent_flow_id NULLS FIRST, f.display_order ASC, f.name ASC",
+             ORDER BY CASE WHEN f.parent_flow_id IS NULL THEN 0 ELSE 1 END ASC, f.parent_flow_id ASC, f.display_order ASC, f.name ASC",
             [(int)$store->sto_id]
         )->result();
 
-        $this->output->set_content_type('application/json');
-        echo json_encode(["status" => true, "data" => $flows]);
+        $this->json_response(["status" => true, "data" => $flows]);
     }
 
     /**
@@ -245,8 +428,7 @@ class FlowBuilder extends CI_Controller {
         $this->require_auth();
         $store = $this->get_store();
         if (!$store) {
-            echo json_encode(["status" => false, "message" => "No store"]);
-            return;
+            $this->json_response(["status" => false, "message" => "No store"], 400);
         }
 
         $input = json_decode(file_get_contents("php://input"), true);
@@ -254,8 +436,7 @@ class FlowBuilder extends CI_Controller {
         $parent_id = (int)($input['parent_flow_id'] ?? 0);
 
         if (!$flow_id) {
-            echo json_encode(["status" => false, "message" => "flow_id requerido"]);
-            return;
+            $this->json_response(["status" => false, "message" => "flow_id requerido"], 422);
         }
 
         $flow = $this->db->query(
@@ -263,8 +444,7 @@ class FlowBuilder extends CI_Controller {
             [$flow_id, (int)$store->sto_id]
         )->row();
         if (!$flow) {
-            echo json_encode(["status" => false, "message" => "Flujo no encontrado"]);
-            return;
+            $this->json_response(["status" => false, "message" => "Flujo no encontrado"], 404);
         }
 
         if ($parent_id) {
@@ -273,12 +453,10 @@ class FlowBuilder extends CI_Controller {
                 [$parent_id, (int)$store->sto_id]
             )->row();
             if (!$parent) {
-                echo json_encode(["status" => false, "message" => "Flujo padre no encontrado"]);
-                return;
+                $this->json_response(["status" => false, "message" => "Flujo padre no encontrado"], 404);
             }
             if ($parent_id === $flow_id) {
-                echo json_encode(["status" => false, "message" => "Un flujo no puede ser padre de si mismo"]);
-                return;
+                $this->json_response(["status" => false, "message" => "Un flujo no puede ser padre de si mismo"], 422);
             }
         }
 
@@ -287,7 +465,13 @@ class FlowBuilder extends CI_Controller {
             "updated_at" => date("Y-m-d H:i:s")
         ]);
 
-        echo json_encode(["status" => true, "message" => "Flujo actualizado"]);
+        if ($this->db->affected_rows() === 0 && $this->db->error()['code']) {
+            $err = $this->db->error();
+            log_message('error', 'FlowBuilder api_set_parent failed us_id='.(int)$this->session->userdata('us_id').' tenant_id='.(int)$store->sto_id.' flow_id='.(int)$flow_id.' db_error='.$err['message']);
+            $this->json_response(["status" => false, "message" => "Error actualizando flujo"], 500);
+        }
+
+        $this->json_response(["status" => true, "message" => "Flujo actualizado"]);
     }
 
 }
