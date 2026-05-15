@@ -60,6 +60,7 @@ input:focus, textarea:focus { border-color: #6366F1 !important; box-shadow: 0 0 
 
 <div id='toastContainer' class='toast-container'></div>
 <script>
+const BASE_URL = '<?= base_url() ?>';
 
 function showToast(msg, type) { type = type || 'info'; var c = document.getElementById('toastContainer'); if (!c) return; var t = document.createElement('div'); t.className = 'toast-item ' + type; t.innerHTML = msg; c.appendChild(t); setTimeout(function() { t.style.opacity = '0'; t.style.transition = 'opacity 0.3s'; setTimeout(function() { t.remove(); }, 300); }, 3000); }
 
@@ -82,7 +83,6 @@ document.getElementById('form_create').addEventListener('submit', function(e) {
     e.preventDefault();
     var btn = this.querySelector('button[type="submit"]');
     btn.disabled = true; btn.innerHTML = 'Creating...';
-    const BASE_URL = '<?= base_url() ?>';
     fetch(BASE_URL + 'FlowBuilder/create', {
         method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json'},
         body: new URLSearchParams(new FormData(this))

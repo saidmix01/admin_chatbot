@@ -1,4 +1,4 @@
-<div class="container-fluid flex-grow-1 container-p-y" style="background: #f3f4f6; min-height: calc(100vh - 60px);">
+<div class="container-fluid flex-grow-1 container-p-y" style="background: #f3f4f6; height: calc(100vh - 60px); overflow-y: auto; -webkit-overflow-scrolling: touch;">
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap" style="gap: 10px;">
         <div>
@@ -11,11 +11,18 @@
             </h4>
         </div>
         <div class="d-flex" style="gap: 6px;">
-            <input type="text" id="trigger-value" value="<?= !empty($triggers) ? htmlspecialchars($triggers[0]->trigger_value) : '' ?>" placeholder="Palabra clave" style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 6px 12px; font-size: 0.8rem; outline: none; width: 150px;">
+            <input type="text" id="trigger-value" value="<?= !empty($triggers) ? htmlspecialchars($triggers[0]->trigger_value) : '' ?>" placeholder="Palabra clave" style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 6px 12px; font-size: 0.8rem; outline: none; width: 150px;" <?= !empty($read_only) ? 'disabled' : '' ?>>
+            <?php if (empty($read_only)): ?>
             <button onclick="saveTrigger(<?= $flow->id ?>)" class="flow-btn flow-btn-outline" style="font-size: 0.75rem;">Trigger</button>
             <button onclick="saveNodes(<?= $version->id ?>)" class="flow-btn flow-btn-primary" style="font-size: 0.75rem;">💾 Guardar</button>
             <button onclick="validateFlow(<?= $version->id ?>)" class="flow-btn flow-btn-outline" style="font-size: 0.75rem;">✅ Validar</button>
             <button onclick="publishFlow(<?= $version->id ?>)" class="flow-btn" style="font-size: 0.75rem; background: #22C55E; border-color: #22C55E; color: #fff;">🚀 Publicar</button>
+            <?php else: ?>
+            <button onclick="clonePublishedToDraft()" class="flow-btn flow-btn-primary" style="font-size: 0.75rem;">🧬 Clonar a borrador</button>
+            <?php endif; ?>
+            <?php if (!empty($published)): ?>
+            <a href="<?= base_url() ?>FlowBuilder/edit/<?= (int)$flow->id ?>?version=published" class="flow-btn flow-btn-outline" style="font-size: 0.75rem;">👁 Publicado</a>
+            <?php endif; ?>
             <div class="dropdown" style="position: relative;">
                 <button class="flow-btn flow-btn-outline" style="font-size: 0.75rem;" onclick="document.getElementById('flowActionsDropdown').classList.toggle('show')">⋮</button>
                 <div id="flowActionsDropdown" class="flow-dropdown-menu" style="position: absolute; right: 0; top: 100%; z-index: 100; background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.12); padding: 6px; min-width: 160px; display: none;">
@@ -35,8 +42,10 @@
                         <span class="text-muted" style="font-size: 0.7rem;" id="nodeCount">0 pasos</span>
                     </div>
                     <div class="d-flex" style="gap: 6px;">
-                        <button class="flow-btn flow-btn-outline" style="font-size: 0.7rem; padding: 3px 10px;" onclick="alert()">👁 Vista Previa</button>
+                        <button class="flow-btn flow-btn-outline" style="font-size: 0.7rem; padding: 3px 10px;" onclick="showBotJsonPreview()">🧾 JSON</button>
+                        <?php if (empty($read_only)): ?>
                         <button class="flow-btn flow-btn-primary" style="font-size: 0.7rem; padding: 3px 10px;" onclick="openNewNodeModal()">+ Agregar paso</button>
+                        <?php endif; ?>
                     </div>
                 </div>
                 <div class="flow-canvas-body" id="canvasBody">
@@ -44,7 +53,9 @@
                         <div class="flow-empty-icon">⚡</div>
                         <h5>Comienza a construir tu flujo</h5>
                         <p class="text-muted">Agrega pasos y conectalos para crear tu conversacion.</p>
+                        <?php if (empty($read_only)): ?>
                         <button class="flow-btn flow-btn-primary" onclick="openNewNodeModal()">+ Agregar primer paso</button>
+                        <?php endif; ?>
                     </div>
                     <div id="stepsContainer" class="flow-steps-container"></div>
                 </div>
@@ -422,9 +433,28 @@
 
 </style>
 
-<div id=	oastContainer class=	oast-container></div>
+<div id='toastContainer' class='toast-container'></div>
 <script>
 const BASE_URL = '<?= base_url() ?>';
+const READ_ONLY = <?= !empty($read_only) ? 'true' : 'false' ?>;
+const FLOW_VERSION_ID = <?= (int) $version->id ?>;
+var hasUnsavedChanges = false;
+var autoSaveTimer = null;
+
+function markDirty() { hasUnsavedChanges = true; }
+
+function scheduleAutoSave() {
+    if (READ_ONLY) return;
+    markDirty();
+    if (autoSaveTimer) clearTimeout(autoSaveTimer);
+    autoSaveTimer = setTimeout(function() { saveNodes(FLOW_VERSION_ID, true); }, 800);
+}
+
+window.addEventListener('beforeunload', function(e) {
+    if (!hasUnsavedChanges) return;
+    e.preventDefault();
+    e.returnValue = '';
+});
 // Close dropdown on outside click
 document.addEventListener('click', function(e) {
     var dd = document.getElementById('flowActionsDropdown');
@@ -517,7 +547,7 @@ function renderSteps() {
         h += '</div>';
         h += '<div class=step-actions onclick=event.stopPropagation();>';
         h += '<button onclick=editNode(' + i + ')>Edit</button>';
-        h += '<button onclick=nodes.splice(' + i + ',1);renderSteps();showToast("Deleted","success");>Delete</button>';
+        h += '<button onclick=deleteNodeAt(' + i + ')>Delete</button>';
         h += '</div></div></div>';
         h += '<div class=flow-step-add><button onclick=openNewNodeModal() title="Add step">+</button></div>';
     });
@@ -527,6 +557,7 @@ function renderSteps() {
 // --- Node CRUD ---
 
 function openNewNodeModal() {
+    if (READ_ONLY) { showToast('Solo lectura', 'error'); return; }
     document.getElementById('edit-idx').value = '-1';
     document.getElementById('modalTitleText').textContent = 'New Step';
     document.getElementById('modal-key').value = '';
@@ -536,6 +567,7 @@ function openNewNodeModal() {
 }
 
 function editNode(idx) {
+    if (READ_ONLY) { showToast('Solo lectura', 'error'); return; }
     var n = nodes[idx];
     document.getElementById('edit-idx').value = idx;
     document.getElementById('modalTitleText').textContent = 'Edit: ' + n.node_key;
@@ -566,18 +598,23 @@ function editNode(idx) {
 }
 
 function deleteCurrentNode() {
+    if (READ_ONLY) { showToast('Solo lectura', 'error'); return; }
     var idx = parseInt(document.getElementById('edit-idx').value);
     if (isNaN(idx) || idx < 0) return;
     nodes.splice(idx, 1);
     $('#nodeModal').modal('hide');
     renderSteps();
     showToast('Deleted', 'success');
+    scheduleAutoSave();
 }
 
 function saveNodeModal() {
+    if (READ_ONLY) { showToast('Solo lectura', 'error'); return; }
     var idx = parseInt(document.getElementById('edit-idx').value);
     var key = document.getElementById('modal-key').value.trim();
     if (!key) { showToast('Node key is required', 'error'); return; }
+    if ((isNaN(idx) || idx === -1) && nodes.some(function(n) { return n.node_key === key; })) { showToast('Node key ya existe', 'error'); return; }
+    if (!isNaN(idx) && idx >= 0 && nodes[idx] && nodes[idx].node_key !== key && nodes.some(function(n, i) { return i !== idx && n.node_key === key; })) { showToast('Node key ya existe', 'error'); return; }
     var type = document.getElementById('modal-type').value;
     var payload = {};
     switch (type) {
@@ -611,15 +648,18 @@ function saveNodeModal() {
     }
     $('#nodeModal').modal('hide');
     renderSteps();
+    scheduleAutoSave();
 }
 
 function quickAddNode(type) {
+    if (READ_ONLY) { showToast('Solo lectura', 'error'); return; }
     var base = { 'message': 'msg', 'question': 'ask', 'choice': 'menu', 'condition': 'if', 'action_webhook': 'api', 'call_flow': 'sub', 'goto': 'go', 'end': 'end' };
     var key = base[type] || 'node';
     var i = 1;
     while (nodes.some(function(n) { return n.node_key === key + i; })) i++;
     nodes.push({ node_key: key + i, type: type, payload: {} });
     renderSteps();
+    scheduleAutoSave();
 }
 
 function loadFlowsForSelector() {
@@ -658,6 +698,16 @@ function showToast(msg, type) {
     }, 3000);
 }
 
+function deleteNodeAt(idx) {
+    if (READ_ONLY) { showToast('Solo lectura', 'error'); return; }
+    idx = parseInt(idx);
+    if (isNaN(idx) || idx < 0 || idx >= nodes.length) return;
+    nodes.splice(idx, 1);
+    renderSteps();
+    showToast('Deleted', 'success');
+    scheduleAutoSave();
+}
+
 function loadCatalog(type) {
     var btn = document.getElementById('c-options');
     if (!btn) { showToast('Catalog not available', 'error'); return; }
@@ -691,6 +741,7 @@ function escapeHtml(t) { if (!t) return ''; var d = document.createElement('div'
 // --- Actions ---
 
 function saveTrigger(fid) {
+    if (READ_ONLY) { showToast('Solo lectura', 'error'); return; }
     var val = document.getElementById('trigger-value').value.trim();
     fetch(BASE_URL + 'FlowBuilder/save_trigger/' + fid, {
         method: 'POST',
@@ -699,7 +750,8 @@ function saveTrigger(fid) {
     }).then(function(r) { return r.json(); }).then(function(d) { showToast(d.message, d.status ? 'success' : 'error'); }).catch(function(e) { showToast('Error: ' + e.message, 'error'); });
 }
 
-function saveNodes(vid) {
+function saveNodes(vid, silent) {
+    if (READ_ONLY) { showToast('Solo lectura', 'error'); return; }
     var ae = [];
     for (var i = 0; i < nodes.length - 1; i++) {
         var f = nodes[i];
@@ -712,8 +764,11 @@ function saveNodes(vid) {
         headers: {'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json'},
         body: JSON.stringify({ nodes: nodes, edges: ae })
     }).then(function(r) { return r.json(); }).then(function(d) {
-        showToast(d.message, d.status ? 'success' : 'error');
-        if (d.status) setTimeout(function() { location.reload(); }, 1000);
+        if (!silent || !d.status) showToast(d.message, d.status ? 'success' : 'error');
+        if (d.status) {
+            hasUnsavedChanges = false;
+            if (!silent) setTimeout(function() { location.reload(); }, 1000);
+        }
     }).catch(function(e) { showToast('Error: ' + e.message, 'error'); });
 }
 
@@ -725,6 +780,7 @@ function validateFlow(vid) {
 }
 
 function publishFlow(vid) {
+    if (READ_ONLY) { showToast('Solo lectura', 'error'); return; }
     showToast('Publishing...', 'info');
     fetch(BASE_URL + 'FlowBuilder/publish/' + vid, { headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' } })
     .then(function(r) { return r.json(); }).then(function(d) {
@@ -732,5 +788,138 @@ function publishFlow(vid) {
         if (d.status) { setTimeout(function() { location.reload(); }, 1500); }
     }).catch(function(e) { showToast('Error: ' + e.message, 'error'); });
 }
+
+function clonePublishedToDraft() {
+    fetch(BASE_URL + 'FlowBuilder/clone_published/<?= (int)$flow->id ?>', { headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' } })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+        showToast(d.message, d.status ? 'success' : 'error');
+        if (d.status) window.location = BASE_URL + 'FlowBuilder/edit/<?= (int)$flow->id ?>';
+    }).catch(function(e) { showToast('Error: ' + e.message, 'error'); });
+}
+
+function normalizeChoiceOptions(opts) {
+    if (!Array.isArray(opts)) return [];
+    return opts.map(function(o) {
+        if (!o || typeof o !== 'object') return null;
+        var label = o.label != null ? String(o.label) : (o.text != null ? String(o.text) : '');
+        var value = o.value != null ? o.value : (o.id != null ? o.id : '');
+        if (typeof value === 'string' && value.trim() !== '' && !isNaN(value)) value = parseInt(value, 10);
+        return { label: label, value: value };
+    }).filter(Boolean);
+}
+
+function normalizeConditionPayload(p) {
+    var cond = (p && p.if && typeof p.if === 'object') ? p.if : {};
+    var v = cond.value;
+    if (typeof v === 'string' && v.trim() !== '' && !isNaN(v)) v = parseInt(v, 10);
+    return {
+        if: { op: cond.op || 'equals', var: cond.var || '', value: v },
+        true_to: p ? p.true_to : undefined,
+        false_to: p ? p.false_to : undefined
+    };
+}
+
+function normalizeNodePayloadForBot(n) {
+    var p = (n && n.payload && typeof n.payload === 'object') ? n.payload : {};
+    if (n.type === 'choice') {
+        if (p.options_source && typeof p.options_source === 'object') {
+            var out = Object.assign({}, p);
+            if (out.options) out.options = normalizeChoiceOptions(out.options);
+            return out;
+        }
+
+        if (p.catalog_source) {
+            var itemType = p.catalog_source === 'servicio' ? 'service' : 'product';
+            return {
+                text: p.text || '',
+                options_source: {
+                    kind: 'catalog',
+                    item_type: itemType,
+                    limit: 30,
+                    only_active: true,
+                    save_items_to: 'catalog_shown',
+                    label_template: '{{name}} — {{price}}'
+                },
+                save_to: 'selected_option',
+                save_selected_id_to: 'producto_id',
+                save_selected_name_to: 'producto_nombre',
+                save_selected_price_to: 'producto_precio',
+                retry_text: 'Opción inválida. Responde con un número de la lista.'
+            };
+        }
+
+        var out2 = Object.assign({}, p);
+        if (out2.options) out2.options = normalizeChoiceOptions(out2.options);
+        return out2;
+    }
+
+    if (n.type === 'condition') return normalizeConditionPayload(p);
+
+    return p;
+}
+
+function getBotFlowJson() {
+    var trigVal = (document.getElementById('trigger-value') ? document.getElementById('trigger-value').value : '').trim();
+    var triggers = trigVal ? [{type: 'keyword', value: String(trigVal).toLowerCase()}] : [];
+    return {
+        status: true,
+        data: [
+            {
+                id: <?= (int) $flow->id ?>,
+                name: <?= json_encode($flow->name ?? '') ?>,
+                description: <?= json_encode($flow->description ?? '') ?>,
+                version: <?= (int) ($version->version ?? 1) ?>,
+                published_at: null,
+                triggers: triggers,
+                nodes: (nodes || []).map(function(n) { return { key: n.node_key, type: n.type, payload: normalizeNodePayloadForBot(n) }; }),
+                edges: (edges || []).map(function(e) { return { from: e.from, to: e.to, rule: e.rule || null }; })
+            }
+        ]
+    };
+}
+
+function copyBotJsonPreview() {
+    var el = document.getElementById('botJsonPreview');
+    if (!el) return;
+    var text = el.value || '';
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function() { showToast('Copiado', 'success'); }).catch(function() { showToast('No se pudo copiar', 'error'); });
+        return;
+    }
+    el.focus();
+    el.select();
+    try {
+        document.execCommand('copy');
+        showToast('Copiado', 'success');
+    } catch (e) {
+        showToast('No se pudo copiar', 'error');
+    }
+}
+
+function showBotJsonPreview() {
+    if (typeof Swal === 'undefined') { showToast('SweetAlert2 no disponible', 'error'); return; }
+    var jsonStr = JSON.stringify(getBotFlowJson(), null, 2);
+    Swal.fire({
+        title: 'JSON para bot WhatsApp',
+        width: 900,
+        html:
+            '<textarea id="botJsonPreview" readonly style="width:100%;height:360px;font-family:monospace;font-size:12px;line-height:1.4;white-space:pre;overflow:auto;border:1px solid #e5e7eb;border-radius:10px;padding:12px;">' +
+            escapeHtml(jsonStr) +
+            '</textarea>' +
+            '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px;">' +
+            '<button type="button" class="flow-btn flow-btn-primary" onclick="copyBotJsonPreview()">Copiar</button>' +
+            '</div>',
+        showConfirmButton: false,
+        showCloseButton: true
+    });
+}
+
+(function initFlowEditor() {
+    renderSteps();
+    updateNodeList();
+    var empty = document.getElementById('flowEmptyState');
+    if (empty) empty.style.display = nodes && nodes.length ? 'none' : '';
+})();
 
 </script>

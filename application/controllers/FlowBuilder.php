@@ -139,19 +139,82 @@ class FlowBuilder extends CI_Controller {
         $flow = $this->db->where('id', $id)->where('tenant_id', $store->sto_id)->get('flows')->row();
         if (!$flow) { show_error('Flujo no encontrado'); return; }
         $triggers = $this->db->where('flow_id', $id)->get('flow_triggers')->result();
-        $version = $this->db->where('flow_id', $id)->where('status', 'draft')->order_by('version', 'DESC')->get('flow_versions')->row();
+        $read_only = false;
+        $version_mode = (string) $this->input->get('version');
+        $version_id = (int) $this->input->get('version_id');
+
+        $version = null;
+        if ($version_id) {
+            $version = $this->db->where('id', $version_id)->where('flow_id', $id)->get('flow_versions')->row();
+            if (!$version) { show_error('Versión no encontrada'); return; }
+            $read_only = ($version->status !== 'draft');
+        } else if ($version_mode === 'published') {
+            $version = $this->db->where('flow_id', $id)->where('status', 'published')->order_by('version', 'DESC')->get('flow_versions')->row();
+            if ($version) $read_only = true;
+        }
+
         if (!$version) {
-            $maxv = $this->db->select_max('version')->where('flow_id', $id)->get('flow_versions')->row()->version ?? 0;
-            $this->db->insert('flow_versions', ['flow_id' => $id, 'version' => $maxv + 1, 'status' => 'draft']);
-            $version = $this->db->where('flow_id', $id)->where('status', 'draft')->get('flow_versions')->row();
+            $version = $this->db->where('flow_id', $id)->where('status', 'draft')->order_by('version', 'DESC')->get('flow_versions')->row();
+            if (!$version) {
+                $maxv = $this->db->select_max('version')->where('flow_id', $id)->get('flow_versions')->row()->version ?? 0;
+                $this->db->insert('flow_versions', ['flow_id' => $id, 'version' => $maxv + 1, 'status' => 'draft']);
+                $version = $this->db->where('flow_id', $id)->where('status', 'draft')->get('flow_versions')->row();
+            }
         }
         $nodes = $this->db->where('flow_version_id', $version->id)->order_by('id')->get('flow_nodes')->result();
         $edges = $this->db->where('flow_version_id', $version->id)->get('flow_edges')->result();
         $published = $this->db->where('flow_id', $id)->where('status', 'published')->order_by('version', 'DESC')->get('flow_versions')->row();
         $this->load_admin_view('editor', [
             'flow' => $flow, 'triggers' => $triggers, 'version' => $version,
-            'nodes' => $nodes, 'edges' => $edges, 'published' => $published, 'store' => $store
+            'nodes' => $nodes, 'edges' => $edges, 'published' => $published, 'store' => $store, 'read_only' => $read_only
         ]);
+    }
+
+    public function clone_published($flow_id = 0)
+    {
+        $this->require_auth();
+        $store = $this->get_store();
+        if (!$store) $this->json_response(['status' => false, 'message' => 'Sin tienda'], 400);
+        $flow_id = (int) $flow_id;
+        if (!$flow_id) $this->json_response(['status' => false, 'message' => 'flow_id requerido'], 422);
+
+        $flow = $this->db->where('id', $flow_id)->where('tenant_id', $store->sto_id)->get('flows')->row();
+        if (!$flow) $this->json_response(['status' => false, 'message' => 'Flujo no encontrado'], 404);
+
+        $published = $this->db->where('flow_id', $flow_id)->where('status', 'published')->order_by('version', 'DESC')->get('flow_versions')->row();
+        if (!$published) $this->json_response(['status' => false, 'message' => 'No hay versión publicada'], 422);
+
+        $this->db->trans_begin();
+        $nextv = (int)($this->db->select_max('version')->where('flow_id', (int)$flow_id)->get('flow_versions')->row()->version ?? 0) + 1;
+        $this->db->insert('flow_versions', ['flow_id' => (int)$flow_id, 'version' => $nextv, 'status' => 'draft']);
+        $new_version_id = (int)$this->db->insert_id();
+
+        $this->db->query(
+            "INSERT INTO flow_nodes (flow_version_id, node_key, type, payload_json)
+             SELECT ?, node_key, type, payload_json
+             FROM flow_nodes
+             WHERE flow_version_id = ?
+             ORDER BY id",
+            [$new_version_id, (int)$published->id]
+        );
+        $this->db->query(
+            "INSERT INTO flow_edges (flow_version_id, from_node_key, to_node_key, rule_json)
+             SELECT ?, from_node_key, to_node_key, rule_json
+             FROM flow_edges
+             WHERE flow_version_id = ?
+             ORDER BY id",
+            [$new_version_id, (int)$published->id]
+        );
+
+        if ($this->db->trans_status() === false) {
+            $err = $this->db->error();
+            $this->db->trans_rollback();
+            log_message('error', 'FlowBuilder clone_published failed us_id='.(int)$this->session->userdata('us_id').' tenant_id='.(int)$store->sto_id.' flow_id='.(int)$flow_id.' db_error='.$err['message']);
+            $this->json_response(['status' => false, 'message' => 'Error clonando'], 500);
+        }
+
+        $this->db->trans_commit();
+        $this->json_response(['status' => true, 'message' => 'Clonado', 'data' => ['new_draft_version_id' => $new_version_id]]);
     }
 
     public function save_nodes($version_id = 0) {
@@ -313,6 +376,27 @@ class FlowBuilder extends CI_Controller {
         $this->db->where('flow_id', (int)$version->flow_id)->where('status', 'published')->update('flow_versions', ['status' => 'archived']);
         $this->db->where('id', $version_id)->update('flow_versions', ['status' => 'published', 'published_at' => date('Y-m-d H:i:s')]);
 
+        $nextv = (int)($this->db->select_max('version')->where('flow_id', (int)$version->flow_id)->get('flow_versions')->row()->version ?? 0) + 1;
+        $this->db->insert('flow_versions', ['flow_id' => (int)$version->flow_id, 'version' => $nextv, 'status' => 'draft']);
+        $new_version_id = (int)$this->db->insert_id();
+
+        $this->db->query(
+            "INSERT INTO flow_nodes (flow_version_id, node_key, type, payload_json)
+             SELECT ?, node_key, type, payload_json
+             FROM flow_nodes
+             WHERE flow_version_id = ?
+             ORDER BY id",
+            [$new_version_id, $version_id]
+        );
+        $this->db->query(
+            "INSERT INTO flow_edges (flow_version_id, from_node_key, to_node_key, rule_json)
+             SELECT ?, from_node_key, to_node_key, rule_json
+             FROM flow_edges
+             WHERE flow_version_id = ?
+             ORDER BY id",
+            [$new_version_id, $version_id]
+        );
+
         if ($this->db->trans_status() === false) {
             $err = $this->db->error();
             $this->db->trans_rollback();
@@ -321,7 +405,7 @@ class FlowBuilder extends CI_Controller {
         }
 
         $this->db->trans_commit();
-        $this->json_response(['status' => true, 'message' => 'Flujo publicado']);
+        $this->json_response(['status' => true, 'message' => 'Flujo publicado', 'data' => ['new_draft_version_id' => $new_version_id]]);
     }
 
     public function save_trigger($flow_id = 0) {

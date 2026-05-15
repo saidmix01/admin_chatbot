@@ -27,6 +27,73 @@ class BotApi extends CI_Controller
         return [];
     }
 
+    private function normalize_choice_payload($payload)
+    {
+        $p = is_array($payload) ? $payload : [];
+
+        if (isset($p['options_source']) && is_array($p['options_source'])) {
+            return $p;
+        }
+
+        if (!empty($p['catalog_source'])) {
+            $itemType = $p['catalog_source'] === 'servicio' ? 'service' : 'product';
+            return [
+                'text' => $p['text'] ?? '',
+                'options_source' => [
+                    'kind' => 'catalog',
+                    'item_type' => $itemType,
+                    'limit' => 30,
+                    'only_active' => true,
+                    'save_items_to' => 'catalog_shown',
+                    'label_template' => '{{name}} — {{price}}'
+                ],
+                'save_to' => 'selected_option',
+                'save_selected_id_to' => 'producto_id',
+                'save_selected_name_to' => 'producto_nombre',
+                'save_selected_price_to' => 'producto_precio',
+                'retry_text' => 'Opción inválida. Responde con un número de la lista.'
+            ];
+        }
+
+        if (!empty($p['options']) && is_array($p['options'])) {
+            $normalized = [];
+            foreach ($p['options'] as $o) {
+                if (!is_array($o)) continue;
+                $label = isset($o['label']) ? (string)$o['label'] : (isset($o['text']) ? (string)$o['text'] : '');
+                $value = $o['value'] ?? ($o['id'] ?? '');
+                if (is_string($value) && trim($value) !== '' && is_numeric($value)) $value = (int)$value;
+                $normalized[] = ['label' => $label, 'value' => $value];
+            }
+            $p['options'] = $normalized;
+        }
+
+        return $p;
+    }
+
+    private function normalize_condition_payload($payload)
+    {
+        $p = is_array($payload) ? $payload : [];
+        $cond = (isset($p['if']) && is_array($p['if'])) ? $p['if'] : [];
+        $value = $cond['value'] ?? null;
+        if (is_string($value) && trim($value) !== '' && is_numeric($value)) $value = (int)$value;
+        return [
+            'if' => [
+                'op' => $cond['op'] ?? 'equals',
+                'var' => $cond['var'] ?? '',
+                'value' => $value
+            ],
+            'true_to' => $p['true_to'] ?? null,
+            'false_to' => $p['false_to'] ?? null
+        ];
+    }
+
+    private function normalize_node_payload($type, $payload)
+    {
+        if ($type === 'choice') return $this->normalize_choice_payload($payload);
+        if ($type === 'condition') return $this->normalize_condition_payload($payload);
+        return is_array($payload) ? $payload : [];
+    }
+
     public function login()
     {
         $data = $this->input();
@@ -363,6 +430,121 @@ class BotApi extends CI_Controller
             "status" => true,
             "store" => $store->sto_name,
             "data" => $result
+        ]);
+    }
+
+    public function get_flow_v2($us_id = 0)
+    {
+        if (!$us_id) $this->json(["status" => false, "message" => "us_id requerido"], 400);
+
+        $store = $this->db->query("SELECT sto_id, sto_name FROM stores WHERE us_id = " . intval($us_id))->row();
+        if (!$store) $this->json(["status" => false, "message" => "Tienda no encontrada"], 404);
+
+        $flows = $this->db->query(
+            "SELECT f.id, f.name, f.description
+             FROM flows f
+             WHERE f.tenant_id = ? AND f.is_active = 1
+             ORDER BY f.display_order ASC, f.id ASC",
+            [(int)$store->sto_id]
+        )->result();
+
+        $result = [];
+        foreach ($flows as $f) {
+            $version = $this->db->query(
+                "SELECT id, version, published_at
+                 FROM flow_versions
+                 WHERE flow_id = ? AND status = 'published'
+                 ORDER BY published_at DESC NULLS LAST, version DESC
+                 LIMIT 1",
+                [(int)$f->id]
+            )->row();
+            if (!$version) {
+                $version = $this->db->query(
+                    "SELECT id, version, published_at
+                     FROM flow_versions
+                     WHERE flow_id = ? AND status = 'draft'
+                     ORDER BY version DESC
+                     LIMIT 1",
+                    [(int)$f->id]
+                )->row();
+            }
+            if (!$version) continue;
+
+            $triggers = $this->db->query(
+                "SELECT trigger_type, trigger_value FROM flow_triggers WHERE flow_id = ?",
+                [$f->id]
+            )->result();
+
+            $nodes = $this->db->query(
+                "SELECT node_key, type, payload_json FROM flow_nodes WHERE flow_version_id = ? ORDER BY id",
+                [(int)$version->id]
+            )->result();
+
+            $edges = $this->db->query(
+                "SELECT from_node_key, to_node_key, rule_json FROM flow_edges WHERE flow_version_id = ? ORDER BY id",
+                [(int)$version->id]
+            )->result();
+
+            $result[] = [
+                "id" => (int)$f->id,
+                "name" => $f->name,
+                "description" => $f->description,
+                "version" => (int)$version->version,
+                "published_at" => $version->published_at,
+                "triggers" => array_map(function($t) {
+                    return ["type" => $t->trigger_type, "value" => $t->trigger_value];
+                }, $triggers),
+                "nodes" => array_map(function($n) {
+                    $payload = json_decode($n->payload_json, true) ?: [];
+                    $normalized = $this->normalize_node_payload($n->type, $payload);
+                    if (is_array($normalized) && empty($normalized)) $normalized = new stdClass();
+                    return [
+                        "key" => $n->node_key,
+                        "type" => $n->type,
+                        "payload" => $normalized
+                    ];
+                }, $nodes),
+                "edges" => array_map(function($e) {
+                    return [
+                        "from" => $e->from_node_key,
+                        "to" => $e->to_node_key,
+                        "rule" => $e->rule_json ? json_decode($e->rule_json, true) : null
+                    ];
+                }, $edges)
+            ];
+        }
+
+        $this->json(["status" => true, "data" => $result]);
+    }
+
+    public function get_catalog($us_id = 0)
+    {
+        if (!$us_id) $this->json(["status" => false, "message" => "us_id requerido"], 400);
+
+        $products = $this->db->query(
+            "SELECT s.ser_id, s.ser_name, s.ser_price, s.ser_description, s.ser_type, s.ser_imagen
+             FROM services s
+             INNER JOIN service_user su ON su.ser_id = s.ser_id
+             WHERE su.us_id = ? AND s.ser_status = 1 AND s.ser_type = 'producto'
+             ORDER BY s.ser_name",
+            [(int)$us_id]
+        )->result();
+
+        $services = $this->db->query(
+            "SELECT s.ser_id, s.ser_name, s.ser_price, s.ser_description, s.ser_type, s.ser_imagen
+             FROM services s
+             INNER JOIN service_user su ON su.ser_id = s.ser_id
+             WHERE su.us_id = ? AND s.ser_status = 1 AND s.ser_type = 'servicio'
+             ORDER BY s.ser_name",
+            [(int)$us_id]
+        )->result();
+
+        $this->json([
+            "status" => true,
+            "data" => [
+                "products" => $products,
+                "services" => $services
+            ]
         ]);
     }
 

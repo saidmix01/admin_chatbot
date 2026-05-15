@@ -146,16 +146,16 @@ function get_elements_form_sync(form_name = "") {
 
 
 
-const destroyDataTable = (tableId) => {
+function destroyDataTable(tableId) {
 	const existingTable = $(`#${tableId}`).DataTable();
 	if (existingTable) {
 		existingTable.destroy();
 	}
-};
+}
 
 
 
-const paint_datatable = async (table_name, columns, data) => {
+async function paint_datatable(table_name, columns, data) {
 	destroyDataTable(table_name);
 	$(`#${table_name}`).DataTable({
 		data: data,
