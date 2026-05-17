@@ -39,7 +39,7 @@ class Preview extends CI_Controller {
 
 		$data = array(
 			"business_name" => $store_data->sto_name ?? "Mi Negocio",
-			"description" => $store_data->sto_wellcome_message ?? "WhatsApp Business para pequeños negocios",
+			"description" => $store_data->sto_description ?? $store_data->sto_wellcome_message ?? "WhatsApp Business para pequeños negocios",
 			"whatsapp_number" => $store_data->sto_phone ?? "+57 300 000 0000",
 			"products" => $products,
 			"store_id" => $sto_id

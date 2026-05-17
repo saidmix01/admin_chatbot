@@ -46,24 +46,59 @@ class BotConfig extends CI_Controller {
 			$this->Store_model->data = array("s.us_id" => $us_id);
 			$store = $this->Store_model->get_stores();
 
-				if (!empty($store["data"])) {
-					$update = array();
-					if (!empty($input["welcome_msg"])) $update["sto_wellcome_message"] = $input["welcome_msg"];
-					if (!empty($update)) {
-						$this->db->where("sto_id", $store["data"][0]->sto_id);
-						$this->db->update("stores", $update);
-					}
-					if (isset($input["starters"])) {
-						$this->db->where("sto_id", $store["data"][0]->sto_id);
-						$this->db->update("stores", array("sto_starters" => json_encode($input["starters"])));
-					}
-				}
+			$update = array();
 
-				$response["status"] = true;
-				$response["message"] = "Configuración guardada correctamente";
-			} catch (\Throwable $th) {
-				$response["message"] = $th->getMessage();
+			// Mensaje de bienvenida
+			if (isset($input["welcome_msg"])) {
+				$update["sto_wellcome_message"] = $input["welcome_msg"];
 			}
+
+			// Mensaje de menú
+			if (isset($input["menu_msg"])) {
+				$update["sto_menu_message"] = $input["menu_msg"];
+			}
+
+			// Mensaje fuera de horario
+			if (isset($input["offhours_msg"])) {
+				$update["sto_offhours_message"] = $input["offhours_msg"];
+			}
+
+			// Mensaje de despedida
+			if (isset($input["goodbye_msg"])) {
+				$update["sto_goodbye_message"] = $input["goodbye_msg"];
+			}
+
+			// Horarios
+			if (isset($input["schedule_enabled"])) {
+				$update["sto_schedule_enabled"] = intval($input["schedule_enabled"]);
+			}
+			if (isset($input["schedule_open"])) {
+				$update["sto_schedule_open"] = $input["schedule_open"];
+			}
+			if (isset($input["schedule_close"])) {
+				$update["sto_schedule_close"] = $input["schedule_close"];
+			}
+			if (isset($input["schedule_days"])) {
+				$update["sto_schedule_days"] = $input["schedule_days"];
+			}
+
+			if (!empty($store["data"])) {
+				if (!empty($update)) {
+					$this->db->where("sto_id", $store["data"][0]->sto_id);
+					$this->db->update("stores", $update);
+				}
+			} else {
+				$update["us_id"] = $us_id;
+				$update["sto_status"] = 1;
+				$update["sto_name"] = "Mi Negocio";
+				$this->db->insert("stores", $update);
+			}
+
+			$response["status"] = true;
+			$response["message"] = "Configuración guardada correctamente";
+		} catch (\Throwable $th) {
+			$response["message"] = $th->getMessage();
+		}
 		echo json_encode($response);
 	}
 }

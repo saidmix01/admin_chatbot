@@ -24,7 +24,7 @@
 
                 <div class="form-saas-group">
                     <label class="form-saas-label">Descripción corta</label>
-                    <textarea class="form-saas" name="description" rows="2" placeholder="Describe tu negocio en pocas palabras"><?= $store->sto_wellcome_message ?? '' ?></textarea>
+                    <textarea class="form-saas" name="description" rows="2" placeholder="Describe tu negocio en pocas palabras"><?= $store->sto_description ?? $store->sto_wellcome_message ?? '' ?></textarea>
                 </div>
 
                 <div class="row">

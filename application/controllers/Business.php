@@ -50,7 +50,7 @@ class Business extends CI_Controller {
 
 			$update = array();
 			if (!empty($input["business_name"])) $update["sto_name"] = $input["business_name"];
-			if (!empty($input["description"])) $update["sto_wellcome_message"] = $input["description"];
+			if (!empty($input["description"])) $update["sto_description"] = $input["description"];
 			if (!empty($input["address"])) $update["sto_direction"] = $input["address"];
 			if (!empty($input["whatsapp"])) $update["sto_phone"] = $input["whatsapp"];
 
