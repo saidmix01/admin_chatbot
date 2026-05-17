@@ -367,10 +367,10 @@
             {
               "name": "Config obtenida",
               "code": 200,
-              "body": "{\"status\":true,\"data\":{\"business_name\":\"Café Colombia\",\"welcome_msg\":\"¡Bienvenido!\",\"menu_msg\":\"Elige una opción:\",\"offhours_msg\":\"Fuera de horario...\",\"goodbye_msg\":\"¡Gracias!\",\"whatsapp_number\":\"573001234567\",\"bot_status\":\"connected\"}}"
+              "body": "{\"status\":true,\"data\":{\"business_name\":\"Café Colombia\",\"welcome_msg\":\"¡Bienvenido! ¿En qué podemos ayudarte?\",\"menu_msg\":\"Elige una opción:\\n1. Ver productos\\n2. Horario\\n3. Ubicación\\n4. Hablar con un asesor\",\"offhours_msg\":\"Actualmente estamos fuera de nuestro horario de atención. Te atenderemos en cuanto abramos.\",\"goodbye_msg\":\"¡Gracias por contactarnos! Que tengas un excelente día.\",\"schedule_enabled\":1,\"schedule_open\":\"09:00\",\"schedule_close\":\"18:00\",\"schedule_days\":\"1,2,3,4,5\",\"timezone\":\"America/Bogota\",\"whatsapp_number\":\"573001234567\",\"bot_status\":\"connected\"}}"
             }
           ]
-        },
+        }
         {
           "name": "Obtener productos",
           "request": {
@@ -409,10 +409,10 @@
             {
               "name": "Negocio encontrado",
               "code": 200,
-              "body": "{\"status\":true,\"data\":{\"sto_id\":1,\"sto_name\":\"Café Colombia\",\"sto_phone\":\"573001112233\",\"sto_direction\":\"Calle 10 #20-30\"}}"
+              "body": "{\"status\":true,\"data\":{\"business_name\":\"Café Colombia\",\"description\":\"Café artesanal colombiano\",\"address\":\"Calle 10 #20-30\",\"phone\":\"573001112233\",\"welcome_msg\":\"¡Bienvenido! ¿En qué podemos ayudarte?\",\"menu_msg\":\"Elige una opción:\\n1. Ver productos\\n2. Horario\\n3. Ubicación\\n4. Hablar con un asesor\",\"offhours_msg\":\"Actualmente estamos fuera de nuestro horario de atención. Te atenderemos en cuanto abramos.\",\"goodbye_msg\":\"¡Gracias por contactarnos! Que tengas un excelente día.\",\"schedule_enabled\":1,\"schedule_open\":\"09:00\",\"schedule_close\":\"18:00\",\"schedule_days\":\"1,2,3,4,5\",\"timezone\":\"America/Bogota\"}}"
             }
           ]
-        },
+        }
         {
           "name": "Obtener flujo publicado (get_flow)",
           "request": {
