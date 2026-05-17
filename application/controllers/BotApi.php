@@ -94,6 +94,24 @@ class BotApi extends CI_Controller
         return is_array($payload) ? $payload : [];
     }
 
+    private function get_store_for_user($us_id)
+    {
+        $store = $this->db->where('us_id', (int)$us_id)->get('stores')->row();
+        if ($store) return $store;
+
+        $store = $this->db->query(
+            "SELECT s.*
+             FROM user_store us
+             INNER JOIN stores s ON s.sto_id = us.sto_id
+             WHERE us.us_id = ?
+             ORDER BY us.created_at DESC
+             LIMIT 1",
+            [(int)$us_id]
+        )->row();
+
+        return $store;
+    }
+
     public function login()
     {
         $data = $this->input();
@@ -437,8 +455,11 @@ class BotApi extends CI_Controller
     {
         if (!$us_id) $this->json(["status" => false, "message" => "us_id requerido"], 400);
 
-        $store = $this->db->query("SELECT sto_id, sto_name FROM stores WHERE us_id = " . intval($us_id))->row();
+        $store = $this->get_store_for_user($us_id);
         if (!$store) $this->json(["status" => false, "message" => "Tienda no encontrada"], 404);
+
+        $session = $this->db->where('us_id', (int)$us_id)->get('bot_sessions')->row();
+        $starters = json_decode($store->sto_starters ?? '[]', true) ?: [];
 
         $flows = $this->db->query(
             "SELECT f.id, f.name, f.description
@@ -514,7 +535,29 @@ class BotApi extends CI_Controller
             ];
         }
 
-        $this->json(["status" => true, "data" => $result]);
+        $this->json([
+            "status" => true,
+            "business" => [
+                "sto_id" => (int)($store->sto_id ?? 0),
+                "sto_name" => $store->sto_name ?? '',
+                "sto_email" => $store->sto_email ?? '',
+                "sto_phone" => $store->sto_phone ?? '',
+                "sto_direction" => $store->sto_direction ?? '',
+                "sto_wellcome_message" => $store->sto_wellcome_message ?? '',
+                "starters" => $starters
+            ],
+            "bot_config" => [
+                "business_name" => $store->sto_name ?? '',
+                "welcome_msg" => $store->sto_wellcome_message ?? '¡Bienvenido!',
+                "menu_msg" => 'Elige una opción:',
+                "offhours_msg" => 'Estamos fuera de horario. Escríbenos y te atenderemos en la mañana.',
+                "goodbye_msg" => '¡Gracias por contactarnos!',
+                "whatsapp_number" => $session->bs_whatsapp_number ?? '',
+                "bot_status" => $session->bs_status ?? 'disconnected',
+                "starters" => $starters
+            ],
+            "data" => $result
+        ]);
     }
 
     public function get_catalog($us_id = 0)
