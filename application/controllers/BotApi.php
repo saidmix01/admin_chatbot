@@ -121,6 +121,19 @@ class BotApi extends CI_Controller
         return $store;
     }
 
+    private function get_effective_bot_status($session)
+    {
+        if (!$session) return 'disconnected';
+        $status = $session->bs_status ?? 'disconnected';
+        $last = $session->bs_last_activity ?? null;
+        if (!$last && property_exists($session, 'updated_at')) $last = $session->updated_at;
+        if ($status === 'connected' && $last) {
+            $ts = strtotime($last);
+            if ($ts !== false && (time() - $ts) > 180) return 'disconnected';
+        }
+        return $status;
+    }
+
     private function check_session()
     {
         if (!$this->session->userdata('login')) {
@@ -256,6 +269,7 @@ class BotApi extends CI_Controller
 
         $store = $this->get_store_for_user($us_id);
         $session = $this->db->where('us_id', (int)$us_id)->get('bot_sessions')->row();
+        $effective_status = $this->get_effective_bot_status($session);
         $starters = json_decode($this->store_val($store, 'sto_starters', '[]'), true) ?: [];
 
         $welcome = $this->store_val($store, 'sto_wellcome_message');
@@ -275,7 +289,7 @@ class BotApi extends CI_Controller
             'schedule_days' => $this->store_val($store, 'sto_schedule_days', '1,2,3,4,5') ?: '1,2,3,4,5',
             'timezone' => $this->store_val($store, 'sto_timezone', 'America/Bogota') ?: 'America/Bogota',
             'whatsapp_number' => $session->bs_whatsapp_number ?? '',
-            'bot_status' => $session->bs_status ?? 'disconnected',
+            'bot_status' => $effective_status,
             'starters' => $starters
         ]]);
     }
@@ -334,10 +348,11 @@ class BotApi extends CI_Controller
         if (!$us_id) $this->json(['status' => false, 'message' => 'us_id requerido'], 400);
 
         $session = $this->db->where('us_id', (int)$us_id)->get('bot_sessions')->row();
+        $effective_status = $this->get_effective_bot_status($session);
         $this->json([
             'status' => (bool)$session,
             'qr' => $session->bs_qr_base64 ?? null,
-            'status_text' => $session->bs_status ?? 'no_session'
+            'status_text' => $effective_status ?: 'no_session'
         ]);
     }
 
@@ -347,7 +362,9 @@ class BotApi extends CI_Controller
         if (!$us_id) $this->json(['status' => false, 'message' => 'us_id requerido'], 400);
 
         $session = $this->db->where('us_id', (int)$us_id)->get('bot_sessions')->row();
-        $this->json(['status' => true, 'data' => $session ?: (object)[]]);
+        if (!$session) $this->json(['status' => true, 'data' => (object)[]]);
+        $session->bs_status = $this->get_effective_bot_status($session);
+        $this->json(['status' => true, 'data' => $session]);
     }
 
     public function refresh_qr($us_id = 0)
@@ -489,6 +506,7 @@ class BotApi extends CI_Controller
         if (!$store) $this->json(["status" => false, "message" => "Tienda no encontrada"], 404);
 
         $session = $this->db->where('us_id', (int)$us_id)->get('bot_sessions')->row();
+        $effective_status = $this->get_effective_bot_status($session);
         $starters = json_decode($this->store_val($store, 'sto_starters', '[]'), true) ?: [];
 
         $flows = $this->db->query(
@@ -588,7 +606,7 @@ class BotApi extends CI_Controller
                 "schedule_days" => $this->store_val($store, 'sto_schedule_days', '1,2,3,4,5') ?: '1,2,3,4,5',
                 "timezone" => $this->store_val($store, 'sto_timezone', 'America/Bogota') ?: 'America/Bogota',
                 "whatsapp_number" => $session->bs_whatsapp_number ?? '',
-                "bot_status" => $session->bs_status ?? 'disconnected',
+                "bot_status" => $effective_status,
                 "starters" => $starters
             ],
             "data" => $result
@@ -626,4 +644,3 @@ class BotApi extends CI_Controller
         ]);
     }
 }
-

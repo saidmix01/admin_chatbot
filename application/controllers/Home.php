@@ -40,19 +40,31 @@ class Home extends CI_Controller
 	}
 
 	private function get_whatsapp_status() {
-		$q = $this->db->query("SELECT bs_status FROM bot_sessions WHERE us_id = " . intval($this->session->userdata('us_id')));
-		if ($q->num_rows() > 0) {
-			return $q->row()->bs_status;
+		$q = $this->db->query("SELECT bs_status, bs_last_activity, updated_at FROM bot_sessions WHERE us_id = " . intval($this->session->userdata('us_id')));
+		if ($q->num_rows() === 0) return 'disconnected';
+
+		$row = $q->row();
+		$status = $row->bs_status ?? 'disconnected';
+		$last = $row->bs_last_activity ?: ($row->updated_at ?? null);
+		if ($status === 'connected' && $last) {
+			$ts = strtotime($last);
+			if ($ts !== false && (time() - $ts) > 180) return 'disconnected';
 		}
-		return 'disconnected';
+		return $status;
 	}
 
 	private function get_whatsapp_number() {
-		$q = $this->db->query("SELECT bs_whatsapp_number FROM bot_sessions WHERE us_id = " . intval($this->session->userdata('us_id')));
-		if ($q->num_rows() > 0 && $q->row()->bs_whatsapp_number) {
-			return $q->row()->bs_whatsapp_number;
+		$q = $this->db->query("SELECT bs_status, bs_whatsapp_number, bs_last_activity, updated_at FROM bot_sessions WHERE us_id = " . intval($this->session->userdata('us_id')));
+		if ($q->num_rows() === 0) return '';
+
+		$row = $q->row();
+		$status = $row->bs_status ?? 'disconnected';
+		$last = $row->bs_last_activity ?: ($row->updated_at ?? null);
+		if ($status === 'connected' && $last) {
+			$ts = strtotime($last);
+			if ($ts !== false && (time() - $ts) > 180) return '';
 		}
-		return '';
+		return $row->bs_whatsapp_number ?: '';
 	}
 
 	private function get_bot_status() {

@@ -1,5 +1,6 @@
 
             </div>
+                </div>
             <!-- / Main content -->
         </div>
     </div>
