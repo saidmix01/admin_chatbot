@@ -201,14 +201,43 @@ class BotApi extends CI_Controller {
 		echo json_encode(["status" => true, "data" => $q->result()]);
 	}
 
-	// Bot fetches business info (public)
+	// Bot fetches business info (public) — full config including schedule and messages
 	public function get_business($us_id) {
-		$q = $this->db->query("SELECT sto_name, COALESCE(sto_description, sto_wellcome_message) as description, sto_direction as address, sto_phone as phone
+		$q = $this->db->query("SELECT 
+			sto_name as business_name,
+			COALESCE(sto_description, sto_wellcome_message) as description,
+			sto_direction as address,
+			sto_phone as phone,
+			sto_wellcome_message as welcome_msg,
+			sto_menu_message as menu_msg,
+			sto_offhours_message as offhours_msg,
+			sto_goodbye_message as goodbye_msg,
+			sto_schedule_enabled as schedule_enabled,
+			sto_schedule_open as schedule_open,
+			sto_schedule_close as schedule_close,
+			sto_schedule_days as schedule_days,
+			sto_timezone as timezone
 			FROM stores WHERE us_id = " . intval($us_id));
 
 		if ($q->num_rows() > 0) {
-			$business = $q->row();
-			echo json_encode(["status" => true, "data" => $business]);
+			$row = $q->row();
+			// Fill nulls with defaults so the bot doesn't have to guess
+			$data = [
+				"business_name" => $row->business_name ?: 'Mi Negocio',
+				"description" => $row->description ?: '',
+				"address" => $row->address ?: '',
+				"phone" => $row->phone ?: '',
+				"welcome_msg" => $row->welcome_msg ?: '¡Hola! Bienvenido a {business}. ¿En qué podemos ayudarte?',
+				"menu_msg" => $row->menu_msg ?: "Elige una opción:\n1. Ver productos\n2. Horario\n3. Ubicación\n4. Hablar con un asesor",
+				"offhours_msg" => $row->offhours_msg ?: "Actualmente estamos fuera de nuestro horario de atención. Te atenderemos en cuanto abramos.",
+				"goodbye_msg" => $row->goodbye_msg ?: '¡Gracias por contactarnos! Que tengas un excelente día.',
+				"schedule_enabled" => intval($row->schedule_enabled ?? 0),
+				"schedule_open" => $row->schedule_open ?: '09:00',
+				"schedule_close" => $row->schedule_close ?: '18:00',
+				"schedule_days" => $row->schedule_days ?: '1,2,3,4,5',
+				"timezone" => $row->timezone ?: 'America/Bogota'
+			];
+			echo json_encode(["status" => true, "data" => $data]);
 		} else {
 			echo json_encode(["status" => false, "data" => null, "message" => "Negocio no encontrado"]);
 		}
