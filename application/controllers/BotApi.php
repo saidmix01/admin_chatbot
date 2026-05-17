@@ -8,6 +8,7 @@ class BotApi extends CI_Controller
         parent::__construct();
         $this->load->database();
         $this->load->library('session');
+        $this->load->helper('general_helper');
         header('Content-Type: application/json; charset=UTF-8');
     }
 
@@ -25,6 +26,14 @@ class BotApi extends CI_Controller
             return json_decode($raw, true) ?: [];
         }
         return [];
+    }
+
+    private function store_val($store, $prop, $default = null)
+    {
+        if (!$store) return $default;
+        if (!property_exists($store, $prop)) return $default;
+        if ($store->$prop === null) return $default;
+        return $store->$prop;
     }
 
     private function normalize_choice_payload($payload)
@@ -112,35 +121,35 @@ class BotApi extends CI_Controller
         return $store;
     }
 
+    private function check_session()
+    {
+        if (!$this->session->userdata('login')) {
+            $this->json(['status' => false, 'message' => 'No autorizado'], 401);
+        }
+    }
+
     public function login()
     {
         $data = $this->input();
         $email = $data['email'] ?? '';
         $password = $data['password'] ?? '';
-        if (!$email || !$password) {
-            $this->json(['status' => false, 'message' => 'email y password requeridos'], 400);
-        }
+        if (!$email || !$password) $this->json(['status' => false, 'message' => 'email y password requeridos'], 400);
 
         $user = $this->db->where('us_email', $email)->get('users')->row();
-        if (!$user) {
-            $this->json(['status' => false, 'message' => 'Credenciales inválidas'], 401);
-        }
+        if (!$user) $this->json(['status' => false, 'message' => 'Credenciales inválidas'], 401);
+        if (!password_verify($password, $user->us_password)) $this->json(['status' => false, 'message' => 'Credenciales inválidas'], 401);
 
-        if (!password_verify($password, $user->us_password)) {
-            $this->json(['status' => false, 'message' => 'Credenciales inválidas'], 401);
-        }
-
-        $store = $this->db->where('us_id', $user->us_id)->get('stores')->row();
+        $store = $this->get_store_for_user($user->us_id);
 
         $this->json(['status' => true, 'data' => [
-            'us_id' => $user->us_id,
+            'us_id' => (int)$user->us_id,
             'us_name' => $user->us_name,
             'us_email' => $user->us_email,
             'store' => $store ? [
-                'sto_id' => $store->sto_id,
-                'sto_name' => $store->sto_name,
-                'sto_phone' => $store->sto_phone,
-                'sto_wellcome_message' => $store->sto_wellcome_message
+                'sto_id' => (int)$store->sto_id,
+                'sto_name' => $store->sto_name ?? '',
+                'sto_phone' => $store->sto_phone ?? '',
+                'sto_wellcome_message' => $store->sto_wellcome_message ?? ''
             ] : null
         ]]);
     }
@@ -152,17 +161,17 @@ class BotApi extends CI_Controller
         if (!$us_id) $this->json(['status' => false, 'message' => 'us_id requerido'], 400);
 
         $qr_base64 = $data['qr_base64'] ?? '';
-        $exists = $this->db->where('us_id', $us_id)->get('bot_sessions')->row();
+        $exists = $this->db->where('us_id', (int)$us_id)->get('bot_sessions')->row();
 
         if ($exists) {
-            $this->db->where('us_id', $us_id)->update('bot_sessions', [
+            $this->db->where('us_id', (int)$us_id)->update('bot_sessions', [
                 'bs_qr_base64' => $qr_base64,
                 'bs_status' => 'waiting_scan',
                 'updated_at' => date('Y-m-d H:i:s')
             ]);
         } else {
             $this->db->insert('bot_sessions', [
-                'us_id' => $us_id,
+                'us_id' => (int)$us_id,
                 'bs_qr_base64' => $qr_base64,
                 'bs_status' => 'waiting_scan'
             ]);
@@ -176,18 +185,20 @@ class BotApi extends CI_Controller
         $us_id = $data['us_id'] ?? 0;
         if (!$us_id) $this->json(['status' => false, 'message' => 'us_id requerido'], 400);
 
+        $status = $data['status'] ?? 'disconnected';
         $fields = [
-            'bs_status' => $data['status'] ?? 'disconnected',
+            'bs_status' => $status,
             'bs_whatsapp_number' => $data['whatsapp_number'] ?? '',
             'bs_last_activity' => date('Y-m-d H:i:s'),
             'updated_at' => date('Y-m-d H:i:s')
         ];
+        if ($status === 'connected') $fields['bs_qr_base64'] = '';
 
-        $exists = $this->db->where('us_id', $us_id)->get('bot_sessions')->row();
+        $exists = $this->db->where('us_id', (int)$us_id)->get('bot_sessions')->row();
         if ($exists) {
-            $this->db->where('us_id', $us_id)->update('bot_sessions', $fields);
+            $this->db->where('us_id', (int)$us_id)->update('bot_sessions', $fields);
         } else {
-            $fields['us_id'] = $us_id;
+            $fields['us_id'] = (int)$us_id;
             $this->db->insert('bot_sessions', $fields);
         }
         $this->json(['status' => true, 'message' => 'Estado actualizado']);
@@ -200,7 +211,7 @@ class BotApi extends CI_Controller
         if (!$us_id) $this->json(['status' => false, 'message' => 'us_id requerido'], 400);
 
         $this->db->insert('bot_orders', [
-            'us_id' => $us_id,
+            'us_id' => (int)$us_id,
             'bo_customer_name' => $data['customer_name'] ?? '',
             'bo_customer_phone' => $data['customer_phone'] ?? '',
             'bo_product_name' => $data['product_name'] ?? '',
@@ -218,7 +229,7 @@ class BotApi extends CI_Controller
         if (!$us_id) $this->json(['status' => false, 'message' => 'us_id requerido'], 400);
 
         $this->db->insert('bot_messages', [
-            'us_id' => $us_id,
+            'us_id' => (int)$us_id,
             'bm_from' => $data['from'] ?? 'customer',
             'bm_customer_phone' => $data['customer_phone'] ?? '',
             'bm_customer_name' => $data['customer_name'] ?? '',
@@ -233,7 +244,7 @@ class BotApi extends CI_Controller
         $bo_id = $data['bo_id'] ?? 0;
         if (!$bo_id) $this->json(['status' => false, 'message' => 'bo_id requerido'], 400);
 
-        $this->db->where('bo_id', $bo_id)->update('bot_orders', [
+        $this->db->where('bo_id', (int)$bo_id)->update('bot_orders', [
             'bo_status' => $data['status'] ?? 'completado'
         ]);
         $this->json(['status' => true, 'message' => 'Estado del pedido actualizado']);
@@ -243,19 +254,63 @@ class BotApi extends CI_Controller
     {
         if (!$us_id) $this->json(['status' => false, 'message' => 'us_id requerido'], 400);
 
-        $store = $this->db->where('us_id', $us_id)->get('stores')->row();
-        $session = $this->db->where('us_id', $us_id)->get('bot_sessions')->row();
+        $store = $this->get_store_for_user($us_id);
+        $session = $this->db->where('us_id', (int)$us_id)->get('bot_sessions')->row();
+        $starters = json_decode($this->store_val($store, 'sto_starters', '[]'), true) ?: [];
+
+        $welcome = $this->store_val($store, 'sto_wellcome_message');
+        $menu = $this->store_val($store, 'sto_menu_message');
+        $offhours = $this->store_val($store, 'sto_offhours_message');
+        $goodbye = $this->store_val($store, 'sto_goodbye_message');
 
         $this->json(['status' => true, 'data' => [
-            'business_name' => $store->sto_name ?? '',
-            'welcome_msg' => $store->sto_wellcome_message ?? '¡Bienvenido!',
-            'menu_msg' => 'Elige una opción:',
-            'offhours_msg' => 'Estamos fuera de horario. Escríbenos y te atenderemos en la mañana.',
-            'goodbye_msg' => '¡Gracias por contactarnos!',
+            'business_name' => $this->store_val($store, 'sto_name', ''),
+            'welcome_msg' => $welcome ?: '¡Hola! Bienvenido a {business}. ¿En qué podemos ayudarte?',
+            'menu_msg' => $menu ?: "Elige una opción:\n1. Ver productos\n2. Horario\n3. Ubicación\n4. Hablar con un asesor",
+            'offhours_msg' => $offhours ?: 'Actualmente estamos fuera de nuestro horario de atención. Te atenderemos en cuanto abramos.',
+            'goodbye_msg' => $goodbye ?: '¡Gracias por contactarnos! Que tengas un excelente día.',
+            'schedule_enabled' => (int)$this->store_val($store, 'sto_schedule_enabled', 0),
+            'schedule_open' => $this->store_val($store, 'sto_schedule_open', '09:00') ?: '09:00',
+            'schedule_close' => $this->store_val($store, 'sto_schedule_close', '18:00') ?: '18:00',
+            'schedule_days' => $this->store_val($store, 'sto_schedule_days', '1,2,3,4,5') ?: '1,2,3,4,5',
+            'timezone' => $this->store_val($store, 'sto_timezone', 'America/Bogota') ?: 'America/Bogota',
             'whatsapp_number' => $session->bs_whatsapp_number ?? '',
             'bot_status' => $session->bs_status ?? 'disconnected',
-            'starters' => json_decode($store->sto_starters ?? '[]', true) ?: []
+            'starters' => $starters
         ]]);
+    }
+
+    public function get_business($us_id = 0)
+    {
+        if (!$us_id) $this->json(['status' => false, 'message' => 'us_id requerido'], 400);
+
+        $store = $this->get_store_for_user($us_id);
+        if (!$store) $this->json(['status' => false, 'message' => 'Negocio no encontrado'], 404);
+
+        $starters = json_decode($this->store_val($store, 'sto_starters', '[]'), true) ?: [];
+
+        $data = [
+            'sto_id' => (int)$this->store_val($store, 'sto_id', 0),
+            'sto_name' => $this->store_val($store, 'sto_name', ''),
+            'sto_email' => $this->store_val($store, 'sto_email', ''),
+            'sto_phone' => $this->store_val($store, 'sto_phone', ''),
+            'sto_direction' => $this->store_val($store, 'sto_direction', ''),
+            'sto_wellcome_message' => $this->store_val($store, 'sto_wellcome_message', ''),
+            'starters' => $starters,
+            'bot' => [
+                'welcome_msg' => ($this->store_val($store, 'sto_wellcome_message') ?: '¡Hola! Bienvenido a {business}. ¿En qué podemos ayudarte?'),
+                'menu_msg' => ($this->store_val($store, 'sto_menu_message') ?: "Elige una opción:\n1. Ver productos\n2. Horario\n3. Ubicación\n4. Hablar con un asesor"),
+                'offhours_msg' => ($this->store_val($store, 'sto_offhours_message') ?: 'Actualmente estamos fuera de nuestro horario de atención. Te atenderemos en cuanto abramos.'),
+                'goodbye_msg' => ($this->store_val($store, 'sto_goodbye_message') ?: '¡Gracias por contactarnos! Que tengas un excelente día.'),
+                'schedule_enabled' => (int)$this->store_val($store, 'sto_schedule_enabled', 0),
+                'schedule_open' => $this->store_val($store, 'sto_schedule_open', '09:00') ?: '09:00',
+                'schedule_close' => $this->store_val($store, 'sto_schedule_close', '18:00') ?: '18:00',
+                'schedule_days' => $this->store_val($store, 'sto_schedule_days', '1,2,3,4,5') ?: '1,2,3,4,5',
+                'timezone' => $this->store_val($store, 'sto_timezone', 'America/Bogota') ?: 'America/Bogota'
+            ]
+        ];
+
+        $this->json(['status' => true, 'data' => $data]);
     }
 
     public function get_products($us_id = 0)
@@ -266,26 +321,11 @@ class BotApi extends CI_Controller
             ->select('s.*')
             ->from('services s')
             ->join('service_user su', 's.ser_id = su.ser_id')
-            ->where('su.us_id', $us_id)
+            ->where('su.us_id', (int)$us_id)
             ->where('s.ser_status', 1)
             ->get()->result();
 
         $this->json(['status' => true, 'data' => $products]);
-    }
-
-    public function get_business($us_id = 0)
-    {
-        if (!$us_id) $this->json(['status' => false, 'message' => 'us_id requerido'], 400);
-
-        $store = $this->db->where('us_id', $us_id)->get('stores')->row();
-        $this->json(['status' => true, 'data' => $store ?: (object)[]]);
-    }
-
-    private function check_session()
-    {
-        if (!$this->session->userdata('login')) {
-            $this->json(['status' => false, 'message' => 'No autorizado'], 401);
-        }
     }
 
     public function get_qr($us_id = 0)
@@ -293,7 +333,7 @@ class BotApi extends CI_Controller
         $this->check_session();
         if (!$us_id) $this->json(['status' => false, 'message' => 'us_id requerido'], 400);
 
-        $session = $this->db->where('us_id', $us_id)->get('bot_sessions')->row();
+        $session = $this->db->where('us_id', (int)$us_id)->get('bot_sessions')->row();
         $this->json([
             'status' => (bool)$session,
             'qr' => $session->bs_qr_base64 ?? null,
@@ -306,7 +346,7 @@ class BotApi extends CI_Controller
         $this->check_session();
         if (!$us_id) $this->json(['status' => false, 'message' => 'us_id requerido'], 400);
 
-        $session = $this->db->where('us_id', $us_id)->get('bot_sessions')->row();
+        $session = $this->db->where('us_id', (int)$us_id)->get('bot_sessions')->row();
         $this->json(['status' => true, 'data' => $session ?: (object)[]]);
     }
 
@@ -315,7 +355,7 @@ class BotApi extends CI_Controller
         $this->check_session();
         if (!$us_id) $this->json(['status' => false, 'message' => 'us_id requerido'], 400);
 
-        $this->db->where('us_id', $us_id)->update('bot_sessions', [
+        $this->db->where('us_id', (int)$us_id)->update('bot_sessions', [
             'bs_qr_base64' => '',
             'bs_status' => 'waiting_scan',
             'updated_at' => date('Y-m-d H:i:s')
@@ -329,7 +369,7 @@ class BotApi extends CI_Controller
         if (!$us_id) $this->json(['status' => false, 'message' => 'us_id requerido'], 400);
 
         $orders = $this->db
-            ->where('us_id', $us_id)
+            ->where('us_id', (int)$us_id)
             ->order_by('created_at', 'DESC')
             ->limit(50)
             ->get('bot_orders')->result();
@@ -343,7 +383,7 @@ class BotApi extends CI_Controller
         if (!$us_id) $this->json(['status' => false, 'message' => 'us_id requerido'], 400);
 
         $messages = $this->db
-            ->where('us_id', $us_id)
+            ->where('us_id', (int)$us_id)
             ->order_by('created_at', 'DESC')
             ->limit(50)
             ->get('bot_messages')->result();
@@ -351,16 +391,18 @@ class BotApi extends CI_Controller
         $this->json(['status' => true, 'data' => $messages]);
     }
 
-    public function get_initial_menu($us_id = 0) {
+    public function get_initial_menu($us_id = 0)
+    {
         if (!$us_id) $this->json(["status" => false, "message" => "us_id requerido"], 400);
-        $store = $this->db->where("us_id", $us_id)->get("stores")->row();
+        $store = $this->get_store_for_user($us_id);
         if (!$store) $this->json(["status" => false, "data" => []]);
-        $flows = $this->db->where("tenant_id", $store->sto_id)->where("is_active", 1)->order_by("display_order", "ASC")->get("flows")->result();
+
+        $flows = $this->db->where("tenant_id", (int)$store->sto_id)->where("is_active", 1)->order_by("display_order", "ASC")->get("flows")->result();
         $result = [];
         foreach ($flows as $f) {
             $triggers = $this->db->where("flow_id", $f->id)->get("flow_triggers")->result();
             $result[] = [
-                "id" => $f->id,
+                "id" => (int)$f->id,
                 "name" => $f->name,
                 "description" => $f->description,
                 "trigger" => !empty($triggers) ? $triggers[0]->trigger_value : "",
@@ -370,24 +412,12 @@ class BotApi extends CI_Controller
         $this->json(["status" => true, "data" => $result]);
     }
 
-    /**
-     * Get the full published flow for a user's store
-     * Used by the WhatsApp bot service to load & execute conversation flows
-     * GET /BotApi/get_flow/US_ID
-     */
     public function get_flow($us_id = 0)
     {
-        if (!$us_id) {
-            http_response_code(400);
-            echo json_encode(["status" => false, "message" => "us_id requerido"]);
-            return;
-        }
+        if (!$us_id) $this->json(["status" => false, "message" => "us_id requerido"], 400);
 
         $store = $this->db->query("SELECT sto_id, sto_name FROM stores WHERE us_id = " . intval($us_id))->row();
-        if (!$store) {
-            echo json_encode(["status" => false, "message" => "Tienda no encontrada"]);
-            return;
-        }
+        if (!$store) $this->json(["status" => false, "message" => "Tienda no encontrada"], 404);
 
         $flows = $this->db->query("
             SELECT f.id, f.name, f.description, f.is_active,
@@ -459,7 +489,7 @@ class BotApi extends CI_Controller
         if (!$store) $this->json(["status" => false, "message" => "Tienda no encontrada"], 404);
 
         $session = $this->db->where('us_id', (int)$us_id)->get('bot_sessions')->row();
-        $starters = json_decode($store->sto_starters ?? '[]', true) ?: [];
+        $starters = json_decode($this->store_val($store, 'sto_starters', '[]'), true) ?: [];
 
         $flows = $this->db->query(
             "SELECT f.id, f.name, f.description
@@ -493,7 +523,7 @@ class BotApi extends CI_Controller
 
             $triggers = $this->db->query(
                 "SELECT trigger_type, trigger_value FROM flow_triggers WHERE flow_id = ?",
-                [$f->id]
+                [(int)$f->id]
             )->result();
 
             $nodes = $this->db->query(
@@ -538,20 +568,25 @@ class BotApi extends CI_Controller
         $this->json([
             "status" => true,
             "business" => [
-                "sto_id" => (int)($store->sto_id ?? 0),
-                "sto_name" => $store->sto_name ?? '',
-                "sto_email" => $store->sto_email ?? '',
-                "sto_phone" => $store->sto_phone ?? '',
-                "sto_direction" => $store->sto_direction ?? '',
-                "sto_wellcome_message" => $store->sto_wellcome_message ?? '',
+                "sto_id" => (int)$this->store_val($store, 'sto_id', 0),
+                "sto_name" => $this->store_val($store, 'sto_name', ''),
+                "sto_email" => $this->store_val($store, 'sto_email', ''),
+                "sto_phone" => $this->store_val($store, 'sto_phone', ''),
+                "sto_direction" => $this->store_val($store, 'sto_direction', ''),
+                "sto_wellcome_message" => $this->store_val($store, 'sto_wellcome_message', ''),
                 "starters" => $starters
             ],
             "bot_config" => [
-                "business_name" => $store->sto_name ?? '',
-                "welcome_msg" => $store->sto_wellcome_message ?? '¡Bienvenido!',
-                "menu_msg" => 'Elige una opción:',
-                "offhours_msg" => 'Estamos fuera de horario. Escríbenos y te atenderemos en la mañana.',
-                "goodbye_msg" => '¡Gracias por contactarnos!',
+                "business_name" => $this->store_val($store, 'sto_name', ''),
+                "welcome_msg" => ($this->store_val($store, 'sto_wellcome_message') ?: '¡Hola! Bienvenido a {business}. ¿En qué podemos ayudarte?'),
+                "menu_msg" => ($this->store_val($store, 'sto_menu_message') ?: "Elige una opción:\n1. Ver productos\n2. Horario\n3. Ubicación\n4. Hablar con un asesor"),
+                "offhours_msg" => ($this->store_val($store, 'sto_offhours_message') ?: 'Actualmente estamos fuera de nuestro horario de atención. Te atenderemos en cuanto abramos.'),
+                "goodbye_msg" => ($this->store_val($store, 'sto_goodbye_message') ?: '¡Gracias por contactarnos! Que tengas un excelente día.'),
+                "schedule_enabled" => (int)$this->store_val($store, 'sto_schedule_enabled', 0),
+                "schedule_open" => $this->store_val($store, 'sto_schedule_open', '09:00') ?: '09:00',
+                "schedule_close" => $this->store_val($store, 'sto_schedule_close', '18:00') ?: '18:00',
+                "schedule_days" => $this->store_val($store, 'sto_schedule_days', '1,2,3,4,5') ?: '1,2,3,4,5',
+                "timezone" => $this->store_val($store, 'sto_timezone', 'America/Bogota') ?: 'America/Bogota',
                 "whatsapp_number" => $session->bs_whatsapp_number ?? '',
                 "bot_status" => $session->bs_status ?? 'disconnected',
                 "starters" => $starters
@@ -590,5 +625,5 @@ class BotApi extends CI_Controller
             ]
         ]);
     }
-
 }
+
