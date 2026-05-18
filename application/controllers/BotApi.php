@@ -215,7 +215,9 @@ class BotApi extends CI_Controller
                 'sto_id' => (int)$store->sto_id,
                 'sto_name' => $store->sto_name ?? '',
                 'sto_phone' => $store->sto_phone ?? '',
-                'sto_wellcome_message' => $store->sto_wellcome_message ?? ''
+                'sto_wellcome_message' => $store->sto_wellcome_message ?? '',
+                'sto_inactivity_minutes' => (int)($store->sto_inactivity_minutes ?? 15),
+                'sto_inactivity_message' => $store->sto_inactivity_message ?? ''
             ] : null
         ]]);
     }
@@ -226,23 +228,21 @@ class BotApi extends CI_Controller
         $us_id = $data['us_id'] ?? 0;
         if (!$us_id) $this->json(['status' => false, 'message' => 'us_id requerido'], 400);
 
-        $qr_base64 = (string)($data['qr_base64'] ?? '');
+        $qr_base64 = $data['qr_base64'] ?? '';
         $exists = $this->db->where('us_id', (int)$us_id)->get('bot_sessions')->row();
 
         if ($exists) {
-            $fields = [
+            $this->db->where('us_id', (int)$us_id)->update('bot_sessions', [
+                'bs_qr_base64' => $qr_base64,
                 'bs_status' => 'waiting_scan',
                 'updated_at' => date('Y-m-d H:i:s')
-            ];
-            if ($qr_base64 !== '') $fields['bs_qr_base64'] = $qr_base64;
-            $this->db->where('us_id', (int)$us_id)->update('bot_sessions', $fields);
+            ]);
         } else {
-            $fields = [
+            $this->db->insert('bot_sessions', [
                 'us_id' => (int)$us_id,
+                'bs_qr_base64' => $qr_base64,
                 'bs_status' => 'waiting_scan'
-            ];
-            if ($qr_base64 !== '') $fields['bs_qr_base64'] = $qr_base64;
-            $this->db->insert('bot_sessions', $fields);
+            ]);
         }
         $this->json(['status' => true, 'message' => 'QR actualizado']);
     }
@@ -253,9 +253,11 @@ class BotApi extends CI_Controller
         $us_id = $data['us_id'] ?? 0;
         if (!$us_id) $this->json(['status' => false, 'message' => 'us_id requerido'], 400);
 
-        $status = $data['status'] ?? 'disconnected';
+        $status = mb_strtolower(trim((string)($data['status'] ?? 'disconnected')), 'UTF-8');
+        $allowed = ['connected', 'disconnected', 'waiting_scan', 'expired', 'reconnecting'];
+        if (!in_array($status, $allowed, true)) $status = 'disconnected';
         $exists = $this->db->where('us_id', (int)$us_id)->get('bot_sessions')->row();
-        $prev_effective = $this->get_effective_bot_status($exists);
+        $prev_effective = mb_strtolower(trim((string)$this->get_effective_bot_status($exists)), 'UTF-8');
 
         $fields = [
             'bs_status' => $status,
@@ -263,6 +265,7 @@ class BotApi extends CI_Controller
             'bs_last_activity' => date('Y-m-d H:i:s'),
             'updated_at' => date('Y-m-d H:i:s')
         ];
+        if ($status === 'connected') $fields['bs_qr_base64'] = '';
 
         if ($exists) {
             $this->db->where('us_id', (int)$us_id)->update('bot_sessions', $fields);
@@ -429,6 +432,8 @@ class BotApi extends CI_Controller
             'menu_msg' => $menu ?: "Elige una opción:\n1. Ver productos\n2. Horario\n3. Ubicación\n4. Hablar con un asesor",
             'offhours_msg' => $offhours ?: 'Actualmente estamos fuera de nuestro horario de atención. Te atenderemos en cuanto abramos.',
             'goodbye_msg' => $goodbye ?: '¡Gracias por contactarnos! Que tengas un excelente día.',
+            'inactivity_minutes' => (int)$this->store_val($store, 'sto_inactivity_minutes', 15),
+            'inactivity_msg' => ($this->store_val($store, 'sto_inactivity_message') ?: 'Cerraremos la sesión por inactividad, hasta luego.'),
             'schedule_enabled' => (int)$this->store_val($store, 'sto_schedule_enabled', 0),
             'schedule_open' => $this->store_val($store, 'sto_schedule_open', '09:00') ?: '09:00',
             'schedule_close' => $this->store_val($store, 'sto_schedule_close', '18:00') ?: '18:00',
@@ -468,6 +473,8 @@ class BotApi extends CI_Controller
                 'menu_msg' => ($this->store_val($store, 'sto_menu_message') ?: "Elige una opción:\n1. Ver productos\n2. Horario\n3. Ubicación\n4. Hablar con un asesor"),
                 'offhours_msg' => ($this->store_val($store, 'sto_offhours_message') ?: 'Actualmente estamos fuera de nuestro horario de atención. Te atenderemos en cuanto abramos.'),
                 'goodbye_msg' => ($this->store_val($store, 'sto_goodbye_message') ?: '¡Gracias por contactarnos! Que tengas un excelente día.'),
+                'inactivity_minutes' => (int)$this->store_val($store, 'sto_inactivity_minutes', 15),
+                'inactivity_msg' => ($this->store_val($store, 'sto_inactivity_message') ?: 'Cerraremos la sesión por inactividad, hasta luego.'),
                 'schedule_enabled' => (int)$this->store_val($store, 'sto_schedule_enabled', 0),
                 'schedule_open' => $this->store_val($store, 'sto_schedule_open', '09:00') ?: '09:00',
                 'schedule_close' => $this->store_val($store, 'sto_schedule_close', '18:00') ?: '18:00',
@@ -525,6 +532,7 @@ class BotApi extends CI_Controller
         if (!$us_id) $this->json(['status' => false, 'message' => 'us_id requerido'], 400);
 
         $this->db->where('us_id', (int)$us_id)->update('bot_sessions', [
+            'bs_qr_base64' => '',
             'bs_status' => 'waiting_scan',
             'updated_at' => date('Y-m-d H:i:s')
         ]);
@@ -757,6 +765,8 @@ class BotApi extends CI_Controller
                 "menu_msg" => ($this->store_val($store, 'sto_menu_message') ?: "Elige una opción:\n1. Ver productos\n2. Horario\n3. Ubicación\n4. Hablar con un asesor"),
                 "offhours_msg" => ($this->store_val($store, 'sto_offhours_message') ?: 'Actualmente estamos fuera de nuestro horario de atención. Te atenderemos en cuanto abramos.'),
                 "goodbye_msg" => ($this->store_val($store, 'sto_goodbye_message') ?: '¡Gracias por contactarnos! Que tengas un excelente día.'),
+                "inactivity_minutes" => (int)$this->store_val($store, 'sto_inactivity_minutes', 15),
+                "inactivity_msg" => ($this->store_val($store, 'sto_inactivity_message') ?: 'Cerraremos la sesión por inactividad, hasta luego.'),
                 "schedule_enabled" => (int)$this->store_val($store, 'sto_schedule_enabled', 0),
                 "schedule_open" => $this->store_val($store, 'sto_schedule_open', '09:00') ?: '09:00',
                 "schedule_close" => $this->store_val($store, 'sto_schedule_close', '18:00') ?: '18:00',

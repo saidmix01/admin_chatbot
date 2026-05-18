@@ -174,6 +174,10 @@ CREATE TABLE IF NOT EXISTS bot_notifications (
 CREATE INDEX IF NOT EXISTS idx_bot_notifications_us_status_created
     ON bot_notifications (us_id, bn_status, created_at DESC);
 
+ALTER TABLE stores
+    ADD COLUMN IF NOT EXISTS sto_inactivity_minutes INTEGER DEFAULT 15,
+    ADD COLUMN IF NOT EXISTS sto_inactivity_message TEXT;
+
 -- ============================================================
 -- SEED DATA
 -- ============================================================

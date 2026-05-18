@@ -78,6 +78,15 @@ class BotConfig extends CI_Controller {
 				$update["sto_goodbye_message"] = $input["goodbye_msg"];
 			}
 
+			if (isset($input["inactivity_minutes"])) {
+				$mins = intval($input["inactivity_minutes"]);
+				if ($mins < 1) $mins = 1;
+				$update["sto_inactivity_minutes"] = $mins;
+			}
+			if (isset($input["inactivity_msg"])) {
+				$update["sto_inactivity_message"] = $input["inactivity_msg"];
+			}
+
 			// Horarios
 			if (isset($input["schedule_enabled"])) {
 				$update["sto_schedule_enabled"] = intval($input["schedule_enabled"]);
