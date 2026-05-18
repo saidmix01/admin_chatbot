@@ -229,13 +229,30 @@ class BotApi extends CI_Controller
         $us_id = $data['us_id'] ?? 0;
         if (!$us_id) $this->json(['status' => false, 'message' => 'us_id requerido'], 400);
 
-        $qr_base64 = $data['qr_base64'] ?? '';
+        $qr_base64 = trim((string)($data['qr_base64'] ?? ''));
+        if ($qr_base64 === '') {
+            $this->json(['status' => true, 'message' => 'QR vacío ignorado']);
+        }
+        if (strlen($qr_base64) > 2000000) {
+            $this->json(['status' => false, 'message' => 'QR demasiado grande'], 413);
+        }
+        $bin = base64_decode($qr_base64, true);
+        if ($bin === false) {
+            $this->json(['status' => false, 'message' => 'QR inválido (base64)'], 422);
+        }
+        $sig = substr($bin, 0, 8);
+        if ($sig !== "\x89PNG\r\n\x1a\n") {
+            $this->json(['status' => false, 'message' => 'QR inválido (no es PNG)'], 422);
+        }
+
         $exists = $this->db->where('us_id', (int)$us_id)->get('bot_sessions')->row();
+        $effective = $this->get_effective_bot_status($exists);
+        $nextStatus = $effective === 'connected' ? ($exists->bs_status ?? 'connected') : 'waiting_scan';
 
         if ($exists) {
             $this->db->where('us_id', (int)$us_id)->update('bot_sessions', [
                 'bs_qr_base64' => $qr_base64,
-                'bs_status' => 'waiting_scan',
+                'bs_status' => $nextStatus,
                 'updated_at' => date('Y-m-d H:i:s')
             ]);
         } else {
@@ -260,13 +277,27 @@ class BotApi extends CI_Controller
         $exists = $this->db->where('us_id', (int)$us_id)->get('bot_sessions')->row();
         $prev_effective = mb_strtolower(trim((string)$this->get_effective_bot_status($exists)), 'UTF-8');
 
+        $reason_code = isset($data['reason_code']) ? (int)$data['reason_code'] : 0;
+        if ($exists && ($exists->bs_status ?? '') === 'connected' && ($status === 'reconnecting' || $status === 'disconnected') && $reason_code !== 401) {
+            $last = $exists->bs_last_activity ?? null;
+            if (!$last && property_exists($exists, 'updated_at')) $last = $exists->updated_at;
+            if ($last) {
+                $ts = strtotime($last);
+                if ($ts !== false && (time() - $ts) <= 45) {
+                    $this->json(['status' => true, 'message' => 'Estado ignorado (anti-flap)']);
+                }
+            }
+        }
+
+        $incoming_number = isset($data['whatsapp_number']) ? trim((string)$data['whatsapp_number']) : null;
+        $prev_number = $exists ? ($exists->bs_whatsapp_number ?? '') : '';
+
         $fields = [
             'bs_status' => $status,
-            'bs_whatsapp_number' => $data['whatsapp_number'] ?? '',
+            'bs_whatsapp_number' => ($incoming_number !== null && $incoming_number !== '') ? $incoming_number : $prev_number,
             'bs_last_activity' => date('Y-m-d H:i:s'),
             'updated_at' => date('Y-m-d H:i:s')
         ];
-        if ($status === 'connected') $fields['bs_qr_base64'] = '';
 
         if ($exists) {
             $this->db->where('us_id', (int)$us_id)->update('bot_sessions', $fields);
@@ -294,6 +325,32 @@ class BotApi extends CI_Controller
         }
 
         $this->json(['status' => true, 'message' => 'Estado actualizado']);
+    }
+
+    public function heartbeat()
+    {
+        $data = $this->input();
+        $us_id = $data['us_id'] ?? 0;
+        if (!$us_id) $this->json(['status' => false, 'message' => 'us_id requerido'], 400);
+
+        $exists = $this->db->where('us_id', (int)$us_id)->get('bot_sessions')->row();
+        $fields = [
+            'bs_last_activity' => date('Y-m-d H:i:s'),
+            'updated_at' => date('Y-m-d H:i:s')
+        ];
+        $incoming_number = isset($data['whatsapp_number']) ? trim((string)$data['whatsapp_number']) : null;
+        if ($incoming_number !== null && $incoming_number !== '') $fields['bs_whatsapp_number'] = $incoming_number;
+
+        if ($exists) {
+            $this->db->where('us_id', (int)$us_id)->update('bot_sessions', $fields);
+        } else {
+            $fields['us_id'] = (int)$us_id;
+            $fields['bs_status'] = 'disconnected';
+            $fields['bs_qr_base64'] = '';
+            $this->db->insert('bot_sessions', $fields);
+        }
+
+        $this->json(['status' => true, 'message' => 'OK']);
     }
 
     public function cron_check_sessions()
@@ -531,6 +588,12 @@ class BotApi extends CI_Controller
     {
         $this->check_session();
         if (!$us_id) $this->json(['status' => false, 'message' => 'us_id requerido'], 400);
+
+        $session = $this->db->where('us_id', (int)$us_id)->get('bot_sessions')->row();
+        $effective = $this->get_effective_bot_status($session);
+        if ($effective === 'connected') {
+            $this->json(['status' => false, 'message' => 'Ya está conectado. Desconecta la sesión desde el teléfono o reinicia el bot para generar un nuevo QR.'], 409);
+        }
 
         $this->db->where('us_id', (int)$us_id)->update('bot_sessions', [
             'bs_qr_base64' => '',
