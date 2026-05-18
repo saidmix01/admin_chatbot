@@ -246,3 +246,5 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
+
+                <div class="layout-content" style="flex: 1 1 auto; overflow-y: auto; -webkit-overflow-scrolling: touch;">

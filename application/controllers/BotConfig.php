@@ -53,9 +53,19 @@ class BotConfig extends CI_Controller {
 				$update["sto_wellcome_message"] = $input["welcome_msg"];
 			}
 
-			// Mensaje de menú
-			if (isset($input["menu_msg"])) {
-				$update["sto_menu_message"] = $input["menu_msg"];
+			if (isset($input["starters"])) {
+				$starters = $input["starters"];
+				if (is_string($starters)) {
+					$decoded = json_decode($starters, true);
+					$starters = is_array($decoded) ? $decoded : [];
+				}
+				if (!is_array($starters)) $starters = [];
+				$clean = [];
+				foreach ($starters as $w) {
+					$t = trim((string)$w);
+					if ($t !== '') $clean[] = $t;
+				}
+				$update["sto_starters"] = json_encode(array_values(array_unique($clean)), JSON_UNESCAPED_UNICODE);
 			}
 
 			// Mensaje fuera de horario

@@ -70,6 +70,43 @@
             </div>
         </div>
 
+        <!-- Plan Status -->
+        <div class="stat-card">
+            <?php
+                $pi = $plan_info ?? null;
+                $exp = $pi && !empty($pi["plan_expires_soon"]);
+                $dl = $pi ? ($pi["plan_days_left"] ?? null) : null;
+                $planColor = $exp ? 'yellow' : 'green';
+                if ($dl !== null && $dl < 0) $planColor = 'red';
+            ?>
+            <div class="stat-card-icon <?= $planColor ?>">
+                <i class="feather icon-calendar"></i>
+            </div>
+            <div class="stat-card-content">
+                <div class="stat-card-label">Plan</div>
+                <div class="stat-card-value">
+                    <?php if(!$pi || empty($pi["plan_start"]) || empty($pi["plan_end"])): ?>
+                        <span class="status-badge disconnected">Sin plan</span>
+                    <?php else: ?>
+                        <span class="status-badge <?= ($dl !== null && $dl < 0) ? 'disconnected' : ($exp ? 'reconnecting' : 'connected') ?>">
+                            <?php
+                                if ($dl !== null && $dl < 0) echo 'Vencido';
+                                else if ($exp) echo 'Próximo a vencer';
+                                else echo 'Activo';
+                            ?>
+                        </span>
+                    <?php endif; ?>
+                </div>
+                <div class="stat-card-sub">
+                    <?php if($pi && !empty($pi["plan_start"]) && !empty($pi["plan_end"])): ?>
+                        Inicia <?= $pi["plan_start"] ?> · Termina <?= $pi["plan_end"] ?>
+                    <?php else: ?>
+                        Configura la fecha de inicio en Usuarios
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <!-- Quick Actions -->

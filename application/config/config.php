@@ -24,7 +24,8 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 |
 */
 
-$config['base_url'] = 'https://' . $_SERVER['HTTP_HOST'] . '/';
+$baseUrl = getenv('BASE_URL');
+$config['base_url'] = $baseUrl ? rtrim($baseUrl, '/') . '/' : 'http://' . $_SERVER['HTTP_HOST'] . '/';
 
 /*
 |--------------------------------------------------------------------------

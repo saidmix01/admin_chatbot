@@ -75,7 +75,7 @@ $query_builder = TRUE;
 
 $db['default'] = array(
 	'dsn'	=> '',
-	'hostname' => getenv('DB_HOST') ?: 'localhost',
+	'hostname' => getenv('DB_HOST') ?: '192.168.1.6',
 	'username' => getenv('DB_USER') ?: 'wapi',
 	'password' => getenv('DB_PASSWORD') ?: 'wapi_secret_2026',
 	'database' => getenv('DB_NAME') ?: 'admin_chatbot',
@@ -93,4 +93,5 @@ $db['default'] = array(
 	'stricton' => FALSE,
 	'failover' => array(),
 	'save_queries' => TRUE,
+	'port' => (int) (getenv('DB_PORT') ?: 5433),
 );
