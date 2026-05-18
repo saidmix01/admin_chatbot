@@ -20,6 +20,7 @@ class Whatsapp extends CI_Controller {
 			$session = $q->num_rows() > 0 ? $q->row() : null;
 
 			$qr_status = $session ? ($session->bs_status ?? 'disconnected') : 'disconnected';
+			$qr_status = mb_strtolower(trim((string)$qr_status), 'UTF-8');
 			$last = $session ? ($session->bs_last_activity ?: ($session->updated_at ?? null)) : null;
 			if ($qr_status === 'connected' && $last) {
 				$ts = strtotime($last);

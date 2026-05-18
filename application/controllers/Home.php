@@ -78,7 +78,7 @@ class Home extends CI_Controller
 		if ($q->num_rows() === 0) return 'disconnected';
 
 		$row = $q->row();
-		$status = $row->bs_status ?? 'disconnected';
+		$status = mb_strtolower(trim((string)($row->bs_status ?? 'disconnected')), 'UTF-8');
 		$last = $row->bs_last_activity ?: ($row->updated_at ?? null);
 		if ($status === 'connected' && $last) {
 			$ts = strtotime($last);
@@ -92,7 +92,7 @@ class Home extends CI_Controller
 		if ($q->num_rows() === 0) return '';
 
 		$row = $q->row();
-		$status = $row->bs_status ?? 'disconnected';
+		$status = mb_strtolower(trim((string)($row->bs_status ?? 'disconnected')), 'UTF-8');
 		$last = $row->bs_last_activity ?: ($row->updated_at ?? null);
 		if ($status === 'connected' && $last) {
 			$ts = strtotime($last);

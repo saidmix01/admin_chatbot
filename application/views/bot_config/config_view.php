@@ -109,6 +109,19 @@
                     <small style="color: var(--saas-gray-400);">Se envía al finalizar la conversación.</small>
                 </div>
 
+                <div class="form-saas-group">
+                    <label class="form-saas-label">Tiempo de inactividad (minutos)</label>
+                    <input type="number" class="form-saas" name="inactivity_minutes" min="1" step="1"
+                        value="<?= (int)($store->sto_inactivity_minutes ?? 15) ?>">
+                    <small style="color: var(--saas-gray-400);">Si el cliente no responde en este tiempo, el bot cerrará el flujo.</small>
+                </div>
+
+                <div class="form-saas-group">
+                    <label class="form-saas-label">Mensaje por inactividad</label>
+                    <textarea class="form-saas" name="inactivity_msg" rows="2" placeholder="Cerraremos la sesión por inactividad, hasta luego."><?= $store->sto_inactivity_message ?? "Cerraremos la sesión por inactividad, hasta luego." ?></textarea>
+                    <small style="color: var(--saas-gray-400);">Se envía justo antes de cerrar el flujo por inactividad.</small>
+                </div>
+
                 <hr style="border-color: var(--saas-gray-100); margin: 1.5rem 0;">
 
                 <div style="display: flex; gap: 0.75rem;">
@@ -158,7 +171,7 @@
 
         // Collect form data into object
         var data = {};
-        var fields = form.querySelectorAll('textarea, input[type="time"], input[type="hidden"]');
+        var fields = form.querySelectorAll('textarea, input[type="time"], input[type="number"], input[type="hidden"]');
         fields.forEach(function(f) {
             if (f.name) data[f.name] = f.value;
         });
