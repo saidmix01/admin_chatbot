@@ -12,17 +12,23 @@
 
         <!-- WhatsApp Status -->
         <div class="stat-card">
-            <div class="stat-card-icon <?=$whatsapp_status === 'connected' ? 'green' : ($whatsapp_status === 'reconnecting' ? 'yellow' : 'red')?>">
+            <div class="stat-card-icon <?=$whatsapp_status === 'connected' ? 'green' : (($whatsapp_status === 'reconnecting' || $whatsapp_status === 'waiting_scan') ? 'yellow' : 'red')?>" id="dash_wa_icon">
                 <i class="fab fa-whatsapp"></i>
             </div>
             <div class="stat-card-content">
                 <div class="stat-card-label">WhatsApp</div>
                 <div class="stat-card-value">
-                    <span class="status-badge <?=$whatsapp_status ?? 'disconnected'?>">
-                        <?= ucfirst($whatsapp_status ?? 'desconectado') ?>
+                    <span class="status-badge <?=$whatsapp_status === 'connected' ? 'connected' : (($whatsapp_status === 'reconnecting' || $whatsapp_status === 'waiting_scan') ? 'reconnecting' : 'disconnected')?>" id="dash_wa_badge">
+                        <?php
+                            if (($whatsapp_status ?? '') === 'connected') echo 'Conectado';
+                            else if (($whatsapp_status ?? '') === 'expired') echo 'Expirado';
+                            else if (($whatsapp_status ?? '') === 'waiting_scan') echo 'Esperando escaneo';
+                            else if (($whatsapp_status ?? '') === 'reconnecting') echo 'Reconectando';
+                            else echo 'Desconectado';
+                        ?>
                     </span>
                 </div>
-                <div class="stat-card-sub">
+                <div class="stat-card-sub" id="dash_wa_number">
                     <?= $whatsapp_number ?? 'No conectado' ?>
                 </div>
             </div>
@@ -36,7 +42,7 @@
             <div class="stat-card-content">
                 <div class="stat-card-label">Bot</div>
                 <div class="stat-card-value">
-                    <span class="status-badge <?= $bot_status === 'active' ? 'connected' : 'disconnected' ?>">
+                    <span class="status-badge <?= $bot_status === 'active' ? 'connected' : 'disconnected' ?>" id="dash_bot_badge">
                         <?= $bot_status === 'active' ? 'Activo' : 'Inactivo' ?>
                     </span>
                 </div>
@@ -143,3 +149,68 @@
     </div>
 
 <!-- [ content ] End -->
+
+<script>
+var dashUsId = <?= (int)$this->session->userdata('us_id') ?>;
+var dashPollTimer = null;
+var dashLastStatus = <?= json_encode($whatsapp_status ?? '') ?>;
+var dashLastNumber = <?= json_encode($whatsapp_number ?? '') ?>;
+
+function dashMapWa(statusText) {
+    if (statusText === 'connected') return { label: 'Conectado', badge: 'connected', icon: 'green' };
+    if (statusText === 'expired') return { label: 'Expirado', badge: 'disconnected', icon: 'red' };
+    if (statusText === 'reconnecting') return { label: 'Reconectando', badge: 'reconnecting', icon: 'yellow' };
+    if (statusText === 'waiting_scan') return { label: 'Esperando escaneo', badge: 'reconnecting', icon: 'yellow' };
+    return { label: 'Desconectado', badge: 'disconnected', icon: 'red' };
+}
+
+function dashUpdateUI(statusText, whatsappNumber) {
+    var m = dashMapWa(statusText);
+    var badge = document.getElementById('dash_wa_badge');
+    if (badge) {
+        badge.classList.remove('connected', 'reconnecting', 'disconnected');
+        badge.classList.add(m.badge);
+        badge.textContent = m.label;
+    }
+    var icon = document.getElementById('dash_wa_icon');
+    if (icon) {
+        icon.classList.remove('green', 'yellow', 'red', 'blue', 'purple');
+        icon.classList.add(m.icon);
+    }
+    var num = document.getElementById('dash_wa_number');
+    if (num) num.textContent = whatsappNumber ? whatsappNumber : 'No conectado';
+
+    var botBadge = document.getElementById('dash_bot_badge');
+    if (botBadge) {
+        var active = statusText === 'connected';
+        botBadge.classList.remove('connected', 'disconnected', 'reconnecting');
+        botBadge.classList.add(active ? 'connected' : 'disconnected');
+        botBadge.textContent = active ? 'Activo' : 'Inactivo';
+    }
+}
+
+function dashPollNow() {
+    return fetch(base_url + 'BotApi/get_status/' + dashUsId)
+        .then(function(r) { return r.json(); })
+        .then(function(res) {
+            var data = (res && res.data) ? res.data : {};
+            var statusText = (data && data.bs_status) ? data.bs_status : 'disconnected';
+            var whatsappNumber = (data && data.bs_whatsapp_number) ? data.bs_whatsapp_number : '';
+
+            if ((statusText || '') !== (dashLastStatus || '') || (whatsappNumber || '') !== (dashLastNumber || '')) {
+                dashUpdateUI(statusText, whatsappNumber);
+                dashLastStatus = statusText || '';
+                dashLastNumber = whatsappNumber || '';
+            }
+        })
+        .catch(function() {});
+}
+
+function dashStartPolling() {
+    if (dashPollTimer) clearInterval(dashPollTimer);
+    dashPollTimer = setInterval(dashPollNow, 15000);
+    dashPollNow();
+}
+
+document.addEventListener('DOMContentLoaded', dashStartPolling);
+</script>
