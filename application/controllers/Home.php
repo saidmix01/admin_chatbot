@@ -81,8 +81,9 @@ class Home extends CI_Controller
 		$status = mb_strtolower(trim((string)($row->bs_status ?? 'disconnected')), 'UTF-8');
 		$last = $row->bs_last_activity ?: ($row->updated_at ?? null);
 		if ($status === 'connected' && $last) {
+			$ttl = (int)(getenv('BOT_STATUS_TTL_SEC') ?: 180);
 			$ts = strtotime($last);
-			if ($ts !== false && (time() - $ts) > 180) return 'disconnected';
+			if ($ts !== false && (time() - $ts) > $ttl) return 'disconnected';
 		}
 		return $status;
 	}
@@ -95,8 +96,9 @@ class Home extends CI_Controller
 		$status = mb_strtolower(trim((string)($row->bs_status ?? 'disconnected')), 'UTF-8');
 		$last = $row->bs_last_activity ?: ($row->updated_at ?? null);
 		if ($status === 'connected' && $last) {
+			$ttl = (int)(getenv('BOT_STATUS_TTL_SEC') ?: 180);
 			$ts = strtotime($last);
-			if ($ts !== false && (time() - $ts) > 180) return '';
+			if ($ts !== false && (time() - $ts) > $ttl) return '';
 		}
 		return $row->bs_whatsapp_number ?: '';
 	}

@@ -23,8 +23,9 @@ class Whatsapp extends CI_Controller {
 			$qr_status = mb_strtolower(trim((string)$qr_status), 'UTF-8');
 			$last = $session ? ($session->bs_last_activity ?: ($session->updated_at ?? null)) : null;
 			if ($qr_status === 'connected' && $last) {
+				$ttl = (int)(getenv('BOT_STATUS_TTL_SEC') ?: 180);
 				$ts = strtotime($last);
-				if ($ts !== false && (time() - $ts) > 180) $qr_status = 'disconnected';
+				if ($ts !== false && (time() - $ts) > $ttl) $qr_status = 'disconnected';
 			}
 			$qr_base64 = $session ? $session->bs_qr_base64 : '';
 			$whatsapp_number = $qr_status === 'connected' ? ($session->bs_whatsapp_number ?? '') : '';
