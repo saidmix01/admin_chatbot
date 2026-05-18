@@ -134,6 +134,28 @@ class BotApi extends CI_Controller
         return $status;
     }
 
+    private function require_cron_key()
+    {
+        $expected = getenv('BOT_CRON_KEY');
+        if (!$expected) return;
+
+        $key = $this->input->get('key');
+        if (!$key || !hash_equals($expected, (string)$key)) {
+            $this->json(['status' => false, 'message' => 'Unauthorized'], 401);
+        }
+    }
+
+    private function enqueue_notification($us_id, $type, $payload = [])
+    {
+        $json = json_encode(is_array($payload) ? $payload : [], JSON_UNESCAPED_UNICODE);
+        $this->db->set('us_id', (int)$us_id);
+        $this->db->set('bn_type', (string)$type);
+        $this->db->set('bn_status', 'pending');
+        $this->db->set('bn_payload', $this->db->escape($json) . '::jsonb', false);
+        $this->db->set('created_at', date('Y-m-d H:i:s'));
+        $this->db->insert('bot_notifications');
+    }
+
     private function absolute_url($path)
     {
         if (!$path) return null;
@@ -204,21 +226,23 @@ class BotApi extends CI_Controller
         $us_id = $data['us_id'] ?? 0;
         if (!$us_id) $this->json(['status' => false, 'message' => 'us_id requerido'], 400);
 
-        $qr_base64 = $data['qr_base64'] ?? '';
+        $qr_base64 = (string)($data['qr_base64'] ?? '');
         $exists = $this->db->where('us_id', (int)$us_id)->get('bot_sessions')->row();
 
         if ($exists) {
-            $this->db->where('us_id', (int)$us_id)->update('bot_sessions', [
-                'bs_qr_base64' => $qr_base64,
+            $fields = [
                 'bs_status' => 'waiting_scan',
                 'updated_at' => date('Y-m-d H:i:s')
-            ]);
+            ];
+            if ($qr_base64 !== '') $fields['bs_qr_base64'] = $qr_base64;
+            $this->db->where('us_id', (int)$us_id)->update('bot_sessions', $fields);
         } else {
-            $this->db->insert('bot_sessions', [
+            $fields = [
                 'us_id' => (int)$us_id,
-                'bs_qr_base64' => $qr_base64,
                 'bs_status' => 'waiting_scan'
-            ]);
+            ];
+            if ($qr_base64 !== '') $fields['bs_qr_base64'] = $qr_base64;
+            $this->db->insert('bot_sessions', $fields);
         }
         $this->json(['status' => true, 'message' => 'QR actualizado']);
     }
@@ -230,22 +254,113 @@ class BotApi extends CI_Controller
         if (!$us_id) $this->json(['status' => false, 'message' => 'us_id requerido'], 400);
 
         $status = $data['status'] ?? 'disconnected';
+        $exists = $this->db->where('us_id', (int)$us_id)->get('bot_sessions')->row();
+        $prev_effective = $this->get_effective_bot_status($exists);
+
         $fields = [
             'bs_status' => $status,
             'bs_whatsapp_number' => $data['whatsapp_number'] ?? '',
             'bs_last_activity' => date('Y-m-d H:i:s'),
             'updated_at' => date('Y-m-d H:i:s')
         ];
-        if ($status === 'connected') $fields['bs_qr_base64'] = '';
 
-        $exists = $this->db->where('us_id', (int)$us_id)->get('bot_sessions')->row();
         if ($exists) {
             $this->db->where('us_id', (int)$us_id)->update('bot_sessions', $fields);
         } else {
             $fields['us_id'] = (int)$us_id;
             $this->db->insert('bot_sessions', $fields);
         }
+
+        if ($prev_effective !== $status) {
+            if ($status === 'connected') {
+                $this->enqueue_notification($us_id, 'bot_connected', [
+                    'previous_status' => $prev_effective,
+                    'new_status' => $status,
+                    'whatsapp_number' => $fields['bs_whatsapp_number'] ?? '',
+                    'source' => 'update_status'
+                ]);
+            } elseif ($prev_effective === 'connected' && $status !== 'connected') {
+                $this->enqueue_notification($us_id, 'bot_disconnected', [
+                    'previous_status' => $prev_effective,
+                    'new_status' => $status,
+                    'whatsapp_number' => $fields['bs_whatsapp_number'] ?? '',
+                    'source' => 'update_status'
+                ]);
+            }
+        }
+
         $this->json(['status' => true, 'message' => 'Estado actualizado']);
+    }
+
+    public function cron_check_sessions()
+    {
+        $this->require_cron_key();
+
+        $sessions = $this->db->get('bot_sessions')->result();
+        $checked = 0;
+        $updated = 0;
+        $notified = 0;
+
+        foreach ($sessions as $s) {
+            $checked++;
+            $effective = $this->get_effective_bot_status($s);
+            $stored = $s->bs_status ?? 'disconnected';
+
+            if ($stored === 'connected' && $effective === 'disconnected') {
+                $this->db->where('us_id', (int)$s->us_id)->update('bot_sessions', [
+                    'bs_status' => 'disconnected',
+                    'updated_at' => date('Y-m-d H:i:s')
+                ]);
+                $updated++;
+                $this->enqueue_notification((int)$s->us_id, 'bot_disconnected', [
+                    'previous_status' => 'connected',
+                    'new_status' => 'disconnected',
+                    'whatsapp_number' => $s->bs_whatsapp_number ?? '',
+                    'reason' => 'timeout',
+                    'source' => 'cron_check_sessions'
+                ]);
+                $notified++;
+            }
+        }
+
+        $this->json([
+            'status' => true,
+            'data' => [
+                'checked' => $checked,
+                'updated' => $updated,
+                'notified' => $notified
+            ]
+        ]);
+    }
+
+    public function pending_notifications($us_id = 0)
+    {
+        $this->require_cron_key();
+        if (!$us_id) $this->json(['status' => false, 'message' => 'us_id requerido'], 400);
+
+        $rows = $this->db
+            ->where('us_id', (int)$us_id)
+            ->where('bn_status', 'pending')
+            ->order_by('created_at', 'ASC')
+            ->limit(50)
+            ->get('bot_notifications')->result();
+
+        $this->json(['status' => true, 'data' => $rows]);
+    }
+
+    public function mark_notification_processed()
+    {
+        $this->require_cron_key();
+        $data = $this->input();
+        $bn_id = (int)($data['bn_id'] ?? 0);
+        if (!$bn_id) $this->json(['status' => false, 'message' => 'bn_id requerido'], 400);
+
+        $this->db->where('bn_id', $bn_id)->update('bot_notifications', [
+            'bn_status' => 'processed',
+            'processed_at' => date('Y-m-d H:i:s')
+        ]);
+
+        $this->json(['status' => true, 'message' => 'OK']);
     }
 
     public function new_order()
@@ -410,7 +525,6 @@ class BotApi extends CI_Controller
         if (!$us_id) $this->json(['status' => false, 'message' => 'us_id requerido'], 400);
 
         $this->db->where('us_id', (int)$us_id)->update('bot_sessions', [
-            'bs_qr_base64' => '',
             'bs_status' => 'waiting_scan',
             'updated_at' => date('Y-m-d H:i:s')
         ]);
