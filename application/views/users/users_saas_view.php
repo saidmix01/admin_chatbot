@@ -5,7 +5,7 @@
     </div>
 
     <div class="action-bar">
-        <div style="font-size: 0.875rem; color: var(--saas-gray-500);"><?= count($clients) ?> usuario(s)</div>
+        <div style="font-size: 0.875rem; color: var(--saas-gray-500);"><?= count($users ?? []) ?> usuario(s)</div>
         <button class="btn-saas btn-saas-primary" onclick="openCreateModal()">
             <i class="feather icon-plus"></i> Nuevo Usuario
         </button>
@@ -21,24 +21,24 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <?php if(!empty($clients)): ?>
-                        <?php foreach($clients as $c): ?>
+                        <?php if(!empty($users)): ?>
+                        <?php foreach($users as $u): ?>
                         <tr>
-                            <td data-label="ID">#<?= $c->us_id ?></td>
-                            <td data-label="Nombre" style="font-weight: 500;"><?= $c->us_name ?></td>
-                            <td data-label="Email"><?= $c->us_email ?></td>
+                            <td data-label="ID">#<?= $u->us_id ?></td>
+                            <td data-label="Nombre" style="font-weight: 500;"><?= $u->us_name ?></td>
+                            <td data-label="Email"><?= $u->us_email ?></td>
                             <td data-label="Estado">
-                                <span class="status-badge <?= $c->us_status == 1 ? 'connected' : 'disconnected' ?>" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;">
-                                    <?= $c->us_status == 1 ? 'Activo' : 'Inactivo' ?>
+                                <span class="status-badge <?= $u->us_status == 1 ? 'connected' : 'disconnected' ?>" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;">
+                                    <?= $u->us_status == 1 ? 'Activo' : 'Inactivo' ?>
                                 </span>
                             </td>
-                            <td data-label="Negocio"><?= $c->store_name ?? '—' ?></td>
+                            <td data-label="Negocio"><?= $u->store_name ?? '—' ?></td>
                             <td data-label="Acciones">
                                 <div style="display: flex; gap: 0.375rem;">
-                                    <button class="btn-saas btn-saas-outline btn-saas-sm" onclick="openEditModal(<?= $c->us_id ?>, '<?= addslashes($c->us_name) ?>', '<?= $c->us_email ?>', <?= $c->us_status ?>)">
+                                    <button class="btn-saas btn-saas-outline btn-saas-sm" onclick="openEditModal(<?= $u->us_id ?>, '<?= addslashes($u->us_name) ?>', '<?= $u->us_email ?>', <?= $u->us_status ?>)">
                                         <i class="feather icon-edit"></i>
                                     </button>
-                                    <button class="btn-saas btn-saas-danger btn-saas-sm" onclick="deleteClient(<?= $c->us_id ?>)">
+                                    <button class="btn-saas btn-saas-danger btn-saas-sm" onclick="deleteUser(<?= $u->us_id ?>)">
                                         <i class="feather icon-trash-2"></i>
                                     </button>
                                 </div>
@@ -46,7 +46,7 @@
                         </tr>
                         <?php endforeach; ?>
                         <?php else: ?>
-                        <tr><td colspan="6" style="text-align: center; padding: 3rem; color: var(--saas-gray-400);">No hay clientes registrados</td></tr>
+                        <tr><td colspan="6" style="text-align: center; padding: 3rem; color: var(--saas-gray-400);">No hay usuarios registrados</td></tr>
                         <?php endif; ?>
                     </tbody>
                 </table>
@@ -66,7 +66,7 @@
             <div class="modal-body" style="padding: 1.5rem;">
                 <form id="form_create">
                     <div class="form-saas-group">
-                        <label class="form-saas-label">Nombre del negocio / cliente</label>
+                        <label class="form-saas-label">Nombre del negocio / usuario</label>
                         <input type="text" class="form-saas" id="create_name" required placeholder="Ej: Café Colombia">
                     </div>
                     <div class="form-saas-group">
@@ -78,6 +78,14 @@
                         <input type="password" class="form-saas" id="create_password" required placeholder="••••••••">
                     </div>
                     <div class="form-saas-group">
+                        <label class="form-saas-label">Perfil</label>
+                        <select class="form-saas" id="create_profile">
+                            <?php foreach(($profiles ?? []) as $p): ?>
+                                <option value="<?= $p->pro_id ?>" <?= ((int)$p->pro_id === 2) ? 'selected' : '' ?>><?= $p->pro_description ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="form-saas-group">
                         <label class="form-saas-label">Inicio del plan</label>
                         <input type="date" class="form-saas" id="create_plan_start" value="<?= date('Y-m-d') ?>">
                         <small style="color: var(--saas-gray-400);">El plan dura 30 días desde esta fecha</small>
@@ -86,7 +94,7 @@
             </div>
             <div class="modal-footer" style="border-top: 1px solid var(--saas-gray-100); padding: 1rem 1.5rem;">
                 <button class="btn-saas btn-saas-outline" data-dismiss="modal">Cancelar</button>
-                <button class="btn-saas btn-saas-primary" onclick="createClient()">Crear Usuario</button>
+                <button class="btn-saas btn-saas-primary" onclick="createUser()">Crear Usuario</button>
             </div>
         </div>
     </div>
@@ -97,7 +105,7 @@
     <div class="modal-dialog">
         <div class="modal-content" style="border-radius: var(--saas-radius); border: none;">
             <div class="modal-header" style="border-bottom: 1px solid var(--saas-gray-100); padding: 1.25rem 1.5rem;">
-                <h5 class="modal-title" style="font-weight: 600;">Editar Cliente</h5>
+                <h5 class="modal-title" style="font-weight: 600;">Editar Usuario</h5>
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
             </div>
             <div class="modal-body" style="padding: 1.5rem;">
@@ -125,7 +133,7 @@
             </div>
             <div class="modal-footer" style="border-top: 1px solid var(--saas-gray-100); padding: 1rem 1.5rem;">
                 <button class="btn-saas btn-saas-outline" data-dismiss="modal">Cancelar</button>
-                <button class="btn-saas btn-saas-primary" onclick="updateClient()">Guardar cambios</button>
+                <button class="btn-saas btn-saas-primary" onclick="updateUser()">Guardar cambios</button>
             </div>
         </div>
     </div>
@@ -134,18 +142,19 @@
 <script>
 function openCreateModal() { $('#createModal').modal('show'); }
 
-function createClient() {
+function createUser() {
     var data = {
         name: document.getElementById('create_name').value,
         email: document.getElementById('create_email').value,
         password: document.getElementById('create_password').value,
+        pro_id: document.getElementById('create_profile').value,
         plan_start: document.getElementById('create_plan_start').value
     };
     if (!data.name || !data.email || !data.password) {
         Swal.fire('Error', 'Todos los campos son requeridos', 'error'); return;
     }
     document.querySelector('.loading').style.display = 'flex';
-    fetch(base_url + 'Clients/create', {
+    fetch(base_url + 'Users/create', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
     })
@@ -174,7 +183,7 @@ function openEditModal(id, name, email, status) {
     $('#editModal').modal('show');
 }
 
-function updateClient() {
+function updateUser() {
     var data = {
         us_id: document.getElementById('edit_us_id').value,
         name: document.getElementById('edit_name').value,
@@ -185,7 +194,7 @@ function updateClient() {
     if (pwd) data.password = pwd;
 
     document.querySelector('.loading').style.display = 'flex';
-    fetch(base_url + 'Clients/update', {
+    fetch(base_url + 'Users/update_user', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
     })
@@ -205,15 +214,15 @@ function updateClient() {
     });
 }
 
-function deleteClient(id) {
+function deleteUser(id) {
     Swal.fire({
-        title: '¿Eliminar cliente?',
+        title: '¿Eliminar usuario?',
         text: 'Esta acción no se puede deshacer',
         icon: 'warning', showCancelButton: true, confirmButtonText: 'Sí, eliminar', cancelButtonText: 'Cancelar'
     }).then(function(result) {
         if (result.isConfirmed) {
             document.querySelector('.loading').style.display = 'flex';
-            fetch(base_url + 'Clients/delete', {
+            fetch(base_url + 'Users/delete_user', {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ us_id: id })
             })

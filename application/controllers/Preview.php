@@ -42,8 +42,19 @@ class Preview extends CI_Controller {
 			"description" => $store_data->sto_description ?? $store_data->sto_wellcome_message ?? "WhatsApp Business para pequeños negocios",
 			"whatsapp_number" => $store_data->sto_phone ?? "+57 300 000 0000",
 			"products" => $products,
-			"store_id" => $sto_id
+			"store_id" => $sto_id,
+			"store_slug" => $store_data->sto_slug ?? null,
+			"profile_image" => $store_data->sto_logo ?? null,
+			"cover_image" => $store_data->sto_cover ?? null,
+			"base_url" => base_url()
 		);
 		$this->load->view('preview/public_view', $data);
+	}
+
+	public function store($slug = null) {
+		if (!$slug) show_404();
+		$q = $this->db->where('sto_slug', $slug)->get('stores')->row();
+		if (!$q) show_404();
+		return $this->index($q->sto_id);
 	}
 }

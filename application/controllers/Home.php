@@ -28,7 +28,8 @@ class Home extends CI_Controller
 				"whatsapp_number" => $this->get_whatsapp_number(),
 				"bot_status" => $this->get_bot_status(),
 				"products_count" => $this->get_products_count(),
-				"last_activity" => $this->get_last_activity()
+				"last_activity" => $this->get_last_activity(),
+				"plan_info" => $this->get_plan_info()
 			);
 
 			$this->load->view('includes/header', $data_header);
@@ -37,6 +38,39 @@ class Home extends CI_Controller
 		} catch (\Throwable $th) {
 			$this->load->view('error_pages/500');
 		}
+	}
+
+	private function get_store_for_user($us_id) {
+		$store = $this->db->where('us_id', (int)$us_id)->get('stores')->row();
+		if ($store) return $store;
+		$store = $this->db->query(
+			"SELECT s.* FROM user_store us INNER JOIN stores s ON s.sto_id = us.sto_id WHERE us.us_id = ? ORDER BY us.created_at DESC LIMIT 1",
+			[(int)$us_id]
+		)->row();
+		return $store;
+	}
+
+	private function get_plan_info() {
+		$us_id = (int)$this->session->userdata('us_id');
+		$store = $this->get_store_for_user($us_id);
+		if (!$store) return null;
+		$start = property_exists($store, 'sto_plan_start') ? $store->sto_plan_start : null;
+		$end = property_exists($store, 'sto_plan_end') ? $store->sto_plan_end : null;
+		$days_left = null;
+		$expires_soon = false;
+		if ($end) {
+			$now = new DateTime('today');
+			$endDt = new DateTime($end);
+			$diff = (int)$now->diff($endDt)->format('%r%a');
+			$days_left = $diff;
+			$expires_soon = $diff <= 7;
+		}
+		return array(
+			"plan_start" => $start,
+			"plan_end" => $end,
+			"plan_days_left" => $days_left,
+			"plan_expires_soon" => $expires_soon
+		);
 	}
 
 	private function get_whatsapp_status() {

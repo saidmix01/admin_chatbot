@@ -134,6 +134,37 @@ class BotApi extends CI_Controller
         return $status;
     }
 
+    private function absolute_url($path)
+    {
+        if (!$path) return null;
+        $p = (string)$path;
+        if (strpos($p, 'data:') === 0) return $p;
+        if (preg_match('~^https?://~', $p)) return $p;
+        if (strpos($p, '/') === 0) $p = ltrim($p, '/');
+        return base_url($p);
+    }
+
+    private function plan_info($store)
+    {
+        $start = $this->store_val($store, 'sto_plan_start', null);
+        $end = $this->store_val($store, 'sto_plan_end', null);
+        $daysLeft = null;
+        $expiresSoon = false;
+        if ($end) {
+            $now = new DateTime('today');
+            $endDt = new DateTime($end);
+            $diff = (int)$now->diff($endDt)->format('%r%a');
+            $daysLeft = $diff;
+            $expiresSoon = $diff <= 7;
+        }
+        return [
+            'plan_start' => $start,
+            'plan_end' => $end,
+            'plan_days_left' => $daysLeft,
+            'plan_expires_soon' => $expiresSoon
+        ];
+    }
+
     private function check_session()
     {
         if (!$this->session->userdata('login')) {
@@ -310,6 +341,12 @@ class BotApi extends CI_Controller
             'sto_phone' => $this->store_val($store, 'sto_phone', ''),
             'sto_direction' => $this->store_val($store, 'sto_direction', ''),
             'sto_wellcome_message' => $this->store_val($store, 'sto_wellcome_message', ''),
+            'sto_description' => $this->store_val($store, 'sto_description', ''),
+            'sto_slug' => $this->store_val($store, 'sto_slug', ''),
+            'sto_profile_image' => $this->absolute_url($this->store_val($store, 'sto_profile_image', '')),
+            'sto_cover_image' => $this->absolute_url($this->store_val($store, 'sto_cover_image', '')),
+            'preview_url' => $this->store_val($store, 'sto_slug', '') ? base_url('preview/store/' . $this->store_val($store, 'sto_slug', '')) : base_url('preview/' . (int)$this->store_val($store, 'sto_id', 0)),
+            'subscription' => $this->plan_info($store),
             'starters' => $starters,
             'bot' => [
                 'welcome_msg' => ($this->store_val($store, 'sto_wellcome_message') ?: '¡Hola! Bienvenido a {business}. ¿En qué podemos ayudarte?'),
@@ -592,6 +629,12 @@ class BotApi extends CI_Controller
                 "sto_phone" => $this->store_val($store, 'sto_phone', ''),
                 "sto_direction" => $this->store_val($store, 'sto_direction', ''),
                 "sto_wellcome_message" => $this->store_val($store, 'sto_wellcome_message', ''),
+                "sto_description" => $this->store_val($store, 'sto_description', ''),
+                "sto_slug" => $this->store_val($store, 'sto_slug', ''),
+                "sto_profile_image" => $this->absolute_url($this->store_val($store, 'sto_profile_image', '')),
+                "sto_cover_image" => $this->absolute_url($this->store_val($store, 'sto_cover_image', '')),
+                "preview_url" => $this->store_val($store, 'sto_slug', '') ? base_url('preview/store/' . $this->store_val($store, 'sto_slug', '')) : base_url('preview/' . (int)$this->store_val($store, 'sto_id', 0)),
+                "subscription" => $this->plan_info($store),
                 "starters" => $starters
             ],
             "bot_config" => [

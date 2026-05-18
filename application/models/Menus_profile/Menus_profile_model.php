@@ -48,6 +48,22 @@ class Menus_profile_model extends CI_Model
 			"message" => ""
 		);
 		try {
+			if (!empty($this->data) && isset($this->data['us_id'])) {
+				$user = $this->db->where('us_id', (int)$this->data['us_id'])->get($this->table_db_users)->row();
+				if ($user && (int)($user->pro_id ?? 0) === 1) {
+					$has = $this->db->where('pro_id', 1)->limit(1)->get($this->table_db)->num_rows() > 0;
+					if (!$has) {
+						$this->db->query(
+							"INSERT INTO {$this->table_db} (pro_id, men_id)
+							 SELECT 1, m.men_id
+							 FROM {$this->table_db_menus} m
+							 WHERE m.men_status = 1
+							 ON CONFLICT (pro_id, men_id) DO NOTHING"
+						);
+					}
+				}
+			}
+
 			// $this->db->cache_on();
 			$where = "";
 			if (!empty($this->data)) {

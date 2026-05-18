@@ -16,7 +16,15 @@ class Clients extends CI_Controller {
 			$menus = $this->Menus_profile_model->get_menu_user();
 
 			$query = $this->db->query("SELECT u.us_id, u.us_name, u.us_email, u.us_status, p.pro_description,
-					(SELECT sto_name FROM stores WHERE us_id = u.us_id LIMIT 1) as store_name
+					(COALESCE(
+						(SELECT s.sto_name
+						 FROM user_store us
+						 INNER JOIN stores s ON s.sto_id = us.sto_id
+						 WHERE us.us_id = u.us_id
+						 ORDER BY us.created_at DESC
+						 LIMIT 1),
+						(SELECT sto_name FROM stores WHERE us_id = u.us_id LIMIT 1)
+					)) as store_name
 				FROM users u
 				JOIN profiles p ON p.pro_id = u.pro_id
 				WHERE u.pro_id = 2
@@ -50,6 +58,11 @@ class Clients extends CI_Controller {
 			$check = $this->db->query("SELECT us_id FROM users WHERE us_email = '" . $input["email"] . "'");
 			if ($check->num_rows() > 0) throw new Exception("El email ya está registrado", 1);
 
+			$plan_start = !empty($input["plan_start"]) ? $input["plan_start"] : date('Y-m-d');
+			$plan_start_ts = strtotime($plan_start);
+			if ($plan_start_ts === false) $plan_start = date('Y-m-d');
+			$plan_end = date('Y-m-d', strtotime($plan_start . ' +30 days'));
+
 			$this->db->insert("users", array(
 				"us_name" => $input["name"],
 				"us_email" => $input["email"],
@@ -58,10 +71,15 @@ class Clients extends CI_Controller {
 				"us_status" => 1
 			));
 			$user_id = $this->db->insert_id();
-			$this->db->insert("stores", array("sto_name" => $input["name"], "sto_status" => 1, "us_id" => $user_id));
+			$store_data = array("sto_name" => $input["name"], "sto_status" => 1, "us_id" => $user_id);
+			if ($this->db->field_exists('sto_plan_start', 'stores')) $store_data["sto_plan_start"] = $plan_start;
+			if ($this->db->field_exists('sto_plan_end', 'stores')) $store_data["sto_plan_end"] = $plan_end;
+			$this->db->insert("stores", $store_data);
+			$sto_id = $this->db->insert_id();
+			$this->db->insert("user_store", array("us_id" => $user_id, "sto_id" => $sto_id));
 
 			$response["status"] = true;
-			$response["message"] = "Cliente creado exitosamente";
+			$response["message"] = "Usuario creado exitosamente";
 		} catch (\Throwable $th) {
 			$response["message"] = $th->getMessage();
 		}
