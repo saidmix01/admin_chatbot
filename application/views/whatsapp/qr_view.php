@@ -17,6 +17,13 @@
                                 <p style="color: var(--saas-gray-500);"><?= $whatsapp_number ?></p>
                                 <small style="color: var(--saas-gray-400);">El bot está funcionando</small>
                             </div>
+                        <?php elseif($qr_status === 'reconnecting'): ?>
+                            <div style="text-align: center;">
+                                <i class="feather icon-refresh-cw" style="font-size: 4rem; color: var(--saas-warning);"></i>
+                                <h5 style="margin-top: 1rem; font-weight: 600;">Reconectando...</h5>
+                                <p style="color: var(--saas-gray-500);">El bot está intentando recuperar la sesión</p>
+                                <small style="color: var(--saas-gray-400);">Si tarda, reinicia el bot o desconecta la sesión desde tu teléfono</small>
+                            </div>
                         <?php elseif($qr_base64): ?>
                             <div style="text-align: center;">
                                 <img src="data:image/png;base64,<?= $qr_base64 ?>" alt="QR WhatsApp" style="max-width: 280px; border-radius: var(--saas-radius-sm);">
@@ -103,6 +110,7 @@ var pollTimer = null;
 
 function mapStatus(statusText, hasQr) {
     if (statusText === 'connected') return { label: 'Conectado', badge: 'connected', icon: 'green' };
+    if (statusText === 'reconnecting') return { label: 'Reconectando', badge: 'reconnecting', icon: 'yellow' };
     if (statusText === 'expired') return { label: 'Expirado', badge: 'disconnected', icon: 'red' };
     if (statusText === 'waiting_scan' || hasQr) return { label: 'Esperando escaneo', badge: 'reconnecting', icon: 'yellow' };
     return { label: 'Desconectado', badge: 'disconnected', icon: 'red' };
@@ -119,6 +127,17 @@ function renderQrContainer(state) {
             + '  <h5 style="margin-top: 1rem; font-weight: 600;">WhatsApp Conectado</h5>'
             + '  <p style="color: var(--saas-gray-500);">' + (state.whatsappNumber || '') + '</p>'
             + '  <small style="color: var(--saas-gray-400);">El bot está funcionando</small>'
+            + '</div>';
+        return;
+    }
+
+    if (state.statusText === 'reconnecting') {
+        c.innerHTML = ''
+            + '<div style="text-align: center;">'
+            + '  <i class="feather icon-refresh-cw" style="font-size: 4rem; color: var(--saas-warning);"></i>'
+            + '  <h5 style="margin-top: 1rem; font-weight: 600;">Reconectando...</h5>'
+            + '  <p style="color: var(--saas-gray-500);">El bot está intentando recuperar la sesión</p>'
+            + '  <small style="color: var(--saas-gray-400);">Si tarda, reinicia el bot o desconecta la sesión desde tu teléfono</small>'
             + '</div>';
         return;
     }
@@ -245,7 +264,7 @@ function refreshQR() {
             lastStatus = 'waiting_scan';
             pollNow();
         } else {
-            Swal.fire('Error', 'No se pudo generar el QR. ¿El bot service está corriendo?', 'error');
+            Swal.fire('Error', r.message || 'No se pudo generar el QR. ¿El bot service está corriendo?', 'error');
         }
     })
     .catch(function() {
