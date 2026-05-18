@@ -16,6 +16,19 @@ class Webhook extends CI_Controller {
             return;
         }
 
+        $normalized = preg_replace('/\s+/u', ' ', trim((string)$text));
+        $normalizedLower = mb_strtolower($normalized, 'UTF-8');
+        if ($normalizedLower === mb_strtolower('Quiero el plan Inicial de Wapi', 'UTF-8')) {
+            $reply = "Plan Inicial de Wapi (ideal para empezar):\n"
+                . "• Bot de WhatsApp con respuestas automáticas básicas\n"
+                . "• Catálogo de productos/servicios + landing/tienda pública\n"
+                . "• Mensajes configurables: bienvenida, menú, fuera de horario y despedida\n"
+                . "• Gestión desde el panel y soporte para la configuración\n\n"
+                . "Si quieres, dime cuántos números necesitas y te recomiendo el plan correcto.";
+            echo json_encode(['status' => true, 'action' => 'demo', 'reply' => $reply]);
+            return;
+        }
+
         $this->load->library('FlowEngine');
         $engine = new FlowEngine($this->db);
         $result = $engine->handleIncoming($from, $text);
